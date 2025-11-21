@@ -25,6 +25,7 @@ import { DashboardBookings } from './pages/dashboard/DashboardBookings';
 import { DashboardCalendar } from './pages/dashboard/DashboardCalendar';
 import { DashboardEvents } from './pages/dashboard/DashboardEvents';
 import { DashboardFinancials } from './pages/dashboard/DashboardFinancials';
+import { DashboardGallery } from './pages/dashboard/DashboardGallery';
 import { DashboardPlaceholder } from './pages/dashboard/DashboardPlaceholder';
 
 const App: React.FC = () => {
@@ -66,11 +67,11 @@ const App: React.FC = () => {
         <Route path="calendar" element={<DashboardCalendar />} />
         <Route path="events" element={<DashboardEvents />} />
         <Route path="financials" element={<DashboardFinancials />} />
+        <Route path="gallery" element={<DashboardGallery />} />
         
         {/* New Modules */}
         <Route path="invoices" element={<DashboardPlaceholder title="Invoices & Billing" />} />
         <Route path="messages" element={<DashboardPlaceholder title="Messages & Inbox" />} />
-        <Route path="gallery" element={<DashboardPlaceholder title="Media Gallery" />} />
         <Route path="feedback" element={<DashboardPlaceholder title="Client Feedback" />} />
         
         <Route path="social" element={<DashboardPlaceholder title="Social Analytics" />} />
