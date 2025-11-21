@@ -17,14 +17,15 @@ import {
 } from './pages/DashboardPage';
 
 // Simple Auth Mock - In a real app, this would use a Context Provider (e.g., Clerk, Supabase)
-const RequireAuth = ({ children }: { children: React.ReactElement }) => {
+const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = true; // Set to false to test redirect
   const location = useLocation();
 
   if (!isAuthenticated) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
-  return children;
+  // Wrapping in a fragment ensures it's treated as a valid node
+  return <>{children}</>;
 };
 
 const App: React.FC = () => {
