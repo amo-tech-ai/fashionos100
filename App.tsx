@@ -11,6 +11,8 @@ import { RequireAuth } from './components/auth/RequireAuth';
 // Public Pages
 import { HomePage } from './pages/public/HomePage';
 import { ServicesPage } from './pages/public/ServicesPage';
+import { PhotographyPage } from './pages/public/PhotographyPage';
+import { VideoProductionPage } from './pages/public/VideoProductionPage';
 import { DirectoryPage } from './pages/public/DirectoryPage';
 import { EventsPage } from './pages/public/EventsPage';
 import { SocialPage } from './pages/public/SocialPage';
@@ -28,9 +30,12 @@ const App: React.FC = () => {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/services" element={<ServicesPage />} />
+        <Route path="/services/photography" element={<PhotographyPage />} />
+        <Route path="/services/video-production" element={<VideoProductionPage />} />
         <Route path="/directory" element={<DirectoryPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/social" element={<SocialPage />} />
+        <Route path="/shop" element={<Navigate to="/services" />} /> {/* Temp redirect */}
       </Route>
 
       {/* --- Authenticated Dashboard Zone --- */}
