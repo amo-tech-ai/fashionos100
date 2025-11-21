@@ -2,7 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Camera, Zap, Sparkles, ShoppingBag, CheckCircle2, 
-  Star, Scissors, Layers, Aperture, Wand2, MapPin
+  Star, Scissors, Layers, Aperture, Wand2, MapPin,
+  ArrowRight, Play, Mail, Globe, Box, Video
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
@@ -10,61 +11,37 @@ import { SectionTag } from '../../components/SectionTag';
 
 // --- Sub-Components ---
 
-const ServiceCard: React.FC<{
-  title: string;
-  desc: string;
-  image: string;
-}> = ({ title, desc, image }) => (
-  <div className="group cursor-pointer h-full flex flex-col">
-    <div className="overflow-hidden rounded-lg mb-4 relative aspect-[4/5]">
-      <img 
-        src={image} 
-        alt={title} 
-        className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+const FeatureCard = ({ icon: Icon, title, text }: { icon: any, title: string, text: string }) => (
+  <div className="p-8 bg-white rounded-2xl border border-gray-100 hover:shadow-xl hover:border-fashion-purple/20 transition-all duration-300 group h-full">
+    <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-6 group-hover:bg-fashion-black group-hover:text-white transition-colors">
+      <Icon size={24} />
     </div>
-    <h3 className="font-serif font-bold text-xl mb-2 group-hover:text-fashion-purple transition-colors">{title}</h3>
-    <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+    <h3 className="text-xl font-serif font-bold mb-3">{title}</h3>
+    <p className="text-gray-500 text-sm leading-relaxed">{text}</p>
   </div>
 );
 
-const PricingCard: React.FC<{
-  title: string;
-  price: string;
-  features: string[];
-  highlight?: boolean;
-}> = ({ title, price, features, highlight = false }) => (
-  <div className={`p-8 rounded-2xl border transition-all duration-300 flex flex-col h-full ${highlight ? 'border-fashion-purple shadow-xl bg-white relative overflow-hidden transform md:-translate-y-4' : 'border-gray-100 bg-gray-50 hover:border-gray-200'}`}>
-    {highlight && (
-      <div className="absolute top-0 right-0 bg-fashion-purple text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-        Most Popular
-      </div>
-    )}
-    <div className="mb-6">
-      <h3 className="font-serif font-bold text-2xl mb-2">{title}</h3>
-      <p className={`text-3xl font-bold ${highlight ? 'text-fashion-purple' : 'text-gray-900'}`}>{price}</p>
-      {price !== "Contact for Pricing" && <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">per session</span>}
-    </div>
-    <ul className="space-y-4 mb-8 flex-1">
-      {features.map((feat, i) => (
-        <li key={i} className="flex items-start gap-3 text-sm text-gray-600">
-          <CheckCircle2 size={16} className={`mt-0.5 shrink-0 ${highlight ? 'text-fashion-purple' : 'text-gray-400'}`} />
-          {feat}
-        </li>
-      ))}
-    </ul>
-    <Button variant={highlight ? 'accent' : 'outline'} fullWidth>Book Now</Button>
-  </div>
-);
-
-const ContactInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, ...props }) => (
-  <div className="flex flex-col gap-1">
+const ContactInput = ({ label, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) => (
+  <div className="flex flex-col gap-1.5">
     <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">{label}</label>
     <input 
       {...props}
-      className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-fashion-purple focus:ring-1 focus:ring-fashion-purple transition-all" 
+      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all" 
     />
+  </div>
+);
+
+const SelectInput = ({ label, options }: { label: string, options: string[] }) => (
+  <div className="flex flex-col gap-1.5">
+    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">{label}</label>
+    <div className="relative">
+      <select className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer">
+        {options.map(opt => <option key={opt}>{opt}</option>)}
+      </select>
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+        <ArrowRight size={14} className="rotate-90" />
+      </div>
+    </div>
   </div>
 );
 
@@ -72,50 +49,41 @@ const ContactInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { lab
 
 export const PhotographyPage: React.FC = () => {
   return (
-    <div className="bg-white pt-20 overflow-x-hidden">
+    <div className="bg-[#FBF8F5] pt-20 overflow-x-hidden text-fashion-black">
       
       {/* 1. HERO SECTION */}
       <section className="pt-12 pb-20 md:pt-24 md:pb-32 container mx-auto px-6 md:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Text Content */}
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5 order-2 lg:order-1">
             <FadeIn>
-              <SectionTag color="bg-purple-100 text-purple-600 px-2 py-1 rounded">AI-Powered Photography</SectionTag>
-              <h1 className="text-5xl md:text-7xl font-serif font-bold leading-[1.1] mb-6 text-fashion-black">
-                AI-Powered <br/>
-                Fashion <br/>
+              <h1 className="text-5xl md:text-7xl font-serif font-bold leading-[1.05] mb-6">
+                Product <br/>
                 Photography <br/>
-                in 48 Hours
+                & Video for <br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-orange-500">Modern Brands.</span>
               </h1>
-              <p className="text-lg text-gray-500 leading-relaxed mb-8 max-w-md">
-                High-impact visuals designed for designers, events, and campaigns. From concept to delivery, powered by intelligent workflows.
+              <p className="text-lg text-gray-500 leading-relaxed mb-10 max-w-md">
+                Premium product visuals, crafted to elevate brands and boost conversions. From e-commerce packshots to high-end editorial campaigns.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link to="/dashboard"><Button variant="accent" size="lg">Book a Shoot</Button></Link>
-                <Button variant="outline" size="lg">View Portfolio</Button>
+                <Link to="/contact"><Button variant="primary" size="lg">Book a Photoshoot</Button></Link>
+                <Link to="/directory"><Button variant="outline" size="lg">View Portfolio</Button></Link>
               </div>
             </FadeIn>
           </div>
           
-          {/* Image Grid */}
-          <div className="lg:col-span-7">
+          {/* Hero Collage */}
+          <div className="lg:col-span-7 order-1 lg:order-2 relative">
              <FadeIn direction="left" delay={200}>
-               <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-4 translate-y-8">
-                     <div className="bg-gray-100 rounded-2xl overflow-hidden aspect-[3/4]">
-                        <img src="https://images.unsplash.com/photo-1620799139834-6b8f844fbe61?q=80&w=800&auto=format&fit=crop" alt="Cosmetics" className="w-full h-full object-cover" />
-                     </div>
-                     <div className="bg-gray-100 rounded-2xl overflow-hidden aspect-square p-6 flex items-center justify-center bg-gradient-to-br from-blue-400 to-cyan-300">
-                        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600" alt="Product" className="w-32 h-32 object-contain drop-shadow-2xl mix-blend-multiply" />
-                     </div>
+               <div className="grid grid-cols-2 gap-4 md:gap-6">
+                  <div className="space-y-4 md:space-y-6 translate-y-12">
+                     <img src="https://images.unsplash.com/photo-1618331835717-801e976710b2?q=80&w=800&auto=format&fit=crop" alt="Cosmetics" className="w-full aspect-[4/5] object-cover rounded-2xl shadow-2xl" />
+                     <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=800&auto=format&fit=crop" alt="Footwear" className="w-full aspect-square object-cover rounded-2xl shadow-xl" />
                   </div>
-                  <div className="space-y-4">
-                     <div className="bg-gray-100 rounded-2xl overflow-hidden aspect-square p-6 flex items-center justify-center bg-gradient-to-br from-orange-400 to-yellow-300">
-                        <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600" alt="Juice" className="w-32 h-32 object-contain drop-shadow-2xl" />
-                     </div>
-                     <div className="bg-gray-100 rounded-2xl overflow-hidden aspect-[3/4]">
-                        <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop" alt="Model" className="w-full h-full object-cover" />
-                     </div>
+                  <div className="space-y-4 md:space-y-6">
+                     <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop" alt="Watch" className="w-full aspect-square object-cover rounded-2xl shadow-xl" />
+                     <img src="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?q=80&w=800&auto=format&fit=crop" alt="Perfume" className="w-full aspect-[4/5] object-cover rounded-2xl shadow-2xl" />
                   </div>
                </div>
              </FadeIn>
@@ -123,341 +91,329 @@ export const PhotographyPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. BENEFIT SECTION */}
-      <section className="py-24 bg-gray-50">
-        <div className="container mx-auto px-6 md:px-12">
-           <div className="flex flex-col lg:flex-row items-center gap-16">
-              <div className="lg:w-1/2">
-                 <FadeIn direction="right">
-                   <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/5] bg-orange-400">
-                      <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=1000" alt="Splash" className="w-full h-full object-cover opacity-90" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                   </div>
-                 </FadeIn>
-              </div>
-              <div className="lg:w-1/2">
-                 <FadeIn>
-                    <h2 className="text-5xl md:text-6xl font-serif font-bold mb-8">Catapult your sales.</h2>
-                    <p className="text-gray-500 text-lg mb-6 leading-relaxed">
-                       Professional <strong>eCommerce photography</strong> has been at the forefront of FashionOS services for years. 
-                    </p>
-                    <p className="text-gray-500 text-lg mb-6 leading-relaxed">
-                       Working out of our studios in <strong>Medellín, Bogotá, and Cartagena</strong>, we create imagery for many top brands including major fashion labels and independent designers.
-                    </p>
-                    <p className="text-gray-500 text-lg mb-8 leading-relaxed">
-                       We understand the importance of delivering high quality, cost-effective product photography that will increase engagement and conversions for your brand.
-                    </p>
-                    <Button variant="primary" size="lg">Start a Project</Button>
-                 </FadeIn>
-              </div>
-           </div>
+      {/* 2. FEATURE GALLERY STRIP */}
+      <section className="w-full overflow-hidden bg-white border-y border-gray-100 py-12">
+        <div className="flex gap-8 animate-scroll hover:pause px-6">
+           {[
+             "https://images.unsplash.com/photo-1596462502278-27bfdd403348?q=80&w=300&h=300&fit=crop",
+             "https://images.unsplash.com/photo-1571781348782-f2c426809196?q=80&w=300&h=300&fit=crop",
+             "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=300&h=300&fit=crop",
+             "https://images.unsplash.com/photo-1616401784845-180882ba9ba8?q=80&w=300&h=300&fit=crop",
+             "https://images.unsplash.com/photo-1627384113743-6e02db2161ae?q=80&w=300&h=300&fit=crop",
+             "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=300&h=300&fit=crop",
+             "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=300&h=300&fit=crop",
+             "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=300&h=300&fit=crop"
+           ].map((src, i) => (
+             <div key={i} className="flex-none w-48 h-48 rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-500 cursor-pointer">
+               <img src={src} className="w-full h-full object-cover" alt="Product thumbnail" />
+             </div>
+           ))}
         </div>
       </section>
 
-      {/* 3. ECOM SECTION */}
-      <section className="py-24">
-         <div className="container mx-auto px-6 md:px-12">
-            <div className="bg-gray-50 rounded-[3rem] p-8 md:p-20 flex flex-col lg:flex-row items-center gap-16 border border-gray-100 shadow-sm">
-               <div className="lg:w-1/2 order-2 lg:order-1">
-                  <FadeIn>
-                     <h2 className="text-5xl font-serif font-bold mb-6 flex items-center gap-3">We <span className="text-purple-500 animate-pulse">♥</span> ecom.</h2>
-                     <p className="text-gray-500 text-lg mb-6 leading-relaxed">
-                        Our skilled photography and production team has been specializing in delivering digital imagery for years. We know what it takes, there's nothing we haven't shot.
-                     </p>
-                     <p className="text-gray-500 text-lg mb-8 leading-relaxed">
-                        From account handlers to our photographers and retouchers we never compromise on quality. Our friendly team will ensure your experience with us is smooth, efficient and above all successful.
-                     </p>
-                     <p className="font-bold text-lg border-l-4 border-fashion-purple pl-4">We let the quality of our images do the talking for us.</p>
-                  </FadeIn>
+      {/* 3. EXCEPTIONAL IMAGERY */}
+      <section className="py-24 container mx-auto px-6 md:px-12">
+        <div className="flex flex-col lg:flex-row items-center gap-20">
+          <div className="lg:w-1/2">
+            <FadeIn>
+              <SectionTag>Quality First</SectionTag>
+              <h2 className="text-4xl md:text-5xl font-serif font-bold mb-8">Exceptional imagery.<br/>Every time.</h2>
+              <p className="text-gray-500 text-lg mb-6 leading-relaxed">
+                 As London & New York's primary professional <strong>product photography studio</strong>, we deliver outstanding images with an unrivaled level of service. 
+                 FashionOS Studios is regularly trusted to shoot for many of the world's foremost brands.
+              </p>
+              <p className="text-gray-500 text-lg mb-8 leading-relaxed">
+                 We love what we do and it shows. Our passion is delivering great work, on-time and on budget. We make the process easy, maintaining high industry standards that ensure we align with your brand guidelines.
+              </p>
+              <Button variant="outline">Learn About Our Process</Button>
+            </FadeIn>
+          </div>
+          <div className="lg:w-1/2">
+            <FadeIn direction="left">
+               <div className="grid grid-cols-2 gap-4">
+                  <img src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?q=80&w=600" className="w-full h-64 object-cover rounded-2xl" alt="Detail 1" />
+                  <img src="https://images.unsplash.com/photo-1580828343064-fde4fc206bc6?q=80&w=600" className="w-full h-64 object-cover rounded-2xl translate-y-8" alt="Detail 2" />
+                  <img src="https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?q=80&w=600" className="w-full h-64 object-cover rounded-2xl" alt="Detail 3" />
+                  <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=600" className="w-full h-64 object-cover rounded-2xl translate-y-8" alt="Detail 4" />
                </div>
-               <div className="lg:w-1/2 order-1 lg:order-2 relative">
-                   <FadeIn direction="left">
-                      <div className="grid grid-cols-2 gap-4">
-                         <img src="https://images.unsplash.com/photo-1618331835717-801e976710b2?q=80&w=600" className="rounded-2xl shadow-lg transform -rotate-2 hover:rotate-0 transition-transform duration-500" alt="Product 1" />
-                         <img src="https://images.unsplash.com/photo-1560343090-f0409e92791a?q=80&w=600" className="rounded-2xl shadow-lg transform rotate-3 translate-y-8 hover:rotate-0 transition-transform duration-500" alt="Product 2" />
-                      </div>
-                   </FadeIn>
-               </div>
-            </div>
-         </div>
+            </FadeIn>
+          </div>
+        </div>
       </section>
 
-      {/* 4. PORTFOLIO STRIP */}
-      <section className="py-20 overflow-hidden">
-         <div className="container mx-auto px-6 md:px-12 mb-12 flex flex-col md:flex-row justify-between items-end">
-            <div>
-               <SectionTag>Portfolio</SectionTag>
-               <h2 className="text-4xl font-serif font-bold">Our Work</h2>
-            </div>
-            <Link to="/directory" className="text-sm font-bold uppercase tracking-widest border-b border-black pb-1 hidden md:block">View Full Portfolio</Link>
-         </div>
-         <div className="flex gap-4 overflow-x-auto pb-8 px-6 hide-scrollbar snap-x">
+      {/* 4. STUDIO TRUST */}
+      <section className="py-24 bg-white">
+        <div className="container mx-auto px-6 md:px-12">
+          <div className="flex flex-col lg:flex-row items-center gap-20">
+             <div className="lg:w-1/2 order-2 lg:order-1">
+                <FadeIn>
+                   <div className="relative rounded-[2rem] overflow-hidden aspect-[3/4] shadow-2xl">
+                      <img src="https://images.unsplash.com/photo-1472289065668-ce650ac443d2?q=80&w=1000" className="w-full h-full object-cover" alt="Studio Camera" />
+                      <div className="absolute bottom-8 left-8 right-8 bg-white/90 backdrop-blur p-6 rounded-2xl">
+                         <div className="flex items-center gap-4">
+                            <div className="bg-black text-white p-3 rounded-full"><Camera size={20} /></div>
+                            <div>
+                               <p className="font-bold text-lg">Phase One IQ4</p>
+                               <p className="text-xs text-gray-500 uppercase tracking-widest">150MP Resolution</p>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+                </FadeIn>
+             </div>
+             <div className="lg:w-1/2 order-1 lg:order-2">
+                <FadeIn direction="left">
+                   <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">A studio you can trust.</h2>
+                   <p className="text-gray-500 text-lg mb-8 leading-relaxed">
+                      We offer a full content creation service, from production to delivery. We're "fully stacked", so we have in-house product photographers, stylists, art directors, and top retouchers.
+                   </p>
+                   <ul className="space-y-4 mb-10">
+                      {[
+                        "Dedicated Art Directors for every shoot",
+                        "High-end Phase One camera systems",
+                        "24-hour rush delivery available",
+                        "Secure product storage & insurance"
+                      ].map((item, i) => (
+                        <li key={i} className="flex items-center gap-3">
+                           <CheckCircle2 className="text-fashion-purple" size={20} />
+                           <span className="font-medium text-gray-700">{item}</span>
+                        </li>
+                      ))}
+                   </ul>
+                </FadeIn>
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. VIBRANT GALLERY */}
+      <section className="py-4 bg-black overflow-hidden">
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-1">
             {[
-               "https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600",
-               "https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=600",
-               "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=600",
-               "https://images.unsplash.com/photo-1552611052-33e04de081de?q=80&w=600",
-               "https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?q=80&w=600",
-               "https://images.unsplash.com/photo-1605763240004-7e93b172d754?q=80&w=600"
+               "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?q=80&w=600", // Bold cosmetics
+               "https://images.unsplash.com/photo-1560343090-f0409e92791a?q=80&w=600", // Neon shoes
+               "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=600", // Headphones
+               "https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=600"  // Sunglasses
             ].map((src, i) => (
-               <div key={i} className="min-w-[300px] md:min-w-[400px] aspect-[3/4] rounded-lg overflow-hidden snap-center cursor-pointer">
-                  <img src={src} alt={`Portfolio ${i}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+               <div key={i} className="aspect-square relative group overflow-hidden">
+                  <img src={src} alt="Vibrant" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100" />
                </div>
             ))}
          </div>
       </section>
 
-      {/* 5. SERVICES GRID */}
-      <section className="py-24 bg-gray-50">
+      {/* 6. EXPERIENCE */}
+      <section className="py-24 bg-[#0a0a0a] text-white">
          <div className="container mx-auto px-6 md:px-12">
-            <div className="text-center mb-16">
-               <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4">Our Ecommerce Services.</h2>
-               <p className="text-gray-500 max-w-2xl mx-auto">Specialized photography workflows designed for high-volume and high-quality.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-               <FadeIn delay={0}>
-                  <ServiceCard 
-                     title="Packshot Photography."
-                     desc="Mainly used for brochures and online catalogues, we can supply your product shots beautifully on a white (or single-coloured) background."
-                     image="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?q=80&w=800"
-                  />
-               </FadeIn>
-               <FadeIn delay={100}>
-                  <ServiceCard 
-                     title="On-Model Fashion."
-                     desc="Our E-Commerce fashion photography is a good way if you want more investment and an uplift in sales. We find that on-model photography alongside invisible mannequins works best."
-                     image="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800"
-                  />
-               </FadeIn>
-               <FadeIn delay={200}>
-                  <ServiceCard 
-                     title="Creative | Still Life"
-                     desc="Our creative still life photography provides you with bespoke visuals tailored to your brand. We often work with brand art directors but also able to assist and create mood boards."
-                     image="https://images.unsplash.com/photo-1556228720-19de75d50e23?q=80&w=800"
-                  />
-               </FadeIn>
-               <FadeIn delay={300}>
-                  <ServiceCard 
-                     title="AI-Enhanced Editing"
-                     desc="Our AI post-production partner automatically tags, scores, and optimizes every image. Background replacement, color correction, and style consistency."
-                     image="https://images.unsplash.com/photo-1550614000-4b9519e0013f?q=80&w=800"
-                  />
-               </FadeIn>
-               <FadeIn delay={400}>
-                  <ServiceCard 
-                     title="eCommerce Apparel."
-                     desc="Clothing Photography — be it ghost mannequins, flat lays, or accessories — we create images that are both technically proficient and beautifully styled."
-                     image="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800"
-                  />
-               </FadeIn>
-               <FadeIn delay={500}>
-                  <ServiceCard 
-                     title="eCommerce Jewellery."
-                     desc="Professional Jewellery photography is something we love doing and pride ourselves on. Our in-house specialist jewellery photographer has the techniques and skills."
-                     image="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800"
-                  />
-               </FadeIn>
+            <div className="flex flex-col lg:flex-row gap-20 items-center">
+               <div className="lg:w-1/2">
+                  <FadeIn>
+                     <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-6">Since 2004</div>
+                     <h2 className="text-4xl md:text-6xl font-serif font-bold mb-8">20+ years in the <br/> Industry.</h2>
+                     <p className="text-gray-400 text-lg mb-8 leading-relaxed">
+                        Our long-standing product photography team understands the need to take time to examine your product to work out exactly how best to light it. Unlike many other studios, we specifically and individually light your products to achieve the best results.
+                     </p>
+                     <p className="text-gray-400 text-lg mb-10 leading-relaxed">
+                        Over many years of trading, we have continually worked with many premium brands, including ASOS, Selfridges, TK Maxx, House of Fraser and Dover Street Market.
+                     </p>
+                     <div className="flex gap-8">
+                        <div>
+                           <span className="block text-4xl font-bold text-fashion-purple mb-1">15k+</span>
+                           <span className="text-xs text-gray-500 uppercase tracking-widest">Projects Delivered</span>
+                        </div>
+                        <div>
+                           <span className="block text-4xl font-bold text-fashion-purple mb-1">850+</span>
+                           <span className="text-xs text-gray-500 uppercase tracking-widest">Clients Worldwide</span>
+                        </div>
+                     </div>
+                  </FadeIn>
+               </div>
+               <div className="lg:w-1/2">
+                  <FadeIn direction="left">
+                     <img src="https://images.unsplash.com/photo-1533750349088-cd8773a6575c?q=80&w=1000" alt="Red Shoe" className="rounded-lg shadow-2xl" />
+                  </FadeIn>
+               </div>
             </div>
          </div>
       </section>
 
-      {/* 6. AI PARTNER */}
-      <section className="py-24 container mx-auto px-6 md:px-12">
-         <div className="flex flex-col lg:flex-row items-center gap-16">
-            <div className="lg:w-1/2">
-               <FadeIn>
-                  <div className="bg-purple-50 text-purple-600 px-4 py-2 rounded-full inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-6">
-                     <Sparkles size={14} /> AI-Powered Studio
-                  </div>
-                  <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">Your AI Post-Production Partner</h2>
+      {/* 7. ECOMMERCE PACKAGE */}
+      <section className="py-24 bg-white">
+         <div className="container mx-auto px-6 md:px-12">
+            <div className="flex flex-col lg:flex-row gap-16 items-center">
+               <div className="lg:w-1/2">
+                   <FadeIn>
+                      <div className="grid grid-cols-2 gap-4">
+                         <img src="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?q=80&w=600" className="bg-gray-50 rounded-xl" alt="Packshot 1" />
+                         <img src="https://images.unsplash.com/photo-1583394838336-acd977736f90?q=80&w=600" className="bg-gray-50 rounded-xl" alt="Packshot 2" />
+                      </div>
+                   </FadeIn>
+               </div>
+               <div className="lg:w-1/2">
+                  <FadeIn direction="left">
+                     <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">Ecommerce Product Photography.</h2>
+                     <p className="text-gray-500 text-lg mb-8 leading-relaxed">
+                        If you require clean, high-end catalogue images for online, print, or PR purposes, consider trying our e-commerce photography service.
+                     </p>
+                     <p className="text-gray-500 text-lg mb-8 leading-relaxed">
+                        High-quality images are not a luxury but a necessity when it comes to driving online sales. Therefore, it's crucial to select a studio that consistently delivers top-notch images.
+                     </p>
+                     <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 mb-8">
+                        <h4 className="font-bold mb-4">Standard Package Includes:</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                           {["Pure white background", "Colour correction", "Basic retouching", "Web & Print formats", "Invisible Mannequin", "24h proof turnaround"].map((item, i) => (
+                              <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                                 <div className="w-1.5 h-1.5 bg-fashion-purple rounded-full" /> {item}
+                              </div>
+                           ))}
+                        </div>
+                     </div>
+                     <Button variant="primary">Get a Quote Today</Button>
+                  </FadeIn>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      {/* 8. TESTIMONIALS */}
+      <section className="py-24 bg-fashion-black text-white border-y border-white/10">
+         <div className="container mx-auto px-6 md:px-12 text-center max-w-4xl">
+            <FadeIn>
+               <div className="text-fashion-purple text-6xl font-serif mb-6">"</div>
+               <h3 className="text-2xl md:text-4xl font-serif italic leading-relaxed mb-10">
+                  We've happily worked with Blend for a couple of seasons. The quality of their photography is something we value extremely highly. Flexible, accommodating, and thoughtful.
+               </h3>
+               <div>
+                  <p className="font-bold text-lg">MICHAEL WHEELER</p>
+                  <p className="text-gray-500 text-xs uppercase tracking-widest">CEO, F1 Branded Merchandising</p>
+               </div>
+            </FadeIn>
+         </div>
+      </section>
+
+      {/* 9. BENEFITS */}
+      <section className="py-24 bg-white">
+         <div className="container mx-auto px-6 md:px-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+               <FadeIn delay={0}><FeatureCard icon={Layers} title="Consistency" text="It's fundamental that all your photographs look consistent in quality, across all channels, every season." /></FadeIn>
+               <FadeIn delay={100}><FeatureCard icon={Sparkles} title="Boost Image" text="Using exceptional images across your marketing collateral shows your customers you don't compromise on quality." /></FadeIn>
+               <FadeIn delay={200}><FeatureCard icon={ShoppingBag} title="Improve Sales" text="Great images have been proven to drive up sales and increase profit. Customers are naturally drawn to content." /></FadeIn>
+               <FadeIn delay={300}><FeatureCard icon={Video} title="Enhance Media" text="With social media platforms bigger than ever before, it's vital you have the right content to advertise your products." /></FadeIn>
+            </div>
+         </div>
+      </section>
+
+      {/* 10. TRUSTED BY */}
+      <section className="py-16 bg-black text-white overflow-hidden">
+         <div className="container mx-auto px-6 md:px-12">
+            <p className="text-center text-gray-500 text-xs uppercase tracking-widest mb-10 font-bold">Trusted by Leading Brands</p>
+            <div className="flex flex-wrap justify-center gap-12 md:gap-20 grayscale opacity-60">
+               {/* Text Placeholders for Logos */}
+               <span className="text-2xl font-bold font-serif">VOGUE</span>
+               <span className="text-2xl font-bold tracking-widest">CHANEL</span>
+               <span className="text-2xl font-bold font-mono">Cartier</span>
+               <span className="text-2xl font-bold italic">Revlon</span>
+               <span className="text-2xl font-bold tracking-tighter">NIKE</span>
+               <span className="text-2xl font-bold font-serif">Sephora</span>
+            </div>
+         </div>
+      </section>
+
+      {/* 11. CREATIVE ADD-ONS */}
+      <section className="py-24 bg-[#FBF8F5]">
+         <div className="container mx-auto px-6 md:px-12">
+            <div className="bg-white rounded-[3rem] overflow-hidden shadow-xl flex flex-col md:flex-row">
+               <div className="md:w-1/2 p-12 md:p-20 flex flex-col justify-center">
+                  <SectionTag>Go Beyond</SectionTag>
+                  <h2 className="text-4xl font-serif font-bold mb-6">Need something <br/>a little more creative?</h2>
                   <p className="text-gray-500 text-lg mb-8">
-                     Every shoot is enhanced with our AI Studio — intelligent post-production that automatically tags, scores, and optimizes your images for maximum impact.
+                     Looking for unique photography that's tailored to you and your brand? 
+                     Our still life photography service gives you the freedom to style your products however you like, with the option of incorporating props and interesting backgrounds.
                   </p>
-                  <ul className="space-y-4 mb-8">
-                     <li className="flex items-center gap-3 text-gray-600">
-                        <Zap size={18} className="text-purple-500" />
-                        <span>Auto-tagging and smart categorization for instant organization</span>
-                     </li>
-                     <li className="flex items-center gap-3 text-gray-600">
-                        <Wand2 size={18} className="text-purple-500" />
-                        <span>Style scoring to identify your best-performing images</span>
-                     </li>
-                     <li className="flex items-center gap-3 text-gray-600">
-                        <Scissors size={18} className="text-purple-500" />
-                        <span>Background replacement and color correction in seconds</span>
-                     </li>
-                     <li className="flex items-center gap-3 text-gray-600">
-                        <Layers size={18} className="text-purple-500" />
-                        <span>Seamless integration with Cloudinary and Supabase gallery</span>
-                     </li>
+                  <ul className="space-y-3 mb-10">
+                     {["Stop-motion video", "Hand models & casting", "Custom set builds", "Location scouting"].map((item, i) => (
+                        <li key={i} className="flex items-center gap-3 text-gray-700 font-medium">
+                           <div className="w-1.5 h-1.5 bg-fashion-purple rounded-full" /> {item}
+                        </li>
+                     ))}
                   </ul>
-                  <Button variant="accent">Try AI Studio</Button>
-               </FadeIn>
-            </div>
-            <div className="lg:w-1/2">
-               <FadeIn direction="left">
-                  <div className="bg-black rounded-2xl overflow-hidden shadow-2xl aspect-video relative group">
-                     <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000" alt="Camera" className="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity" />
-                     <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-16 h-16 bg-white/10 backdrop-blur rounded-full flex items-center justify-center border border-white/20 shadow-lg group-hover:scale-110 transition-transform">
-                           <Aperture className="text-white animate-spin-slow" size={32} />
-                        </div>
-                     </div>
-                  </div>
-               </FadeIn>
+                  <div><Button variant="primary" size="lg">Ask for a Custom Shoot</Button></div>
+               </div>
+               <div className="md:w-1/2 relative min-h-[400px]">
+                  <img src="https://images.unsplash.com/photo-1563170351-be82bc888aa4?q=80&w=800" alt="Creative" className="absolute inset-0 w-full h-full object-cover" />
+               </div>
             </div>
          </div>
       </section>
 
-      {/* 7. EXPERIENCE */}
-      <section className="py-24 bg-gray-50">
-         <div className="container mx-auto px-6 md:px-12 flex flex-col md:flex-row items-center gap-16">
-            <div className="md:w-1/2">
-               <FadeIn>
-                  <div className="flex items-center gap-2 mb-4">
-                     <Star className="text-yellow-500 fill-yellow-500" size={20} />
-                     <span className="font-bold text-sm uppercase tracking-widest">Established 2005</span>
-                  </div>
-                  <h2 className="text-4xl md:text-6xl font-serif font-bold mb-6 leading-tight">
-                     With over 20 years of industry experience, our experienced team has shot for top brands.
-                  </h2>
-                  <p className="text-gray-500 text-lg leading-relaxed">
-                     From Paris Fashion Week to Amazon product listings, we understand the visual language of sales. 
-                     Our heritage is in traditional photography, but our future is digital.
-                  </p>
-               </FadeIn>
-            </div>
-            <div className="md:w-1/2">
-               <FadeIn direction="left">
-                  <img src="https://images.unsplash.com/photo-1542038784424-48dd95131591?q=80&w=1000" alt="Photographer" className="rounded-2xl shadow-xl w-full" />
-               </FadeIn>
-            </div>
-         </div>
-      </section>
-
-      {/* 8. HOW WE WORK */}
-      <section className="py-24 container mx-auto px-6 md:px-12">
-         <div className="flex flex-col md:flex-row gap-16 items-center">
-            <div className="md:w-1/2">
-               <FadeIn>
-                  <h2 className="text-4xl font-serif font-bold mb-8">How we work.</h2>
-                  <div className="space-y-8">
-                     <div className="flex gap-4">
-                        <div className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center shrink-0 font-bold text-xl">1</div>
-                        <div>
-                           <h3 className="font-bold text-xl mb-2">Plan</h3>
-                           <p className="text-gray-500">Creative briefing, moodboards, and shot lists. We ascertain all requirements including file sizes and delivery methods.</p>
-                        </div>
-                     </div>
-                     <div className="flex gap-4">
-                        <div className="w-12 h-12 bg-gray-100 text-black rounded-full flex items-center justify-center shrink-0 font-bold text-xl">2</div>
-                        <div>
-                           <h3 className="font-bold text-xl mb-2">Shoot</h3>
-                           <p className="text-gray-500">Studio or location production with top talent. We strictly follow guidelines to ensure consistency across your content.</p>
-                        </div>
-                     </div>
-                     <div className="flex gap-4">
-                        <div className="w-12 h-12 bg-gray-100 text-black rounded-full flex items-center justify-center shrink-0 font-bold text-xl">3</div>
-                        <div>
-                           <h3 className="font-bold text-xl mb-2">Deliver</h3>
-                           <p className="text-gray-500">Edited, optimized images in 48 hours. We never underestimate the administration and logistics of delivery.</p>
-                        </div>
-                     </div>
-                  </div>
-               </FadeIn>
-            </div>
-            <div className="md:w-1/2">
-               <FadeIn direction="left">
-                  <img src="https://images.unsplash.com/photo-1603322199363-14380ec26311?q=80&w=1000" alt="Camera Gear" className="rounded-2xl shadow-lg" />
-               </FadeIn>
-            </div>
-         </div>
-      </section>
-
-      {/* 9. PRICING */}
+      {/* 12. CONTACT FORM */}
       <section className="py-24 bg-gray-50">
          <div className="container mx-auto px-6 md:px-12">
-            <div className="text-center mb-16">
-               <h2 className="text-4xl font-serif font-bold mb-2">Simple Pricing</h2>
-               <p className="text-gray-500">Choose the package that fits your needs</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch">
-               <FadeIn delay={0}>
-                  <PricingCard 
-                     title="Starter"
-                     price="Contact"
-                     features={["AI-enhanced portraits", "Basic editing", "48-hour delivery", "Social media ready", "Online gallery"]}
-                  />
-               </FadeIn>
-               <FadeIn delay={100}>
-                  <PricingCard 
-                     title="Pro"
-                     price="Contact"
-                     features={["Up to 50 edited images", "On-location or studio", "AI post-production", "E-commerce optimization", "Priority delivery"]}
-                     highlight
-                  />
-               </FadeIn>
-               <FadeIn delay={200}>
-                  <PricingCard 
-                     title="Elite"
-                     price="Contact"
-                     features={["Photo + video package", "Full-day shoot", "Unlimited edits", "Art direction included", "Rush 24h delivery"]}
-                  />
-               </FadeIn>
+            <div className="max-w-3xl mx-auto">
+               <div className="text-center mb-12">
+                  <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4">Get in Touch.</h2>
+               </div>
+               <form className="space-y-6 bg-white p-8 md:p-12 rounded-3xl shadow-lg border border-gray-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <ContactInput label="First Name*" placeholder="Jane" type="text" />
+                     <ContactInput label="Last Name*" placeholder="Doe" type="text" />
+                  </div>
+                  <ContactInput label="Email*" placeholder="jane@brand.com" type="email" />
+                  <ContactInput label="Company Name" placeholder="Brand Studio Ltd" type="text" />
+                  
+                  <SelectInput label="Project Type" options={["E-commerce / Packshot", "Creative Campaign", "Video Production", "Retouching Only"]} />
+
+                  <div className="flex flex-col gap-1.5">
+                     <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Please tell us about your proposed project</label>
+                     <textarea 
+                        placeholder="Please provide details regarding quantities, scope, photography style..."
+                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all h-32 resize-none" 
+                     />
+                  </div>
+                  <div className="pt-4">
+                     <Button variant="primary" className="px-12 py-4 rounded-sm w-full md:w-auto uppercase tracking-widest font-bold">Submit</Button>
+                  </div>
+               </form>
             </div>
          </div>
       </section>
 
-      {/* 10. CONTACT FORM */}
-      <section className="py-24 container mx-auto px-6 md:px-12">
-         <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-12">
-               <h2 className="text-5xl font-serif font-bold mb-4">Get in Touch.</h2>
-            </div>
-            <form className="space-y-6 bg-white p-8 md:p-12 rounded-3xl shadow-lg border border-gray-100">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <ContactInput label="First Name*" placeholder="Jane" type="text" />
-                  <ContactInput label="Last Name*" placeholder="Doe" type="text" />
-               </div>
-               <ContactInput label="Email*" placeholder="jane@brand.com" type="email" />
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <ContactInput label="Company name" placeholder="Brand Studio Ltd" type="text" />
-                  <ContactInput label="Project Type" placeholder="E-commerce / Campaign" type="text" />
-               </div>
-               <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Tell us about your project</label>
-                  <textarea 
-                     placeholder="Please provide us with details regarding quantities, scope, photography, and/or video."
-                     className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-fashion-purple focus:ring-1 focus:ring-fashion-purple transition-all h-32 resize-none" 
-                  />
-               </div>
-               <div className="pt-4 text-center">
-                  <Button variant="accent" className="px-12 w-full md:w-auto">Submit Request</Button>
-               </div>
-            </form>
-         </div>
-      </section>
-
-      {/* 11. BTS GALLERY */}
-      <section className="py-24 bg-gray-50">
+      {/* 13. CTA BLOCK */}
+      <section className="py-24 bg-white text-center">
          <div className="container mx-auto px-6 md:px-12">
-            <div className="text-center mb-12">
-               <h2 className="text-4xl font-serif font-bold">Behind the scenes.</h2>
-               <p className="text-gray-500 mt-2">See how we create the magic in studio.</p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-               <div className="rounded-xl overflow-hidden aspect-square"><img src="https://images.unsplash.com/photo-1527011046414-4781f1f94f8c?q=80&w=400" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" alt="BTS" /></div>
-               <div className="rounded-xl overflow-hidden aspect-square"><img src="https://images.unsplash.com/photo-1588483977959-53b38b666596?q=80&w=400" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" alt="BTS" /></div>
-               <div className="rounded-xl overflow-hidden aspect-square"><img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=400" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" alt="BTS" /></div>
-               <div className="rounded-xl overflow-hidden aspect-square"><img src="https://images.unsplash.com/photo-1472289065668-ce650ac443d2?q=80&w=400" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" alt="BTS" /></div>
-               <div className="rounded-xl overflow-hidden aspect-square"><img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=400" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" alt="BTS" /></div>
-               <div className="rounded-xl overflow-hidden aspect-square"><img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca4?q=80&w=400" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" alt="BTS" /></div>
-               <div className="rounded-xl overflow-hidden aspect-square"><img src="https://images.unsplash.com/photo-1563170351-be82bc888aa4?q=80&w=400" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" alt="BTS" /></div>
-               <div className="rounded-xl overflow-hidden aspect-square"><img src="https://images.unsplash.com/photo-1550614000-4b9519e0013f?q=80&w=400" className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" alt="BTS" /></div>
-            </div>
+            <FadeIn>
+               <h2 className="text-5xl font-serif font-bold mb-6">Want to really stand out?</h2>
+               <p className="text-gray-500 text-xl mb-10 max-w-2xl mx-auto">
+                  Nothing catches the eye quite like a moving image — and our striking GIFs cater to even the most creative of visions.
+               </p>
+               <Button variant="outline" size="lg">Get Started</Button>
+            </FadeIn>
          </div>
       </section>
 
+      {/* 14. BTS GALLERY */}
+      <section className="py-24 bg-[#FBF8F5]">
+         <div className="container mx-auto px-6 md:px-12">
+            <div className="mb-12">
+               <h2 className="text-3xl font-serif font-bold">Behind the scenes.</h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+               {[
+                  "https://images.unsplash.com/photo-1527011046414-4781f1f94f8c?q=80&w=400",
+                  "https://images.unsplash.com/photo-1588483977959-53b38b666596?q=80&w=400",
+                  "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=400",
+                  "https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=400",
+                  "https://images.unsplash.com/photo-1603322199363-14380ec26311?q=80&w=400",
+                  "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?q=80&w=400"
+               ].map((src, i) => (
+                  <div key={i} className="rounded-sm overflow-hidden aspect-square grayscale hover:grayscale-0 transition-all duration-500">
+                     <img src={src} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="BTS" />
+                  </div>
+               ))}
+            </div>
+         </div>
+      </section>
+      
     </div>
   );
 };

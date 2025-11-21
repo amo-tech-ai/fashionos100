@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
@@ -16,12 +17,14 @@ import { VideoProductionPage } from './pages/public/VideoProductionPage';
 import { DirectoryPage } from './pages/public/DirectoryPage';
 import { EventsPage } from './pages/public/EventsPage';
 import { SocialPage } from './pages/public/SocialPage';
+import { EcommercePage } from './pages/public/EcommercePage';
 
 // Dashboard Pages
 import { DashboardOverview } from './pages/dashboard/DashboardOverview';
 import { DashboardBookings } from './pages/dashboard/DashboardBookings';
 import { DashboardCalendar } from './pages/dashboard/DashboardCalendar';
 import { DashboardEvents } from './pages/dashboard/DashboardEvents';
+import { DashboardFinancials } from './pages/dashboard/DashboardFinancials';
 import { DashboardPlaceholder } from './pages/dashboard/DashboardPlaceholder';
 
 const App: React.FC = () => {
@@ -34,10 +37,10 @@ const App: React.FC = () => {
         <Route path="/services/photography" element={<PhotographyPage />} />
         <Route path="/services/video-production" element={<VideoProductionPage />} />
         <Route path="/services/social" element={<SocialPage />} />
+        <Route path="/services/ecommerce" element={<EcommercePage />} />
         
         {/* Placeholders for future pages ensuring links work */}
         <Route path="/services/web-design" element={<ServicesPage />} />
-        <Route path="/services/ecommerce" element={<ServicesPage />} />
         <Route path="/portfolio" element={<DirectoryPage />} /> {/* Using Directory as Portfolio fallback for now */}
         <Route path="/contact" element={<ServicesPage />} /> {/* Using Services as Contact fallback for now */}
         
@@ -46,7 +49,7 @@ const App: React.FC = () => {
         
         {/* Legacy redirects */}
         <Route path="/social" element={<Navigate to="/services/social" replace />} />
-        <Route path="/shop" element={<Navigate to="/services" />} />
+        <Route path="/shop" element={<Navigate to="/services/ecommerce" />} />
       </Route>
 
       {/* --- Authenticated Dashboard Zone --- */}
@@ -62,6 +65,7 @@ const App: React.FC = () => {
         <Route path="bookings" element={<DashboardBookings />} />
         <Route path="calendar" element={<DashboardCalendar />} />
         <Route path="events" element={<DashboardEvents />} />
+        <Route path="financials" element={<DashboardFinancials />} />
         
         {/* New Modules */}
         <Route path="invoices" element={<DashboardPlaceholder title="Invoices & Billing" />} />
@@ -69,7 +73,6 @@ const App: React.FC = () => {
         <Route path="gallery" element={<DashboardPlaceholder title="Media Gallery" />} />
         <Route path="feedback" element={<DashboardPlaceholder title="Client Feedback" />} />
         
-        <Route path="financials" element={<DashboardPlaceholder title="Financials" />} />
         <Route path="social" element={<DashboardPlaceholder title="Social Analytics" />} />
         <Route path="directory" element={<DashboardPlaceholder title="Talent CRM" />} />
         <Route path="shop" element={<DashboardPlaceholder title="E-Commerce" />} />

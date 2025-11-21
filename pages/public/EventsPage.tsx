@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Search, Sparkles, Calendar, Ticket, ChevronDown, MapPin, 
   Clock, Filter, ArrowRight, Mic2, Camera, ShoppingBag, 
-  Users, Info, Map, Car, Star, Plus, X
+  Users, Info, Map, Car, Star, Plus, X, SlidersHorizontal
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
@@ -27,7 +27,8 @@ const EVENTS_DATA = [
   {
     id: 1,
     title: "Sustainable Fashion Week 2025",
-    category: "Runway Show",
+    category: "Runway",
+    timing: "Upcoming",
     date: "March 15, 2025",
     time: "19:00 PM",
     location: "Centro Cultural, Medellín",
@@ -40,6 +41,7 @@ const EVENTS_DATA = [
     id: 2,
     title: "Editorial Photography Workshop",
     category: "Workshop",
+    timing: "Upcoming",
     date: "March 18, 2025",
     time: "10:00 AM",
     location: "Studio Loft, Bogotá",
@@ -52,6 +54,7 @@ const EVENTS_DATA = [
     id: 3,
     title: "Emerging Designers Showcase",
     category: "Exhibition",
+    timing: "Live",
     date: "March 22, 2025",
     time: "14:00 PM",
     location: "Galería Arte, Cali",
@@ -64,6 +67,7 @@ const EVENTS_DATA = [
     id: 4,
     title: "Street Style Pop-Up Market",
     category: "Pop-up",
+    timing: "Upcoming",
     date: "March 25, 2025",
     time: "11:00 AM",
     location: "Plaza Central, Cartagena",
@@ -75,7 +79,8 @@ const EVENTS_DATA = [
   {
     id: 5,
     title: "Haute Couture Gala Evening",
-    category: "Runway Show",
+    category: "Runway",
+    timing: "Upcoming",
     date: "April 1, 2025",
     time: "20:00 PM",
     location: "Grand Hotel, Medellín",
@@ -88,13 +93,14 @@ const EVENTS_DATA = [
     id: 6,
     title: "Fashion Tech Summit",
     category: "Conference",
-    date: "April 5, 2025",
+    timing: "Past",
+    date: "Feb 10, 2025",
     time: "09:00 AM",
     location: "Innovation Hub, Bogotá",
     image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=800&auto=format&fit=crop",
     tags: ["AI", "Technology", "Future"],
     price: "From $75",
-    capacity: "Selling Fast"
+    capacity: "Closed"
   }
 ];
 
@@ -108,18 +114,54 @@ const CATEGORIES = [
 
 // --- Sub-Components ---
 
-const FilterPill = ({ label, active = false }: { label: string, active?: boolean }) => (
-  <button className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold border transition-all whitespace-nowrap ${active ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}>
-    {label} <ChevronDown size={12} />
-  </button>
-);
+const FilterDropdown = ({ 
+  label, 
+  options, 
+  value, 
+  onChange 
+}: { 
+  label: string, 
+  options: string[], 
+  value: string, 
+  onChange: (val: string) => void 
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <div className="relative">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap ${value !== options[0] ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
+      >
+        {value !== options[0] ? value : label} <ChevronDown size={12} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute top-full mt-2 left-0 bg-white border border-gray-100 rounded-xl shadow-xl p-2 min-w-[180px] z-50 flex flex-col gap-1 animate-in fade-in zoom-in-95 origin-top-left">
+            {options.map(opt => (
+              <button 
+                key={opt}
+                onClick={() => { onChange(opt); setIsOpen(false); }}
+                className={`text-left px-3 py-2 text-xs font-bold rounded-lg transition-colors ${value === opt ? 'text-purple-600 bg-purple-50' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 const EventCard = ({ event }: { event: typeof EVENTS_DATA[0] }) => (
   <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-500 flex flex-col h-full cursor-pointer">
     <div className="aspect-[4/3] relative overflow-hidden">
       <img src={event.image} alt={event.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
       <div className="absolute top-3 right-3">
-         <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md ${event.category === 'Runway Show' ? 'bg-purple-500/90 text-white' : 'bg-white/90 text-black'}`}>
+         <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md ${event.category === 'Runway' ? 'bg-purple-500/90 text-white' : 'bg-white/90 text-black'}`}>
             {event.category}
          </span>
       </div>
@@ -132,8 +174,15 @@ const EventCard = ({ event }: { event: typeof EVENTS_DATA[0] }) => (
       </div>
     </div>
     <div className="p-6 flex flex-col flex-grow">
-      <div className="flex items-center gap-2 text-gray-400 text-xs font-medium mb-3">
-        <Calendar size={14} /> {event.date}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2 text-gray-400 text-xs font-medium">
+          <Calendar size={14} /> {event.date}
+        </div>
+        {event.timing === 'Live' && (
+          <span className="flex items-center gap-1 text-[10px] font-bold text-red-500 uppercase tracking-wider animate-pulse">
+            <span className="w-2 h-2 rounded-full bg-red-500"></span> Live
+          </span>
+        )}
       </div>
       <h3 className="text-xl font-serif font-bold mb-2 leading-tight group-hover:text-purple-600 transition-colors">{event.title}</h3>
       <div className="flex items-center gap-2 text-gray-500 text-xs mb-4">
@@ -159,13 +208,49 @@ export const EventsPage: React.FC = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [dateRange, setDateRange] = useState<{start: Date | null, end: Date | null}>({ start: null, end: null });
   
+  // Filters State
+  const [typeFilter, setTypeFilter] = useState('All Types');
+  const [priceFilter, setPriceFilter] = useState('All Prices');
+  const [statusFilter, setStatusFilter] = useState('All Status');
+
   const handleApplyDate = (start: Date | null, end: Date | null) => {
     setDateRange({ start, end });
     setShowCalendar(false);
   };
 
+  // Filter Logic
+  const filteredEvents = useMemo(() => {
+    return EVENTS_DATA.filter(event => {
+      // Type Filter
+      if (typeFilter !== 'All Types' && event.category !== typeFilter) return false;
+      
+      // Price Filter logic
+      if (priceFilter !== 'All Prices') {
+        const isFree = event.price.toLowerCase().includes('free');
+        const priceNum = parseInt(event.price.replace(/[^0-9]/g, '')) || 0;
+
+        if (priceFilter === 'Free' && !isFree) return false;
+        // Assuming "Under $50" means paid but cheap
+        if (priceFilter === 'Under $50' && (isFree || priceNum >= 50)) return false; 
+        if (priceFilter === 'Premium' && priceNum < 50) return false;
+      }
+
+      // Status Filter
+      if (statusFilter !== 'All Status' && event.timing !== statusFilter) return false;
+
+      return true;
+    });
+  }, [typeFilter, priceFilter, statusFilter]);
+
+  const resetFilters = () => {
+    setTypeFilter('All Types');
+    setPriceFilter('All Prices');
+    setStatusFilter('All Status');
+    setDateRange({ start: null, end: null });
+  };
+
   return (
-    <div className="bg-white pt-20 min-h-screen">
+    <div className="bg-white pt-20 min-h-screen font-sans">
       
       {/* 1. Hero Section */}
       <section className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-purple-50/50 via-white to-white">
@@ -216,14 +301,31 @@ export const EventsPage: React.FC = () => {
          <div className="container mx-auto px-6 md:px-12">
             <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
                <div className="flex items-center gap-2 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 hide-scrollbar">
-                  <FilterPill label="Category" />
+                  <div className="flex items-center gap-2 px-2 border-r border-gray-200 mr-2">
+                    <SlidersHorizontal size={16} className="text-gray-400" />
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider hidden sm:inline">Filters</span>
+                  </div>
+
+                  <FilterDropdown 
+                    label="Event Type" 
+                    options={['All Types', 'Runway', 'Workshop', 'Exhibition', 'Pop-up', 'Conference']}
+                    value={typeFilter}
+                    onChange={setTypeFilter}
+                  />
+
+                  <FilterDropdown 
+                    label="Price" 
+                    options={['All Prices', 'Free', 'Under $50', 'Premium']}
+                    value={priceFilter}
+                    onChange={setPriceFilter}
+                  />
                   
                   <div className="relative">
                      <button 
                         onClick={() => setShowCalendar(!showCalendar)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold border transition-all whitespace-nowrap ${showCalendar ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap ${showCalendar || dateRange.start ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
                      >
-                        <Calendar size={14} /> Date Range <ChevronDown size={12} />
+                        <Calendar size={14} /> {dateRange.start ? 'Date Selected' : 'Date'} <ChevronDown size={12} />
                      </button>
                      {showCalendar && (
                         <div className="absolute top-12 left-0 z-50">
@@ -232,14 +334,23 @@ export const EventsPage: React.FC = () => {
                      )}
                   </div>
 
-                  <FilterPill label="City" />
-                  <FilterPill label="Status" />
+                  <FilterDropdown 
+                    label="Status" 
+                    options={['All Status', 'Upcoming', 'Live', 'Past']}
+                    value={statusFilter}
+                    onChange={setStatusFilter}
+                  />
                </div>
 
                <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
-                  <button className="text-xs font-bold text-gray-400 hover:text-black transition-colors">Reset Filters</button>
+                  <button 
+                    onClick={resetFilters}
+                    className="text-xs font-bold text-gray-400 hover:text-black transition-colors"
+                  >
+                    Reset Filters
+                  </button>
                   <div className="h-4 w-px bg-gray-200 hidden lg:block"></div>
-                  <span className="text-xs text-gray-400"><strong className="text-black">124</strong> events found</span>
+                  <span className="text-xs text-gray-400"><strong className="text-black">{filteredEvents.length}</strong> events found</span>
                </div>
             </div>
          </div>
@@ -280,16 +391,30 @@ export const EventsPage: React.FC = () => {
       {/* 4. Event Grid */}
       <section className="py-12">
          <div className="container mx-auto px-6 md:px-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-               {EVENTS_DATA.map((event, i) => (
-                  <FadeIn key={event.id} delay={i * 50}>
-                     <EventCard event={event} />
-                  </FadeIn>
-               ))}
-            </div>
-            <div className="mt-16 text-center">
-               <Button variant="outline" size="lg">Load More Events</Button>
-            </div>
+            {filteredEvents.length > 0 ? (
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredEvents.map((event, i) => (
+                     <FadeIn key={event.id} delay={i * 50}>
+                        <EventCard event={event} />
+                     </FadeIn>
+                  ))}
+               </div>
+            ) : (
+               <div className="text-center py-20 bg-gray-50 rounded-3xl border border-gray-100 border-dashed">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                    <Search size={24} />
+                  </div>
+                  <h3 className="text-xl font-serif font-bold text-gray-900 mb-2">No events found.</h3>
+                  <p className="text-gray-500 mb-6">Try adjusting your filters to see more results.</p>
+                  <Button variant="outline" onClick={resetFilters}>Clear All Filters</Button>
+               </div>
+            )}
+            
+            {filteredEvents.length > 0 && (
+              <div className="mt-16 text-center">
+                 <Button variant="outline" size="lg">Load More Events</Button>
+              </div>
+            )}
          </div>
       </section>
 
