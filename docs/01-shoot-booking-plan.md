@@ -1,3 +1,4 @@
+
 # 📸 FashionOS – Fashion Shoot Booking Platform Plan
 
 ## 1. MVP Overview
@@ -58,6 +59,10 @@
     *   **Input:** User uploads a reference image or enters text.
     *   **Output:** JSON tags for the database: `["dark_mode", "streetwear", "high_contrast"]`.
     *   **UI:** Hidden background process to help Admins categorize bookings.
+*   **Feature 3: Intelligent Set Design**
+    *   **Input:** User selects Category (e.g., "Streetwear") and Mood (e.g., "High Energy").
+    *   **Output:** Suggested lighting setups (e.g., "Hard flash with color gels") and background textures (e.g., "Concrete wall", "Seamless Grey").
+    *   **UI:** A "Recommended Sets" carousel in the Studio/Location selection step, allowing users to visualize the vibe before booking.
 
 ---
 
@@ -95,6 +100,7 @@
 | **URL Context** | Onboarding | Designer provides Website URL | Brand Profile Summary & Recommended Packages | Personalizes the experience immediately ("We see you sell jewelry, here is our Macro Pack"). |
 | **Function Calling** | Chatbot / Copilot | "Is the studio free next Tuesday?" | Triggers `checkAvailability(date)` and returns answer | Allows natural language booking and availability checks. |
 | **Google Search Grounding** | Trend Report | "What are trending e-comm styles?" | Summary of current visual trends (e.g., "Hard flash, Y2K aesthetic") | Positions FashionOS as a strategic partner, not just a service provider. |
+| **Set Recommendation** | Studio Selection | Category="Streetwear", Mood="Moody" | `["Concrete Wall", "Hard Flash", "Neon Props"]` | Helps inexperienced designers select professional-grade environments that match their vision. |
 
 ---
 
@@ -144,6 +150,13 @@ sequenceDiagram
     Designer->>UI: "I need 10 looks, street style, moody lighting"
     UI->>AI: Prompt: "Extract structured data from: '10 looks, street style, moody'"
     AI->>UI: JSON: { looks: 10, style: "Street", lighting: "Low Key" }
+    
+    par Intelligent Suggestions
+        UI->>AI: Prompt: "Suggest studio setup for Street Style + Low Key"
+        AI->>UI: JSON: { background: "Concrete", lighting: "Hard Flash" }
+        UI->>Designer: Display "Recommended Set: Urban Gritty"
+    end
+
     UI->>DB: Query: Find available slots matching criteria
     DB->>UI: Returns: Tuesday 2PM, Friday 10AM
     UI->>Designer: Shows Available Slots & Estimated Price

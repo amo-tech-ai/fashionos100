@@ -6,15 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Added
-- **Auth:** Skeleton for Clerk/Supabase authentication provider.
-- **Backend:** Initial Supabase schema definitions for `users`, `profiles`, and `events` tables.
-- **AI:** Gemini API integration hooks for "Virtual Stylist" chat feature.
-- **Events:** "Create Event" wizard with drag-and-drop media upload.
-
 ### Planned
-- Stripe integration for ticket purchasing.
-- WhatsApp notification system for booking confirmations.
+- **Auth:** Full integration with Supabase Auth / Clerk.
+- **Backend:** Connecting UI forms (Booking, Contact) to Supabase tables.
+- **Payments:** Stripe Connect integration for split payments between platform and creatives.
+- **Messaging:** Real-time chat for `Dashboard/Inbox`.
+
+---
+
+## [0.3.0] - 2025-03-01
+### 🏗️ Architecture Refactor
+- **Modularization:** Split monolithic `App.tsx` and `Page` files into a scalable directory structure:
+  - `/layouts`: Dedicated `PublicLayout` and `DashboardLayout`.
+  - `/pages/public`: Individual landing pages for Home, Services, Events, etc.
+  - `/pages/dashboard`: Distinct components for each dashboard view.
+- **Routing:** Updated `App.tsx` to use nested routes and protected route wrappers (`RequireAuth`).
+
+### ✨ Added
+- **Dashboard Modules:**
+  - **Financials:** Cashflow charts, transaction tables, and expense breakdowns.
+  - **Gallery:** Media asset management with folder structures and filtering.
+  - **Events:** Organizer view for ticket sales, attendance tracking, and analytics.
+- **Public Pages:**
+  - **Photography:** Dedicated service page with portfolio strip and booking form.
+  - **Video Production:** "Film. Fashion. Finish." landing page with process steps.
+  - **Ecommerce:** Specialized page for product photography packs and AI studio tools.
+- **Documentation:**
+  - **Schema:** Complete `03-shoot-schema.md` specification for Supabase (Users, Shoots, Events, Directory).
+
+### 💄 Improved
+- **UI Components:** Added `KPICard`, `TransactionRow`, and `MediaCard` reusable components.
+- **Navigation:** Enhanced Dashboard sidebar with sticky positioning and scroll handling.
 
 ---
 
