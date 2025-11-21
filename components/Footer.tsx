@@ -26,16 +26,18 @@ export const Footer: React.FC = () => (
             <li><Link to="/services" className="hover:text-black transition-colors">Services</Link></li>
             <li><Link to="/directory" className="hover:text-black transition-colors">Directory</Link></li>
             <li><Link to="/events" className="hover:text-black transition-colors">Events</Link></li>
+            <li><Link to="/portfolio" className="hover:text-black transition-colors">Portfolio</Link></li>
           </ul>
         </div>
 
         <div>
           <h4 className="font-bold text-xs uppercase tracking-widest mb-6">Services</h4>
           <ul className="space-y-3 text-sm text-gray-500">
-            <li><a href="#" className="hover:text-black transition-colors">Photography</a></li>
-            <li><a href="#" className="hover:text-black transition-colors">Video Production</a></li>
-            <li><Link to="/social" className="hover:text-black transition-colors">Social Media</Link></li>
-            <li><a href="#" className="hover:text-black transition-colors">Web Design</a></li>
+            <li><Link to="/services/photography" className="hover:text-black transition-colors">Photography</Link></li>
+            <li><Link to="/services/video-production" className="hover:text-black transition-colors">Video Production</Link></li>
+            <li><Link to="/services/web-design" className="hover:text-black transition-colors">Web Design</Link></li>
+            <li><Link to="/services/ecommerce" className="hover:text-black transition-colors">Ecommerce</Link></li>
+            <li><Link to="/services/social" className="hover:text-black transition-colors">Social Media Marketing</Link></li>
           </ul>
         </div>
 
@@ -44,8 +46,8 @@ export const Footer: React.FC = () => (
           <ul className="space-y-3 text-sm text-gray-500">
             <li><Link to="/dashboard" className="hover:text-black transition-colors">Create Event</Link></li>
             <li><Link to="/dashboard" className="hover:text-black transition-colors">Dashboard</Link></li>
-            <li><Link to="/dashboard/financials" className="hover:text-black transition-colors">Financials</Link></li>
             <li><Link to="/dashboard" className="hover:text-black transition-colors">Join Directory</Link></li>
+            <li><Link to="/contact" className="hover:text-black transition-colors">Contact</Link></li>
           </ul>
         </div>
       </div>

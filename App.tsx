@@ -32,10 +32,20 @@ const App: React.FC = () => {
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/services/photography" element={<PhotographyPage />} />
         <Route path="/services/video-production" element={<VideoProductionPage />} />
+        <Route path="/services/social" element={<SocialPage />} />
+        
+        {/* Placeholders for future pages ensuring links work */}
+        <Route path="/services/web-design" element={<ServicesPage />} />
+        <Route path="/services/ecommerce" element={<ServicesPage />} />
+        <Route path="/portfolio" element={<DirectoryPage />} /> {/* Using Directory as Portfolio fallback for now */}
+        <Route path="/contact" element={<ServicesPage />} /> {/* Using Services as Contact fallback for now */}
+        
         <Route path="/directory" element={<DirectoryPage />} />
         <Route path="/events" element={<EventsPage />} />
-        <Route path="/social" element={<SocialPage />} />
-        <Route path="/shop" element={<Navigate to="/services" />} /> {/* Temp redirect */}
+        
+        {/* Legacy redirects */}
+        <Route path="/social" element={<Navigate to="/services/social" replace />} />
+        <Route path="/shop" element={<Navigate to="/services" />} />
       </Route>
 
       {/* --- Authenticated Dashboard Zone --- */}

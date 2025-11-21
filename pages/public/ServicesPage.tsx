@@ -123,7 +123,7 @@ export const ServicesPage: React.FC = () => {
         link="/services/photography"
         image="https://images.unsplash.com/photo-1620799139834-6b8f844fbe61?q=80&w=1200&auto=format&fit=crop"
         ctaText="Learn More"
-        theme="light" // Using light theme but utilizing a soft background could be nice, keeping standardized for now
+        theme="light" 
       />
 
       {/* 4. SERVICE HIGHLIGHTS: WEB DESIGN */}
@@ -132,7 +132,7 @@ export const ServicesPage: React.FC = () => {
         theme="dark"
         title="Build Beautiful, High-Converting Websites."
         subcopy="We design and develop responsive websites that blend fashion, storytelling, and performance. From landing pages to full eCommerce experiences, every site is built for conversion and elegance."
-        link="/services"
+        link="/services/web-design"
         image="https://images.unsplash.com/photo-1601506521937-244b01c92805?q=80&w=1200"
         ctaText="Learn More"
       />
@@ -152,7 +152,7 @@ export const ServicesPage: React.FC = () => {
         align="right"
         title="Your Story. Everywhere."
         subcopy="We manage your content, campaigns, and collaborations. FashionOS helps you reach audiences on Instagram, TikTok, YouTube, and Facebook — with data-driven creativity."
-        link="/social"
+        link="/services/social"
         image="https://images.unsplash.com/photo-1542038784424-48dd95131591?q=80&w=1200"
         ctaText="Learn More"
       />
@@ -162,7 +162,7 @@ export const ServicesPage: React.FC = () => {
         align="left"
         title="Personalize Every Connection."
         subcopy="Send automated updates, event invites, and product launches through WhatsApp — the most personal marketing channel. Connect with customers in real-time using AI-powered messaging flows."
-        link="/services/branding"
+        link="/services/ecommerce" 
         image="https://images.unsplash.com/photo-1605763240004-7e93b172d754?q=80&w=1200"
         ctaText="Learn More"
       />
