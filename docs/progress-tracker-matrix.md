@@ -31,12 +31,12 @@ This document tracks the development lifecycle of the **FashionOS** platform. It
 | Auth Integration | Google, LinkedIn, IG via Clerk/Supabase | P0 | ⚪ | Backend | W3 | Database | 0% | Pending provider setup. |
 | User Profiles | User roles (Designer, Model, etc.) | P1 | ⚪ | Backend | W3 | Auth | 0% | Database schema needed. |
 | **Directory Module** | | | | | | | | |
-| Directory Listing | Grid view of professionals with filters | P1 | 🟢 | Frontend | W1 | UI System | 90% | Mock data used; needs DB connection. |
+| Directory Listing | Grid view of professionals with filters | P1 | 🟢 | Frontend | W1 | UI System | 100% | Grid/List toggle implemented. Filters active. |
 | Profile Details | Individual portfolio pages | P1 | 🟡 | Frontend | W2 | Directory | 30% | Modal/Page structure needed. |
-| Search & Filter | Keyword search, Category tabs, City filter | P2 | 🟡 | Frontend | W2 | Directory | 60% | UI done; logic needs backend. |
+| Search & Filter | Keyword search, Category tabs, City filter | P2 | 🟢 | Frontend | W2 | Directory | 100% | Filter logic functional (frontend). |
 | **Events Module** | | | | | | | | |
 | Events Feed | List of upcoming events with cards | P1 | 🟢 | Frontend | W2 | UI System | 95% | Fully interactive UI. |
-| Calendar Picker | Custom date range selector logic | P2 | 🟢 | Frontend | W2 | Events Feed | 100% | Interactive calendar component built. |
+| Calendar Picker | Custom date range selector logic | P2 | 🟢 | Frontend | W2 | Events Feed | 100% | Component complete & integrated. |
 | Create Event Form | Multi-step form for hosting events | P1 | ⚪ | Frontend | W3 | Auth | 0% | |
 | Ticketing System | Stripe + Apple Pay integration | P0 | ⚪ | Backend | W5 | Create Event | 0% | |
 | **Designers & Models** | | | | | | | | |
@@ -45,9 +45,9 @@ This document tracks the development lifecycle of the **FashionOS** platform. It
 | **Media & AI** | | | | | | | | |
 | Media Uploads | Cloudinary integration for high-res images | P1 | ⚪ | Backend | W3 | Auth | 0% | |
 | Virtual Runway | AI video generation (Veo/RunwayML) | P3 | ⚪ | AI Team | W8 | Media Uploads | 0% | Research phase. |
-| AI Copilot | Chat interface for platform assistance | P2 | ⚪ | AI Team | W6 | Gemini API | 10% | UI placeholder added. |
+| AI Copilot | Chat interface for platform assistance | P2 | 🟡 | AI Team | W6 | Gemini API | 80% | Widget UI & Gemini integration active. |
 | **Business Logic** | | | | | | | | |
-| Dashboard | Analytics, sales, engagement metrics | P1 | ⚪ | Frontend | W5 | Auth, DB | 0% | |
+| Dashboard | Analytics, sales, engagement metrics | P1 | 🟡 | Frontend | W5 | Auth, DB | 60% | Overview, Calendar, Bookings UIs built. |
 | Sponsors | Activation tracking and logo management | P3 | ⚪ | Sales | W6 | Events | 0% | |
 | WhatsApp Auto | Twilio/Meta API for notifications | P2 | ⚪ | Backend | W7 | User Profiles | 0% | |
 | **Infrastructure** | | | | | | | | |
@@ -58,12 +58,15 @@ This document tracks the development lifecycle of the **FashionOS** platform. It
 ---
 
 ## 📅 Weekly Snapshot (Current Week)
-- **Focus:** Frontend scaffolding, Directory UI, Events Page & Calendar interaction.
-- **Blockers:** Missing real backend (Supabase) connection for data persistence.
-- **Wins:** High-fidelity "Events" page delivered with custom calendar component; Design system established.
+- **Focus:** Documentation (Sitemap, Dashboard Manual), Directory Refinement (Grid/List), and Dashboard internal wiring.
+- **Blockers:** Backend connection for persistent booking data.
+- **Wins:** 
+  - Dashboard AI Copilot widget connected to Gemini Flash 2.5.
+  - Calendar Module fully interactable with filtering.
+  - Directory now supports view toggling.
 
 ## ⏭️ Next Milestones
 1.  **Database Initialization:** Set up Supabase project and user tables.
 2.  **Auth Implementation:** Allow users to sign up/in to access dashboards.
-3.  **Dynamic Data:** Replace mock arrays in Directory/Events with API calls.
+3.  **Dynamic Data:** Replace mock arrays in Dashboard with real stats.
 4.  **Create Event Flow:** Build the wizard for users to submit new events.
