@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, Calendar, CalendarCheck, Ticket, Wallet, Share2, Users, 
-  ShoppingBag, Settings, LogOut, Menu, Search, Bell 
+  ShoppingBag, Settings, LogOut, Menu, Search, Bell, FileText, Image, MessageSquare, Heart
 } from 'lucide-react';
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
 
@@ -9,20 +9,21 @@ export const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Updated Menu Items based on the requirements
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Overview', path: '/dashboard' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Calendar, label: 'Bookings', path: '/dashboard/bookings' },
+    { icon: FileText, label: 'Invoices', path: '/dashboard/invoices' }, // New
+    { icon: MessageSquare, label: 'Inbox', path: '/dashboard/messages' }, // New
     { icon: CalendarCheck, label: 'Calendar', path: '/dashboard/calendar' },
     { icon: Ticket, label: 'Events', path: '/dashboard/events' },
     { icon: Wallet, label: 'Financials', path: '/dashboard/financials' },
-    { icon: Share2, label: 'Social', path: '/dashboard/social' },
-    { icon: Users, label: 'Directory', path: '/dashboard/directory' },
-    { icon: ShoppingBag, label: 'Shop', path: '/dashboard/shop' },
+    { icon: Image, label: 'Gallery', path: '/dashboard/gallery' }, // New
+    { icon: Heart, label: 'Feedback', path: '/dashboard/feedback' }, // New
     { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
   ];
 
   const handleSignOut = () => {
-    // In a real app, clear auth tokens here
     navigate('/');
   };
 
@@ -34,7 +35,7 @@ export const DashboardLayout: React.FC = () => {
              <Link to="/" className="text-2xl font-serif font-bold tracking-tighter text-black no-underline">FashionOS</Link>
              <span className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">Command Center</span>
           </div>
-          <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-4 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 pb-4">
              {menuItems.map((item) => (
                 <NavLink 
                   key={item.label} 
@@ -64,7 +65,7 @@ export const DashboardLayout: React.FC = () => {
             <span className="text-xl font-serif font-bold">FashionOS</span>
             <button onClick={() => setIsMobileMenuOpen(false)}><Menu size={20} /></button>
           </div>
-          <nav className="px-4 space-y-1">
+          <nav className="px-4 space-y-1 overflow-y-auto h-[calc(100vh-100px)]">
             {menuItems.map((item) => (
                 <NavLink 
                   key={item.label} 

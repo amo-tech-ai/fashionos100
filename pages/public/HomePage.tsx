@@ -100,8 +100,8 @@ export const HomePage: React.FC = () => {
             <FadeIn direction="left" delay={200}>
               <div className="grid grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-4 md:space-y-6 translate-y-8">
-                  <img src="https://images.unsplash.com/photo-1550614000-4b9519e0013f?q=80&w=800&auto=format&fit=crop" alt="Runway" className="w-full aspect-[3/4] object-cover rounded-sm shadow-lg" />
-                  <img src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=800&auto=format&fit=crop" alt="Detail" className="w-full aspect-square object-cover rounded-sm shadow-lg" />
+                  <img src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=800&auto=format&fit=crop" alt="Runway" className="w-full aspect-[3/4] object-cover rounded-sm shadow-lg" />
+                  <img src="https://images.unsplash.com/photo-1550614000-4b9519e0013f?q=80&w=800&auto=format&fit=crop" alt="Detail" className="w-full aspect-square object-cover rounded-sm shadow-lg" />
                 </div>
                 <div className="space-y-4 md:space-y-6">
                   <img src="https://images.unsplash.com/photo-1529139574466-a302d2052505?q=80&w=800&auto=format&fit=crop" alt="Editorial" className="w-full aspect-square object-cover rounded-sm shadow-lg" />
@@ -316,7 +316,7 @@ export const HomePage: React.FC = () => {
                <MarketplaceCard 
                   title="Lookbook Starter" 
                   price="$2,500" 
-                  image="https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=600&auto=format&fit=crop"
+                  image="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=600&auto=format&fit=crop"
                   features={["Half-day studio shoot", "1 Model included", "10 Retouched images", "Styling assistance"]}
                />
             </FadeIn>
@@ -324,7 +324,7 @@ export const HomePage: React.FC = () => {
                <MarketplaceCard 
                   title="Campaign Launch" 
                   price="$5,800" 
-                  image="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=600&auto=format&fit=crop"
+                  image="https://images.unsplash.com/photo-1485230405346-71acb9518d9c?q=80&w=600&auto=format&fit=crop"
                   features={["Full-day location shoot", "2 Models included", "20 Retouched images", "Social media cuts (Video)"]}
                />
             </FadeIn>
@@ -342,7 +342,7 @@ export const HomePage: React.FC = () => {
       {/* 9. BEHIND THE SCENES */}
       <section className="py-24 bg-black text-white overflow-hidden relative group cursor-pointer">
          <div className="absolute inset-0 opacity-60 group-hover:opacity-40 transition-opacity duration-700">
-             <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2000&auto=format&fit=crop" alt="BTS" className="w-full h-full object-cover" />
+             <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=2000&auto=format&fit=crop" alt="BTS" className="w-full h-full object-cover" />
          </div>
          <div className="container mx-auto px-6 md:px-12 relative z-10 flex flex-col items-center justify-center h-[50vh]">
              <div className="bg-white/10 backdrop-blur-md p-6 rounded-full mb-8 border border-white/20 group-hover:scale-110 transition-transform duration-500">
@@ -375,7 +375,7 @@ export const HomePage: React.FC = () => {
                   <div><Button variant="primary" size="lg">Start a Custom Brief</Button></div>
                </div>
                <div className="w-full md:w-1/2 relative min-h-[400px]">
-                  <img src="https://images.unsplash.com/photo-1502163140606-888448ae8cdf?q=80&w=800&auto=format&fit=crop" alt="Creative" className="absolute inset-0 w-full h-full object-cover" />
+                  <img src="https://images.unsplash.com/photo-1470072582277-d990675202fa?q=80&w=800&auto=format&fit=crop" alt="Creative" className="absolute inset-0 w-full h-full object-cover" />
                </div>
             </div>
          </div>

@@ -33,7 +33,17 @@ export const CustomBarChart = () => {
 };
 
 // AI Copilot Widget
-export const AICopilotWidget = () => {
+interface AICopilotProps {
+  title?: string;
+  context?: string;
+  placeholder?: string;
+}
+
+export const AICopilotWidget: React.FC<AICopilotProps> = ({ 
+  title = "AI Copilot", 
+  context = "You are a fashion creative director assistant. Keep response concise (max 30 words).",
+  placeholder = "Ask anything..."
+}) => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
@@ -46,11 +56,11 @@ export const AICopilotWidget = () => {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const result = await ai.models.generateContent({
         model: "gemini-2.5-flash",
-        contents: `You are a fashion creative director assistant. Keep response concise (max 30 words). Answer: ${query}`,
+        contents: `${context} Answer: ${query}`,
       });
       setResponse(result.text);
     } catch (e) {
-      setResponse("Offline mode. Try again.");
+      setResponse("Offline mode. Check connection.");
     } finally {
       setLoading(false);
     }
@@ -61,11 +71,15 @@ export const AICopilotWidget = () => {
         <div className="relative z-10">
            <div className="flex items-center gap-2 mb-4">
               <Sparkles className="text-yellow-300 animate-pulse" size={20} />
-              <h3 className="font-serif font-bold text-lg">AI Copilot</h3>
+              <h3 className="font-serif font-bold text-lg">{title}</h3>
            </div>
            
            <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 mb-4 min-h-[80px] flex items-center justify-center text-center border border-white/10">
-              {loading ? <Loader2 className="animate-spin" /> : <p className="text-sm font-medium opacity-90">{response || "Ask me for forecast ideas or booking insights..."}</p>}
+              {loading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <p className="text-sm font-medium opacity-90 leading-relaxed">{response || "How can I help you today?"}</p>
+              )}
            </div>
 
            <div className="relative">
@@ -74,8 +88,8 @@ export const AICopilotWidget = () => {
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAsk()}
                 type="text" 
-                placeholder="Ask anything..." 
-                className="w-full bg-white text-gray-900 rounded-full py-3 pl-4 pr-12 text-sm focus:outline-none shadow-lg"
+                placeholder={placeholder}
+                className="w-full bg-white text-gray-900 rounded-full py-3 pl-4 pr-12 text-sm focus:outline-none shadow-lg placeholder:text-gray-400"
               />
               <button onClick={handleAsk} className="absolute right-1 top-1 bg-indigo-600 p-2 rounded-full hover:bg-indigo-700 transition-colors text-white">
                  <Send size={14} />

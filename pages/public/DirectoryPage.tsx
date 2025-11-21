@@ -9,6 +9,7 @@ import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
 import { SectionTag } from '../../components/SectionTag';
 import { CategoryType } from '../../types';
+import { AICopilotWidget } from '../../components/dashboard/Widgets';
 
 // --- Mock Data ---
 const DIRECTORY_ITEMS = [
@@ -46,7 +47,7 @@ const DIRECTORY_ITEMS = [
     reviews: 210, 
     image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=1000&auto=format&fit=crop',
     featured: false,
-    tags: ['Daylight', ' cyclorama']
+    tags: ['Daylight', 'Cyclorama']
   },
   { 
     id: 4,
@@ -80,7 +81,7 @@ const DIRECTORY_ITEMS = [
     specialty: 'Documentary', 
     rating: 4.9, 
     reviews: 15, 
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',
     featured: false,
     tags: ['BTS', 'Drone']
   },
@@ -321,54 +322,77 @@ export const DirectoryPage: React.FC = () => {
       <section className="py-12 min-h-screen">
          <div className="container mx-auto px-6 md:px-12">
             
-            {/* Sticky Filter Bar */}
-            <div className="sticky top-20 z-30 bg-white/90 backdrop-blur-md py-4 mb-12 border-b border-gray-100">
-               <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
-                  {/* Category Tabs */}
-                  <div className="flex gap-2 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 hide-scrollbar">
-                     {['All', 'Designers', 'Photographers', 'Stylists', 'Models', 'Brands', 'Venues'].map(cat => (
-                        <CategoryPill 
-                           key={cat} 
-                           label={cat} 
-                           active={activeCat === cat} 
-                           onClick={() => setActiveCat(cat as any)} 
-                        />
-                     ))}
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+               
+               {/* LEFT SIDEBAR (AI WIDGET) */}
+               <aside className="w-full lg:w-1/4 lg:sticky lg:top-24 z-20 space-y-8">
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-1 overflow-hidden">
+                     <AICopilotWidget 
+                        title="Talent Scout AI"
+                        context="You are an expert fashion talent scout. User is looking for talent. Suggest roles, specialties, or search terms based on their query. Keep it brief."
+                        placeholder="Find a photographer in Milan..."
+                     />
+                  </div>
+                  <div className="hidden lg:block p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                     <h3 className="font-bold mb-4">Trending Searches</h3>
+                     <div className="flex flex-wrap gap-2">
+                        {['Videographers', 'Stylists NY', 'Makeup Artists', 'Studio Rental'].map(tag => (
+                           <span key={tag} className="text-xs bg-white px-3 py-1 rounded-full border border-gray-200 text-gray-600 cursor-pointer hover:border-purple-400">{tag}</span>
+                        ))}
+                     </div>
+                  </div>
+               </aside>
+
+               {/* RIGHT MAIN CONTENT */}
+               <div className="w-full lg:w-3/4">
+                  {/* Sticky Filter Bar */}
+                  <div className="sticky top-20 z-30 bg-white/90 backdrop-blur-md py-4 mb-8 border-b border-gray-100 rounded-xl px-2">
+                     <div className="flex flex-col xl:flex-row justify-between items-center gap-4">
+                        {/* Category Tabs */}
+                        <div className="flex gap-2 overflow-x-auto w-full xl:w-auto pb-2 xl:pb-0 hide-scrollbar">
+                           {['All', 'Designers', 'Photographers', 'Stylists', 'Models', 'Brands', 'Venues'].map(cat => (
+                              <CategoryPill 
+                                 key={cat} 
+                                 label={cat} 
+                                 active={activeCat === cat} 
+                                 onClick={() => setActiveCat(cat as any)} 
+                              />
+                           ))}
+                        </div>
+
+                        {/* Advanced Filters */}
+                        <div className="flex items-center gap-3 w-full xl:w-auto justify-between xl:justify-end">
+                           <div className="flex gap-2 overflow-x-auto pb-2 lg:pb-0 hide-scrollbar">
+                              <FilterDropdown label="Location" />
+                              <FilterDropdown label="Rate" />
+                           </div>
+                           <div className="flex bg-gray-100 p-1 rounded-lg shrink-0">
+                              <button onClick={() => setViewMode('grid')} className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow text-black' : 'text-gray-400 hover:text-gray-600'}`}><Grid size={16} /></button>
+                              <button onClick={() => setViewMode('list')} className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow text-black' : 'text-gray-400 hover:text-gray-600'}`}><List size={16} /></button>
+                           </div>
+                        </div>
+                     </div>
                   </div>
 
-                  {/* Advanced Filters */}
-                  <div className="flex items-center gap-3 w-full lg:w-auto">
-                     <div className="h-8 w-px bg-gray-200 hidden lg:block"></div>
-                     <div className="flex gap-2 overflow-x-auto pb-2 lg:pb-0 hide-scrollbar flex-1 lg:flex-none">
-                        <FilterDropdown label="Location" />
-                        <FilterDropdown label="Rate" />
-                        <FilterDropdown label="Availability" />
-                     </div>
-                     <div className="flex bg-gray-100 p-1 rounded-lg ml-auto lg:ml-4 shrink-0">
-                        <button onClick={() => setViewMode('grid')} className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow text-black' : 'text-gray-400 hover:text-gray-600'}`}><Grid size={16} /></button>
-                        <button onClick={() => setViewMode('list')} className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow text-black' : 'text-gray-400 hover:text-gray-600'}`}><List size={16} /></button>
-                     </div>
+                  {/* Results Grid */}
+                  <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6' : 'flex flex-col space-y-4'}`}>
+                     {filteredItems.length > 0 ? (
+                        filteredItems.map((item, i) => (
+                           <FadeIn key={item.id} delay={i * 50}>
+                              <ProfileCard item={item} viewMode={viewMode} />
+                           </FadeIn>
+                        ))
+                     ) : (
+                        <div className="col-span-full text-center py-20">
+                           <p className="text-gray-400">No creatives found in this category.</p>
+                        </div>
+                     )}
+                  </div>
+
+                  <div className="mt-16 text-center">
+                     <Button variant="outline" size="lg">Load More Profiles</Button>
                   </div>
                </div>
-            </div>
-
-            {/* Results Grid */}
-            <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8' : 'flex flex-col space-y-4 max-w-4xl mx-auto'}`}>
-               {filteredItems.length > 0 ? (
-                  filteredItems.map((item, i) => (
-                     <FadeIn key={item.id} delay={i * 50}>
-                        <ProfileCard item={item} viewMode={viewMode} />
-                     </FadeIn>
-                  ))
-               ) : (
-                  <div className="col-span-full text-center py-20">
-                     <p className="text-gray-400">No creatives found in this category.</p>
-                  </div>
-               )}
-            </div>
-
-            <div className="mt-16 text-center">
-               <Button variant="outline" size="lg">Load More Profiles</Button>
             </div>
          </div>
       </section>

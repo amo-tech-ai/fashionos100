@@ -21,6 +21,7 @@ import { SocialPage } from './pages/public/SocialPage';
 import { DashboardOverview } from './pages/dashboard/DashboardOverview';
 import { DashboardBookings } from './pages/dashboard/DashboardBookings';
 import { DashboardCalendar } from './pages/dashboard/DashboardCalendar';
+import { DashboardEvents } from './pages/dashboard/DashboardEvents';
 import { DashboardPlaceholder } from './pages/dashboard/DashboardPlaceholder';
 
 const App: React.FC = () => {
@@ -60,9 +61,14 @@ const App: React.FC = () => {
         <Route index element={<DashboardOverview />} />
         <Route path="bookings" element={<DashboardBookings />} />
         <Route path="calendar" element={<DashboardCalendar />} />
+        <Route path="events" element={<DashboardEvents />} />
         
-        {/* Modules under development */}
-        <Route path="events" element={<DashboardPlaceholder title="Events Management" />} />
+        {/* New Modules */}
+        <Route path="invoices" element={<DashboardPlaceholder title="Invoices & Billing" />} />
+        <Route path="messages" element={<DashboardPlaceholder title="Messages & Inbox" />} />
+        <Route path="gallery" element={<DashboardPlaceholder title="Media Gallery" />} />
+        <Route path="feedback" element={<DashboardPlaceholder title="Client Feedback" />} />
+        
         <Route path="financials" element={<DashboardPlaceholder title="Financials" />} />
         <Route path="social" element={<DashboardPlaceholder title="Social Analytics" />} />
         <Route path="directory" element={<DashboardPlaceholder title="Talent CRM" />} />

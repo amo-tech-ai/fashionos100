@@ -3,7 +3,7 @@ import {
   Instagram, TrendingUp, Users, MessageCircle, BarChart3, 
   Smartphone, Share2, Globe, ArrowRight, CheckCircle2, 
   Linkedin, Play, Star, Calendar, MousePointerClick,
-  Video, Camera, Zap, Heart, Layers, Sparkles
+  Video, Camera, Zap, Heart, Layers, Sparkles, Map
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
@@ -426,13 +426,6 @@ export const SocialPage: React.FC = () => {
             </div>
          </div>
       </section>
-      
-      {/* Map Component is just a lucide icon used earlier, ensure it's imported */}
-      {/* Note: MousePointerClick, Heart, Layers, Sparkles added to imports at top */}
-
     </div>
   );
 };
-
-// Helper for StepCard icon (imported above)
-import { Map } from 'lucide-react';
