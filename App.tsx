@@ -24,8 +24,8 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   if (!isAuthenticated) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
-  // Wrapping in a fragment ensures it's treated as a valid node
-  return <>{children}</>;
+  // Wrapping in a fragment ensures it's treated as a valid node by the correct React instance
+  return <React.Fragment>{children}</React.Fragment>;
 };
 
 const App: React.FC = () => {
