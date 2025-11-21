@@ -1,37 +1,30 @@
 import React from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Layouts
-import { PublicLayout } from './components/Layout';
-import { DashboardLayout } from './components/DashboardLayout';
+import { PublicLayout } from './layouts/PublicLayout';
+import { DashboardLayout } from './layouts/DashboardLayout';
+
+// Auth
+import { RequireAuth } from './components/auth/RequireAuth';
 
 // Public Pages
-import { HomePage, ServicesPage, DirectoryPage, EventsPage, SocialPage } from './pages/PublicPages';
+import { HomePage } from './pages/public/HomePage';
+import { ServicesPage } from './pages/public/ServicesPage';
+import { DirectoryPage } from './pages/public/DirectoryPage';
+import { EventsPage } from './pages/public/EventsPage';
+import { SocialPage } from './pages/public/SocialPage';
 
-// Dashboard Views
-import { 
-  DashboardOverview, 
-  DashboardBookings, 
-  DashboardCalendar, 
-  DashboardPlaceholder 
-} from './pages/DashboardPage';
-
-// Simple Auth Mock - In a real app, this would use a Context Provider (e.g., Clerk, Supabase)
-const RequireAuth = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = true; // Set to false to test redirect
-  const location = useLocation();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/" state={{ from: location }} replace />;
-  }
-  // Wrapping in a fragment ensures it's treated as a valid node by the correct React instance
-  return <React.Fragment>{children}</React.Fragment>;
-};
+// Dashboard Pages
+import { DashboardOverview } from './pages/dashboard/DashboardOverview';
+import { DashboardBookings } from './pages/dashboard/DashboardBookings';
+import { DashboardCalendar } from './pages/dashboard/DashboardCalendar';
+import { DashboardPlaceholder } from './pages/dashboard/DashboardPlaceholder';
 
 const App: React.FC = () => {
   return (
     <Routes>
-      {/* --- Public Marketing Routes --- */}
+      {/* --- Public Zone --- */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/services" element={<ServicesPage />} />
@@ -40,7 +33,7 @@ const App: React.FC = () => {
         <Route path="/social" element={<SocialPage />} />
       </Route>
 
-      {/* --- Private Dashboard Routes --- */}
+      {/* --- Authenticated Dashboard Zone --- */}
       <Route 
         path="/dashboard" 
         element={
@@ -53,7 +46,7 @@ const App: React.FC = () => {
         <Route path="bookings" element={<DashboardBookings />} />
         <Route path="calendar" element={<DashboardCalendar />} />
         
-        {/* Placeholders for remaining routes */}
+        {/* Modules under development */}
         <Route path="events" element={<DashboardPlaceholder title="Events Management" />} />
         <Route path="financials" element={<DashboardPlaceholder title="Financials" />} />
         <Route path="social" element={<DashboardPlaceholder title="Social Analytics" />} />
