@@ -18,6 +18,7 @@ import { DirectoryPage } from './pages/public/DirectoryPage';
 import { EventsPage } from './pages/public/EventsPage';
 import { SocialPage } from './pages/public/SocialPage';
 import { EcommercePage } from './pages/public/EcommercePage';
+import { StartProjectPage } from './pages/public/StartProjectPage';
 
 // Dashboard Pages
 import { DashboardOverview } from './pages/dashboard/DashboardOverview';
@@ -39,6 +40,9 @@ const App: React.FC = () => {
         <Route path="/services/video-production" element={<VideoProductionPage />} />
         <Route path="/services/social" element={<SocialPage />} />
         <Route path="/services/ecommerce" element={<EcommercePage />} />
+        
+        {/* Booking Wizard */}
+        <Route path="/start-project" element={<StartProjectPage />} />
         
         {/* Placeholders for future pages ensuring links work */}
         <Route path="/services/web-design" element={<ServicesPage />} />

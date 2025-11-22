@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Search, Camera, CheckCircle2, Video, ShoppingBag, Users, Play, Sparkles, Star } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { SectionTag } from '../../components/SectionTag';
+import { ImageCarousel, CarouselItem } from '../../components/ImageCarousel';
 
 // --- Helper Components Local to Homepage ---
 
@@ -65,6 +67,33 @@ const MarketplaceCard = ({ title, price, features, image }: { title: string, pri
 // --- Main Page Component ---
 
 export const HomePage: React.FC = () => {
+  const carouselItems: CarouselItem[] = [
+    {
+      id: 1,
+      image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1200&auto=format&fit=crop",
+      title: "Summer Editorial '25",
+      subtitle: "Campaign"
+    },
+    {
+      id: 2,
+      image: "https://images.unsplash.com/photo-1537832816519-689ad163238b?q=80&w=1200&auto=format&fit=crop",
+      title: "Milan Fashion Week",
+      subtitle: "Runway"
+    },
+    {
+      id: 3,
+      image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1200&auto=format&fit=crop",
+      title: "Urban Street Style",
+      subtitle: "Lookbook"
+    },
+    {
+      id: 4,
+      image: "https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=1200&auto=format&fit=crop",
+      title: "Studio Minimalist",
+      subtitle: "Product"
+    }
+  ];
+
   return (
     <div className="bg-white overflow-x-hidden">
       
@@ -110,6 +139,25 @@ export const HomePage: React.FC = () => {
               </div>
             </FadeIn>
           </div>
+        </div>
+      </section>
+
+      {/* 1.5 CAROUSEL SECTION (New) */}
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-6 md:px-12">
+          <FadeIn>
+            <div className="mb-8 flex justify-between items-end">
+              <div>
+                <SectionTag>Featured Work</SectionTag>
+                <h2 className="text-3xl md:text-4xl font-serif font-bold">Latest Campaigns</h2>
+              </div>
+              <div className="hidden md:flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-gray-400">
+                <span className="w-12 h-px bg-gray-200"></span>
+                Swipe to explore
+              </div>
+            </div>
+            <ImageCarousel items={carouselItems} aspectRatio="landscape" className="rounded-2xl shadow-2xl" />
+          </FadeIn>
         </div>
       </section>
 
