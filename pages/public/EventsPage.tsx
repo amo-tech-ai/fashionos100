@@ -1,8 +1,10 @@
 import React, { useState, useMemo } from 'react';
+import { GoogleGenAI } from "@google/genai";
 import { 
   Search, Sparkles, Calendar, Ticket, ChevronDown, MapPin, 
   Clock, Filter, ArrowRight, Mic2, Camera, ShoppingBag, 
-  Users, Info, Map, Car, Star, Plus, X, SlidersHorizontal
+  Users, Info, Map, Car, Star, Plus, X, SlidersHorizontal,
+  Loader2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
@@ -213,14 +215,73 @@ export const EventsPage: React.FC = () => {
   const [priceFilter, setPriceFilter] = useState('All Prices');
   const [statusFilter, setStatusFilter] = useState('All Status');
 
+  // AI Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiMatches, setAiMatches] = useState<number[] | null>(null);
+
   const handleApplyDate = (start: Date | null, end: Date | null) => {
     setDateRange({ start, end });
     setShowCalendar(false);
   };
 
+  const handleAISearch = async () => {
+    if (!searchQuery.trim()) {
+      setAiMatches(null);
+      return;
+    }
+
+    setIsAiLoading(true);
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        // Construct context from mock data
+        const eventsContext = EVENTS_DATA.map(e => ({
+            id: e.id,
+            title: e.title,
+            category: e.category,
+            tags: e.tags,
+            location: e.location,
+            date: e.date,
+            price: e.price
+        }));
+
+        const prompt = `
+        You are an intelligent event search engine for FashionOS.
+        User Query: "${searchQuery}"
+
+        Available Events Data:
+        ${JSON.stringify(eventsContext)}
+
+        Instructions:
+        1. Analyze the semantic meaning of the user query (e.g., "cheap workshops", "events in bogota", "sustainable fashion").
+        2. Return a JSON object containing an array of event IDs that match the query.
+        3. Output format: { "matchIds": [1, 2, ...] }
+        4. If no matches found, return { "matchIds": [] }
+        5. Only return the JSON.
+        `;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: { responseMimeType: "application/json" }
+        });
+
+        const result = JSON.parse(response.text || "{}");
+        setAiMatches(result.matchIds || []);
+    } catch (error) {
+        console.error("AI Search failed", error);
+        // In a real app, handle error state visible to user
+    } finally {
+        setIsAiLoading(false);
+    }
+  };
+
   // Filter Logic
   const filteredEvents = useMemo(() => {
     return EVENTS_DATA.filter(event => {
+      // AI Filter
+      if (aiMatches !== null && !aiMatches.includes(event.id)) return false;
+
       // Type Filter
       if (typeFilter !== 'All Types' && event.category !== typeFilter) return false;
       
@@ -240,13 +301,15 @@ export const EventsPage: React.FC = () => {
 
       return true;
     });
-  }, [typeFilter, priceFilter, statusFilter]);
+  }, [typeFilter, priceFilter, statusFilter, aiMatches]);
 
   const resetFilters = () => {
     setTypeFilter('All Types');
     setPriceFilter('All Prices');
     setStatusFilter('All Status');
     setDateRange({ start: null, end: null });
+    setSearchQuery('');
+    setAiMatches(null);
   };
 
   return (
@@ -264,26 +327,41 @@ export const EventsPage: React.FC = () => {
                   AI-curated shows, exhibitions, workshops, and industry meetups — all in one place.
                </p>
 
-               {/* Enhanced Search Bar */}
+               {/* AI Search Bar */}
                <div className="max-w-2xl mx-auto relative mb-8">
-                  <div className="flex items-center bg-white rounded-full shadow-xl p-2 border border-gray-100 transition-shadow hover:shadow-2xl">
-                     <Search className="ml-4 text-gray-400 shrink-0" size={20} />
+                  <div className={`flex items-center bg-white rounded-full shadow-xl p-2 border transition-all duration-300 hover:shadow-2xl ${isAiLoading ? 'border-purple-400 ring-2 ring-purple-100' : 'border-gray-100'}`}>
+                     <Search className={`ml-4 shrink-0 transition-colors ${isAiLoading ? 'text-purple-500' : 'text-gray-400'}`} size={20} />
                      <input 
                         type="text" 
-                        placeholder="Find fashion shows in Medellín this weekend..." 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAISearch()}
+                        placeholder="Try 'sustainable events in March' or 'workshops for designers'..." 
                         className="flex-1 p-3 outline-none text-sm bg-transparent text-gray-700 placeholder:text-gray-400" 
                      />
                      <div className="hidden md:flex items-center gap-2 border-l border-gray-100 pl-3 pr-3">
-                        <span className="text-[10px] font-bold text-purple-500 flex items-center gap-1"><Sparkles size={10} /> Powered by AI Copilot</span>
+                        <span className={`text-[10px] font-bold flex items-center gap-1 transition-colors ${isAiLoading ? 'text-purple-600' : 'text-purple-500'}`}>
+                           {isAiLoading ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />} 
+                           {isAiLoading ? "Thinking..." : "Powered by AI Copilot"}
+                        </span>
                      </div>
-                     <button className="bg-black text-white p-3 rounded-full hover:bg-gray-800 transition-colors">
+                     {searchQuery && (
+                        <button onClick={() => { setSearchQuery(''); setAiMatches(null); }} className="p-2 text-gray-400 hover:text-gray-600 md:hidden">
+                           <X size={16} />
+                        </button>
+                     )}
+                     <button 
+                        onClick={handleAISearch}
+                        disabled={isAiLoading}
+                        className="bg-black text-white p-3 rounded-full hover:bg-gray-800 transition-colors disabled:bg-gray-400"
+                     >
                         <ArrowRight size={18} />
                      </button>
                   </div>
                </div>
 
                <div className="flex justify-center gap-4">
-                  <Button variant="accent" size="sm" className="rounded-full">Browse All Events</Button>
+                  <Button variant="accent" size="sm" className="rounded-full" onClick={resetFilters}>Browse All Events</Button>
                   <Link to="/dashboard"><Button variant="outline" size="sm" className="rounded-full">Create Event</Button></Link>
                </div>
             </FadeIn>
@@ -305,6 +383,13 @@ export const EventsPage: React.FC = () => {
                     <SlidersHorizontal size={16} className="text-gray-400" />
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-wider hidden sm:inline">Filters</span>
                   </div>
+
+                  {aiMatches !== null && (
+                     <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 border border-purple-100 rounded-full text-xs font-bold text-purple-700 whitespace-nowrap animate-in fade-in slide-in-from-left-4">
+                        <Sparkles size={12} /> Filtered by AI
+                        <button onClick={() => setAiMatches(null)} className="ml-1 hover:bg-purple-200 rounded-full p-0.5"><X size={12} /></button>
+                     </div>
+                  )}
 
                   <FilterDropdown 
                     label="Event Type" 
@@ -405,7 +490,7 @@ export const EventsPage: React.FC = () => {
                     <Search size={24} />
                   </div>
                   <h3 className="text-xl font-serif font-bold text-gray-900 mb-2">No events found.</h3>
-                  <p className="text-gray-500 mb-6">Try adjusting your filters to see more results.</p>
+                  <p className="text-gray-500 mb-6">Try adjusting your filters or AI search query to see more results.</p>
                   <Button variant="outline" onClick={resetFilters}>Clear All Filters</Button>
                </div>
             )}
@@ -506,7 +591,7 @@ export const EventsPage: React.FC = () => {
                   From runway shows to creative workshops — explore the best fashion events curated just for you.
                </p>
                <div className="flex justify-center gap-4">
-                  <Button variant="primary" size="lg">Browse Events</Button>
+                  <Button variant="primary" size="lg" onClick={resetFilters}>Browse Events</Button>
                   <Link to="/dashboard"><Button variant="outline" size="lg">Create Event</Button></Link>
                </div>
             </FadeIn>
