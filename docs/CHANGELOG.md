@@ -14,6 +14,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - 2025-03-02
+### ✨ Added
+- **Veo 3.1 Video Generator:**
+  - Implemented a new "AI Trailer Studio" section on the **Events Page**.
+  - Users can generate 8-second cinematic event trailers using Gemini's `veo-3.1-fast-generate-preview` model.
+  - Generation is context-aware, using the event's title, description, and hero image as source material.
+  - Includes a polling mechanism to handle video generation status and real-time preview.
+- **Event Creation Wizard (Dashboard):**
+  - Added an AI-powered modal in `DashboardEvents` to generate draft event details from natural language or URL inputs.
+  - Uses Gemini 2.5 Flash to structure unstructured text into JSON (Title, Schedule, Pricing).
+
+### 🏗️ Architecture
+- **Supabase Edge Functions:** Documented architecture for `create-event` and `analyze-brief` functions in `docs/07-edge-functions.md`.
+
+---
+
 ## [0.3.0] - 2025-03-01
 ### 🏗️ Architecture Refactor
 - **Modularization:** Split monolithic `App.tsx` and `Page` files into a scalable directory structure:

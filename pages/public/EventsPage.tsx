@@ -1,10 +1,9 @@
+
 import React, { useState, useMemo } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { 
   Search, Sparkles, Calendar, Ticket, ChevronDown, MapPin, 
-  Clock, Filter, ArrowRight, Mic2, Camera, ShoppingBag, 
-  Users, Info, Map, Car, Star, Plus, X, SlidersHorizontal,
-  Loader2
+  ArrowRight, Star, Plus, X, SlidersHorizontal, Loader2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
@@ -12,210 +11,20 @@ import { FadeIn } from '../../components/FadeIn';
 import { CalendarPicker } from '../../components/CalendarPicker';
 import { SectionTag } from '../../components/SectionTag';
 
-// --- Mock Data ---
-
-const FEATURED_EVENT = {
-  id: 0,
-  title: "Milan Fashion Week: Spring/Summer Finale",
-  desc: "Experience the culmination of global fashion as top designers showcase their SS26 collections. Featuring exclusive runway access and backstage passes.",
-  image: "https://images.unsplash.com/photo-1537832816519-689ad163238b?q=80&w=1000&auto=format&fit=crop",
-  date: "Sept 24-28, 2025",
-  location: "Milan, Italy",
-  tags: ["Runway", "High Fashion", "Exclusive"],
-  price: "From $450"
-};
-
-const EVENTS_DATA = [
-  {
-    id: 1,
-    title: "Sustainable Fashion Week 2025",
-    category: "Runway",
-    timing: "Upcoming",
-    date: "March 15, 2025",
-    time: "19:00 PM",
-    location: "Centro Cultural, Medellín",
-    image: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=800&auto=format&fit=crop",
-    tags: ["AI", "Sustainable", "Designer"],
-    price: "From $50",
-    capacity: "85% Sold"
-  },
-  {
-    id: 2,
-    title: "Editorial Photography Workshop",
-    category: "Workshop",
-    timing: "Upcoming",
-    date: "March 18, 2025",
-    time: "10:00 AM",
-    location: "Studio Loft, Bogotá",
-    image: "https://images.unsplash.com/photo-1520986606214-8b456906c813?q=80&w=800&auto=format&fit=crop",
-    tags: ["Photography", "Education"],
-    price: "Free",
-    capacity: "Open"
-  },
-  {
-    id: 3,
-    title: "Emerging Designers Showcase",
-    category: "Exhibition",
-    timing: "Live",
-    date: "March 22, 2025",
-    time: "14:00 PM",
-    location: "Galería Arte, Cali",
-    image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=800&auto=format&fit=crop",
-    tags: ["Emerging", "Designer"],
-    price: "From $30",
-    capacity: "Limited"
-  },
-  {
-    id: 4,
-    title: "Street Style Pop-Up Market",
-    category: "Pop-up",
-    timing: "Upcoming",
-    date: "March 25, 2025",
-    time: "11:00 AM",
-    location: "Plaza Central, Cartagena",
-    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop",
-    tags: ["Streetwear", "Market"],
-    price: "Free Entry",
-    capacity: "Open"
-  },
-  {
-    id: 5,
-    title: "Haute Couture Gala Evening",
-    category: "Runway",
-    timing: "Upcoming",
-    date: "April 1, 2025",
-    time: "20:00 PM",
-    location: "Grand Hotel, Medellín",
-    image: "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?q=80&w=800&auto=format&fit=crop",
-    tags: ["Couture", "VIP", "Gala"],
-    price: "From $200",
-    capacity: "Sold Out"
-  },
-  {
-    id: 6,
-    title: "Fashion Tech Summit",
-    category: "Conference",
-    timing: "Past",
-    date: "Feb 10, 2025",
-    time: "09:00 AM",
-    location: "Innovation Hub, Bogotá",
-    image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=800&auto=format&fit=crop",
-    tags: ["AI", "Technology", "Future"],
-    price: "From $75",
-    capacity: "Closed"
-  }
-];
-
-const CATEGORIES = [
-  { icon: Mic2, label: "Runway Shows", desc: "Live collections" },
-  { icon: Camera, label: "Workshops", desc: "Learn skills" },
-  { icon: ShoppingBag, label: "Pop-ups", desc: "Shop local" },
-  { icon: Map, label: "Exhibitions", desc: "Art & Style" },
-  { icon: Users, label: "Meetups", desc: "Network" },
-];
-
-// --- Sub-Components ---
-
-const FilterDropdown = ({ 
-  label, 
-  options, 
-  value, 
-  onChange 
-}: { 
-  label: string, 
-  options: string[], 
-  value: string, 
-  onChange: (val: string) => void 
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  return (
-    <div className="relative">
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap ${value !== options[0] ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
-      >
-        {value !== options[0] ? value : label} <ChevronDown size={12} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-      
-      {isOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full mt-2 left-0 bg-white border border-gray-100 rounded-xl shadow-xl p-2 min-w-[180px] z-50 flex flex-col gap-1 animate-in fade-in zoom-in-95 origin-top-left">
-            {options.map(opt => (
-              <button 
-                key={opt}
-                onClick={() => { onChange(opt); setIsOpen(false); }}
-                className={`text-left px-3 py-2 text-xs font-bold rounded-lg transition-colors ${value === opt ? 'text-purple-600 bg-purple-50' : 'text-gray-600 hover:bg-gray-50'}`}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
-
-const EventCard = ({ event }: { event: typeof EVENTS_DATA[0] }) => (
-  <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-500 flex flex-col h-full cursor-pointer">
-    <div className="aspect-[4/3] relative overflow-hidden">
-      <img src={event.image} alt={event.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-      <div className="absolute top-3 right-3">
-         <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md ${event.category === 'Runway' ? 'bg-purple-500/90 text-white' : 'bg-white/90 text-black'}`}>
-            {event.category}
-         </span>
-      </div>
-      <div className="absolute bottom-3 left-3">
-        {event.price === "Free" || event.price === "Free Entry" ? (
-           <span className="bg-green-400/90 backdrop-blur text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase">Free</span>
-        ) : (
-           <span className="bg-black/70 backdrop-blur text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase">{event.price}</span>
-        )}
-      </div>
-    </div>
-    <div className="p-6 flex flex-col flex-grow">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2 text-gray-400 text-xs font-medium">
-          <Calendar size={14} /> {event.date}
-        </div>
-        {event.timing === 'Live' && (
-          <span className="flex items-center gap-1 text-[10px] font-bold text-red-500 uppercase tracking-wider animate-pulse">
-            <span className="w-2 h-2 rounded-full bg-red-500"></span> Live
-          </span>
-        )}
-      </div>
-      <h3 className="text-xl font-serif font-bold mb-2 leading-tight group-hover:text-purple-600 transition-colors">{event.title}</h3>
-      <div className="flex items-center gap-2 text-gray-500 text-xs mb-4">
-        <MapPin size={14} /> {event.location}
-      </div>
-      
-      <div className="flex flex-wrap gap-2 mt-auto">
-        {event.tags.map(tag => (
-          <span key={tag} className="px-2 py-1 bg-gray-50 text-gray-500 rounded-md text-[10px] font-bold uppercase">{tag}</span>
-        ))}
-      </div>
-      <div className="mt-6 pt-4 border-t border-gray-50 flex justify-between items-center">
-         <span className="text-[10px] font-bold text-purple-600 uppercase tracking-widest">{event.capacity}</span>
-         <Button variant="primary" size="sm" className="rounded-full px-6">Get Tickets</Button>
-      </div>
-    </div>
-  </div>
-);
-
-// --- Main Page ---
+// Imported Components & Data
+import { FilterDropdown } from '../../components/events/FilterDropdown';
+import { EventCard } from '../../components/events/EventCard';
+import { VeoTrailerGenerator } from '../../components/events/VeoTrailerGenerator';
+import { EVENTS_DATA, FEATURED_EVENT, CATEGORIES } from '../../data/mockEvents';
 
 export const EventsPage: React.FC = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [dateRange, setDateRange] = useState<{start: Date | null, end: Date | null}>({ start: null, end: null });
   
-  // Filters State
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [priceFilter, setPriceFilter] = useState('All Prices');
   const [statusFilter, setStatusFilter] = useState('All Status');
 
-  // AI Search State
   const [searchQuery, setSearchQuery] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiMatches, setAiMatches] = useState<number[] | null>(null);
@@ -225,6 +34,7 @@ export const EventsPage: React.FC = () => {
     setShowCalendar(false);
   };
 
+  // AI Search Logic
   const handleAISearch = async () => {
     if (!searchQuery.trim()) {
       setAiMatches(null);
@@ -234,30 +44,14 @@ export const EventsPage: React.FC = () => {
     setIsAiLoading(true);
     try {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        // Construct context from mock data
         const eventsContext = EVENTS_DATA.map(e => ({
-            id: e.id,
-            title: e.title,
-            category: e.category,
-            tags: e.tags,
-            location: e.location,
-            date: e.date,
-            price: e.price
+            id: e.id, title: e.title, category: e.category, tags: e.tags, location: e.location, date: e.date, price: e.price
         }));
 
         const prompt = `
-        You are an intelligent event search engine for FashionOS.
-        User Query: "${searchQuery}"
-
-        Available Events Data:
-        ${JSON.stringify(eventsContext)}
-
-        Instructions:
-        1. Analyze the semantic meaning of the user query (e.g., "cheap workshops", "events in bogota", "sustainable fashion").
-        2. Return a JSON object containing an array of event IDs that match the query.
-        3. Output format: { "matchIds": [1, 2, ...] }
-        4. If no matches found, return { "matchIds": [] }
-        5. Only return the JSON.
+        Act as an event search engine. Query: "${searchQuery}"
+        Data: ${JSON.stringify(eventsContext)}
+        Return JSON: { "matchIds": [id1, id2] } based on semantic relevance.
         `;
 
         const response = await ai.models.generateContent({
@@ -270,35 +64,25 @@ export const EventsPage: React.FC = () => {
         setAiMatches(result.matchIds || []);
     } catch (error) {
         console.error("AI Search failed", error);
-        // In a real app, handle error state visible to user
     } finally {
         setIsAiLoading(false);
     }
   };
 
-  // Filter Logic
   const filteredEvents = useMemo(() => {
     return EVENTS_DATA.filter(event => {
-      // AI Filter
       if (aiMatches !== null && !aiMatches.includes(event.id)) return false;
-
-      // Type Filter
       if (typeFilter !== 'All Types' && event.category !== typeFilter) return false;
       
-      // Price Filter logic
       if (priceFilter !== 'All Prices') {
         const isFree = event.price.toLowerCase().includes('free');
         const priceNum = parseInt(event.price.replace(/[^0-9]/g, '')) || 0;
-
         if (priceFilter === 'Free' && !isFree) return false;
-        // Assuming "Under $50" means paid but cheap
         if (priceFilter === 'Under $50' && (isFree || priceNum >= 50)) return false; 
         if (priceFilter === 'Premium' && priceNum < 50) return false;
       }
 
-      // Status Filter
       if (statusFilter !== 'All Status' && event.timing !== statusFilter) return false;
-
       return true;
     });
   }, [typeFilter, priceFilter, statusFilter, aiMatches]);
@@ -324,7 +108,7 @@ export const EventsPage: React.FC = () => {
                   Discover Fashion Events <br/> Near You
                </h1>
                <p className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto">
-                  AI-curated shows, exhibitions, workshops, and industry meetups — all in one place.
+                  AI-curated shows, exhibitions, workshops, and industry meetups.
                </p>
 
                {/* AI Search Bar */}
@@ -342,7 +126,7 @@ export const EventsPage: React.FC = () => {
                      <div className="hidden md:flex items-center gap-2 border-l border-gray-100 pl-3 pr-3">
                         <span className={`text-[10px] font-bold flex items-center gap-1 transition-colors ${isAiLoading ? 'text-purple-600' : 'text-purple-500'}`}>
                            {isAiLoading ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />} 
-                           {isAiLoading ? "Thinking..." : "Powered by AI Copilot"}
+                           {isAiLoading ? "Thinking..." : "AI Copilot"}
                         </span>
                      </div>
                      {searchQuery && (
@@ -374,7 +158,7 @@ export const EventsPage: React.FC = () => {
          </div>
       </section>
 
-      {/* 2. Smart Filter Bar */}
+      {/* 2. Filter Bar */}
       <div className="sticky top-20 z-40 bg-white/90 backdrop-blur-md border-y border-gray-100 py-4">
          <div className="container mx-auto px-6 md:px-12">
             <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
@@ -473,7 +257,10 @@ export const EventsPage: React.FC = () => {
          </div>
       </section>
 
-      {/* 4. Event Grid */}
+      {/* 4. AI Veo Generator */}
+      <VeoTrailerGenerator featuredEvent={FEATURED_EVENT} />
+
+      {/* 5. Event Grid */}
       <section className="py-12">
          <div className="container mx-auto px-6 md:px-12">
             {filteredEvents.length > 0 ? (
@@ -503,7 +290,7 @@ export const EventsPage: React.FC = () => {
          </div>
       </section>
 
-      {/* 5. Categories Carousel */}
+      {/* 6. Categories Carousel */}
       <section className="py-20 bg-gray-50 overflow-hidden">
          <div className="container mx-auto px-6 md:px-12">
             <div className="flex justify-between items-end mb-10">
@@ -531,7 +318,7 @@ export const EventsPage: React.FC = () => {
          </div>
       </section>
 
-      {/* 6. Plan Your Visit */}
+      {/* 7. Plan Your Visit */}
       <section className="py-20 container mx-auto px-6 md:px-12">
          <div className="text-center max-w-3xl mx-auto mb-12">
             <SectionTag>Concierge</SectionTag>
@@ -541,9 +328,9 @@ export const EventsPage: React.FC = () => {
          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
                { icon: Ticket, title: 'Tickets & Pricing', desc: 'Early bird rates and VIP packages.' },
-               { icon: Map, title: 'Venue Maps', desc: 'Navigate sprawling event spaces easily.' },
-               { icon: Car, title: 'Transport', desc: 'Valet parking and shuttle services.' },
-               { icon: Info, title: 'FAQ', desc: 'Dress codes, entry requirements, and more.' }
+               { icon: MapPin, title: 'Venue Maps', desc: 'Navigate sprawling event spaces easily.' }, // Fixed Icon usage
+               { icon: Ticket, title: 'Transport', desc: 'Valet parking and shuttle services.' }, // Reused icon as placeholder
+               { icon: ArrowRight, title: 'FAQ', desc: 'Dress codes, entry requirements, and more.' } // Reused icon as placeholder
             ].map((item, i) => (
                <div key={i} className="p-6 rounded-2xl border border-gray-100 text-center hover:bg-gray-50 transition-colors cursor-pointer">
                   <item.icon className="mx-auto mb-4 text-gray-400" size={24} />
@@ -554,7 +341,7 @@ export const EventsPage: React.FC = () => {
          </div>
       </section>
 
-      {/* 7. Host CTA */}
+      {/* 8. Host CTA */}
       <section className="py-20 bg-black text-white">
          <div className="container mx-auto px-6 md:px-12">
             <div className="flex flex-col md:flex-row items-center gap-16">
@@ -574,7 +361,6 @@ export const EventsPage: React.FC = () => {
                   <div className="aspect-video rounded-2xl overflow-hidden opacity-80">
                      <img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=1000" alt="Backstage" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
                   </div>
-                  {/* Decoration */}
                   <div className="absolute -bottom-6 -left-6 w-24 h-24 border-l-2 border-b-2 border-purple-500"></div>
                   <div className="absolute -top-6 -right-6 w-24 h-24 border-r-2 border-t-2 border-purple-500"></div>
                </div>
@@ -582,7 +368,7 @@ export const EventsPage: React.FC = () => {
          </div>
       </section>
 
-      {/* 8. Final CTA */}
+      {/* 9. Final CTA */}
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white text-center">
          <div className="container mx-auto px-6">
             <FadeIn>

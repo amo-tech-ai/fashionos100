@@ -35,38 +35,39 @@ This document tracks the development lifecycle of the **FashionOS** platform. It
 | Profile Details | Individual portfolio pages | P1 | 🟡 | Frontend | W2 | Directory | 30% | Modal/Page structure needed. |
 | Search & Filter | Keyword search, Category tabs, City filter | P2 | 🟢 | Frontend | W2 | Directory | 100% | Filter logic functional (frontend). |
 | **Events Module** | | | | | | | | |
-| Events Feed | List of upcoming events with cards | P1 | 🟢 | Frontend | W2 | UI System | 95% | Fully interactive UI. |
+| Events Feed | List of upcoming events with cards | P1 | 🟢 | Frontend | W2 | UI System | 100% | Fully interactive UI with AI filtering. |
 | Calendar Picker | Custom date range selector logic | P2 | 🟢 | Frontend | W2 | Events Feed | 100% | Component complete & integrated. |
-| Create Event Form | Multi-step form for hosting events | P1 | ⚪ | Frontend | W3 | Auth | 0% | |
+| Create Event Wizard | AI-powered form for hosting events | P1 | 🟢 | Frontend | W3 | Auth | 90% | Modal integrated in Dashboard with Gemini draft generation. |
+| Event Trailer Gen | Veo 3.1 video generation for events | P2 | 🟢 | AI Team | W3 | Media | 100% | Implemented on Events Page with polling & preview. |
 | Ticketing System | Stripe + Apple Pay integration | P0 | ⚪ | Backend | W5 | Create Event | 0% | |
 | **Designers & Models** | | | | | | | | |
 | Designers Module | Portfolio upload, collections showcase | P2 | ⚪ | Fullstack | W4 | Auth | 0% | |
 | Models & Casting | Comp cards, measurements, booking reqs | P2 | ⚪ | Fullstack | W4 | Auth | 0% | |
 | **Media & AI** | | | | | | | | |
 | Media Uploads | Cloudinary integration for high-res images | P1 | ⚪ | Backend | W3 | Auth | 0% | |
-| Virtual Runway | AI video generation (Veo/RunwayML) | P3 | ⚪ | AI Team | W8 | Media Uploads | 0% | Research phase. |
-| AI Copilot | Chat interface for platform assistance | P2 | 🟡 | AI Team | W6 | Gemini API | 80% | Widget UI & Gemini integration active. |
+| Virtual Runway | AI video generation (Veo/RunwayML) | P3 | 🟡 | AI Team | W8 | Media Uploads | 40% | Event Trailer feature live. |
+| AI Copilot | Chat interface for platform assistance | P2 | 🟢 | AI Team | W6 | Gemini API | 100% | Widget UI & Gemini integration active across Dashboard/Directory. |
 | **Business Logic** | | | | | | | | |
-| Dashboard | Analytics, sales, engagement metrics | P1 | 🟡 | Frontend | W5 | Auth, DB | 60% | Overview, Calendar, Bookings UIs built. |
+| Dashboard | Analytics, sales, engagement metrics | P1 | 🟢 | Frontend | W5 | Auth, DB | 90% | All core views (Overview, Bookings, Financials, Events) built. |
 | Sponsors | Activation tracking and logo management | P3 | ⚪ | Sales | W6 | Events | 0% | |
 | WhatsApp Auto | Twilio/Meta API for notifications | P2 | ⚪ | Backend | W7 | User Profiles | 0% | |
 | **Infrastructure** | | | | | | | | |
-| Supabase DB | Tables, RLS policies, Triggers | P0 | ⚪ | Backend | W2 | None | 10% | Initial schema drafting. |
-| Edge Functions | Serverless logic for payments/emails | P1 | ⚪ | Backend | W4 | Supabase | 0% | |
+| Supabase DB | Tables, RLS policies, Triggers | P0 | 🟡 | Backend | W2 | None | 30% | Schema designed (SQL ready). |
+| Edge Functions | Serverless logic for payments/emails | P1 | ⚪ | Backend | W4 | Supabase | 10% | Specs written. |
 | Deployment | Vercel/Netlify CI/CD pipeline | P0 | 🟡 | DevOps | W2 | GitHub | 50% | Local env stable. |
 
 ---
 
 ## 📅 Weekly Snapshot (Current Week)
-- **Focus:** Documentation (Sitemap, Dashboard Manual), Directory Refinement (Grid/List), and Dashboard internal wiring.
-- **Blockers:** Backend connection for persistent booking data.
+- **Focus:** AI Features (Veo Video Gen, Event Wizard), Dashboard Polish.
+- **Blockers:** Backend connection for persistent data (currently using mocks).
 - **Wins:** 
-  - Dashboard AI Copilot widget connected to Gemini Flash 2.5.
-  - Calendar Module fully interactable with filtering.
-  - Directory now supports view toggling.
+  - **Veo 3.1 Integration:** Successfully added event trailer generation to the public events page.
+  - **Event Wizard:** Created a Gemini-powered modal that drafts full event schedules from simple text.
+  - **Documentation:** Complete schemas for Edge Functions and Events database.
 
 ## ⏭️ Next Milestones
-1.  **Database Initialization:** Set up Supabase project and user tables.
+1.  **Supabase Connection:** Run the SQL scripts to create real tables.
 2.  **Auth Implementation:** Allow users to sign up/in to access dashboards.
-3.  **Dynamic Data:** Replace mock arrays in Dashboard with real stats.
-4.  **Create Event Flow:** Build the wizard for users to submit new events.
+3.  **Edge Functions:** Deploy `create-event` and `generate-assets` functions.
+4.  **Payments:** Connect Stripe for ticket sales.
