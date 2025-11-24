@@ -22,7 +22,7 @@ We layer this on your existing **6-stage Event Creation Wizard** (Event Basics â
 
 ---
 
-## 2. Core User Journey (The "Maria" Flow)
+## 2. Core User Journey (The "Organizer" Flow)
 
 **Persona:** Maria, event organizer.
 

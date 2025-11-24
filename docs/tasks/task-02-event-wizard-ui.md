@@ -1,3 +1,4 @@
+
 # 🪄 Task 02: Event Creation Wizard UI
 
 **Status:** 🟢 Completed

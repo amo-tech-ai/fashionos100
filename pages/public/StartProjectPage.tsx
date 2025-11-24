@@ -386,4 +386,68 @@ export const StartProjectPage: React.FC = () => {
               <h3 className="font-serif font-bold text-xl">Summary</h3>
               <button onClick={() => setIsSummaryOpen(false)} className="p-2 bg-gray-100 rounded-full"><X size={16} /></button>
             </div>
-            <div className="space-
+            <div className="space-y-3 mb-4 text-sm">
+              <div className="flex justify-between"><span className="text-gray-500">Service</span><span className="font-bold capitalize">{booking.service || '-'}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Category</span><span className="font-bold capitalize">{booking.category || '-'}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Quantity</span><span className="font-bold">{booking.quantity}</span></div>
+            </div>
+            <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
+              <span className="font-bold text-gray-400 uppercase tracking-wider text-xs">Total</span>
+              <span className="font-serif font-bold text-2xl">${calculateTotal(booking).toLocaleString()}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3">
+          <button onClick={handleBack} className="p-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50">
+            <ArrowLeft size={20} />
+          </button>
+          
+          <button 
+            onClick={() => setIsSummaryOpen(!isSummaryOpen)}
+            className="flex-1 flex flex-col items-start justify-center px-4 py-1.5 bg-gray-50 rounded-xl border border-gray-200"
+          >
+            <span className="text-[10px] font-bold uppercase text-gray-400 tracking-wider">Total</span>
+            <div className="flex items-center gap-1">
+              <span className="font-serif font-bold text-lg leading-none">${calculateTotal(booking).toLocaleString()}</span>
+              {isSummaryOpen ? <ChevronDown size={14} className="text-gray-400" /> : <ChevronUp size={14} className="text-gray-400" />}
+            </div>
+          </button>
+
+          <Button 
+            onClick={handleNext} 
+            disabled={!canProceed()} 
+            variant="primary" 
+            className="flex-1 h-[52px] text-sm" // Large touch target
+          >
+            {currentStep === 4 ? 'Confirm' : 'Next'} <ArrowRight size={16} className="ml-2" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Desktop Sticky Footer (Back/Next only) */}
+      <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200 py-4 z-40">
+        <div className="container mx-auto px-6 flex justify-between items-center max-w-4xl">
+          <Button onClick={handleBack} variant="ghost" className="text-gray-500 hover:text-black">
+            <ArrowLeft size={16} className="mr-2" /> Back
+          </Button>
+          <Button onClick={handleNext} disabled={!canProceed()} variant="primary" className="px-12">
+            {currentStep === 4 ? 'Confirm Booking' : 'Next Step'} <ArrowRight size={16} className="ml-2" />
+          </Button>
+        </div>
+      </div>
+
+    </div>
+  );
+};
+
+// Helper Icon
+function CheckCircle({ size = 24, className = "" }: { size?: number, className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+    </svg>
+  );
+}

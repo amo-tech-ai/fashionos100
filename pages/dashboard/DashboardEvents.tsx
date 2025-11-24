@@ -1,4 +1,6 @@
+
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Calendar, Ticket, TrendingUp, MoreHorizontal, MapPin, Clock, 
   Users, DollarSign, ChevronRight, Filter, Search, Bell, 
@@ -114,9 +116,11 @@ export const DashboardEvents = () => {
              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
              <input type="text" placeholder="Search events..." className="bg-white border border-gray-200 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-purple-400 w-64" />
           </div>
-          <Button variant="primary" size="sm" className="rounded-full gap-2 shadow-lg shadow-purple-500/20">
-             <Plus size={16} /> Create Event
-          </Button>
+          <Link to="/dashboard/events/new">
+            <Button variant="primary" size="sm" className="rounded-full gap-2 shadow-lg shadow-purple-500/20">
+               <Plus size={16} /> Create Event
+            </Button>
+          </Link>
         </div>
       </div>
 
