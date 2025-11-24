@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { Loader2, Send, Sparkles, AlertCircle, Lightbulb } from 'lucide-react';
@@ -37,7 +38,7 @@ interface AICopilotProps {
   title?: string;
   context?: string;
   placeholder?: string;
-  phase?: 'Concept' | 'Casting' | 'Venue' | 'Marketing' | 'Production' | string; // Added phase prop
+  phase?: string; // Added phase prop for context-aware suggestions
 }
 
 const PHASE_SUGGESTIONS: Record<string, string[]> = {
