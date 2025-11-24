@@ -118,7 +118,7 @@ export const DashboardEvents = () => {
           </div>
           <Link to="/dashboard/events/new">
             <Button variant="primary" size="sm" className="rounded-full gap-2 shadow-lg shadow-purple-500/20">
-               <Plus size={16} /> Create Event
+               <Plus size={16} /> Create New Event
             </Button>
           </Link>
         </div>
@@ -250,7 +250,7 @@ export const DashboardEvents = () => {
                    </div>
                    <div>
                       <p className="text-xs font-bold text-gray-900">Panel Discussion</p>
-                      <p className="text-[10px] text-gray-500">Tech Beyond 2024</p>
+                      <p className="text-xs text-gray-500">Tech Beyond 2024</p>
                    </div>
                 </div>
              </div>
@@ -263,29 +263,43 @@ export const DashboardEvents = () => {
             <h3 className="font-serif font-bold text-xl">Upcoming Events</h3>
             <Button variant="ghost" size="sm">View All Events</Button>
          </div>
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {UPCOMING_EVENTS.map((evt, i) => (
-               <FadeIn key={evt.id} delay={i * 100} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all group cursor-pointer">
-                  <div className="aspect-[16/9] relative overflow-hidden">
-                     <img src={evt.image} alt={evt.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                     <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                        {evt.category}
-                     </div>
-                  </div>
-                  <div className="p-5">
-                     <h4 className="font-serif font-bold text-lg mb-2 group-hover:text-purple-600 transition-colors">{evt.title}</h4>
-                     <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
-                        <span className="flex items-center gap-1"><MapPin size={12} /> {evt.location}</span>
-                        <span className="flex items-center gap-1"><Calendar size={12} /> {evt.date}</span>
-                     </div>
-                     <div className="flex justify-between items-center pt-4 border-t border-gray-50">
-                        <span className="font-bold text-lg">{evt.price}</span>
-                        <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${evt.status === 'Sold Out' ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`}>{evt.status}</span>
-                     </div>
-                  </div>
-               </FadeIn>
-            ))}
-         </div>
+         
+         {UPCOMING_EVENTS.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {UPCOMING_EVENTS.map((evt, i) => (
+                   <FadeIn key={evt.id} delay={i * 100} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all group cursor-pointer">
+                      <div className="aspect-[16/9] relative overflow-hidden">
+                         <img src={evt.image} alt={evt.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                            {evt.category}
+                         </div>
+                      </div>
+                      <div className="p-5">
+                         <h4 className="font-serif font-bold text-lg mb-2 group-hover:text-purple-600 transition-colors">{evt.title}</h4>
+                         <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
+                            <span className="flex items-center gap-1"><MapPin size={12} /> {evt.location}</span>
+                            <span className="flex items-center gap-1"><Calendar size={12} /> {evt.date}</span>
+                         </div>
+                         <div className="flex justify-between items-center pt-4 border-t border-gray-50">
+                            <span className="font-bold text-lg">{evt.price}</span>
+                            <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${evt.status === 'Sold Out' ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`}>{evt.status}</span>
+                         </div>
+                      </div>
+                   </FadeIn>
+                ))}
+            </div>
+         ) : (
+            <div className="bg-white border-2 border-dashed border-gray-200 rounded-3xl p-12 text-center">
+               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                  <Calendar size={24} />
+               </div>
+               <h3 className="text-xl font-serif font-bold text-gray-900 mb-2">No Events Yet</h3>
+               <p className="text-gray-500 mb-6">Get started by creating your first event.</p>
+               <Link to="/dashboard/events/new">
+                  <Button variant="primary">Create New Event</Button>
+               </Link>
+            </div>
+         )}
       </section>
 
       {/* 6. BOOKINGS TABLE & ACTIVITY */}

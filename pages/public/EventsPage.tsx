@@ -96,6 +96,12 @@ export const EventsPage: React.FC = () => {
     setAiMatches(null);
   };
 
+  const getDateLabel = () => {
+    if (dateRange.start && dateRange.end) return `${dateRange.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${dateRange.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    if (dateRange.start) return dateRange.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return "Date";
+  };
+
   return (
     <div className="bg-white pt-20 min-h-screen font-sans">
       
@@ -146,7 +152,7 @@ export const EventsPage: React.FC = () => {
 
                <div className="flex justify-center gap-4">
                   <Button variant="accent" size="sm" className="rounded-full" onClick={resetFilters}>Browse All Events</Button>
-                  <Link to="/dashboard"><Button variant="outline" size="sm" className="rounded-full">Create Event</Button></Link>
+                  <Link to="/dashboard/events/new"><Button variant="outline" size="sm" className="rounded-full">Create Event</Button></Link>
                </div>
             </FadeIn>
          </div>
@@ -194,7 +200,7 @@ export const EventsPage: React.FC = () => {
                         onClick={() => setShowCalendar(!showCalendar)}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap ${showCalendar || dateRange.start ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
                      >
-                        <Calendar size={14} /> {dateRange.start ? 'Date Selected' : 'Date'} <ChevronDown size={12} />
+                        <Calendar size={14} /> {getDateLabel()} <ChevronDown size={12} />
                      </button>
                      {showCalendar && (
                         <div className="absolute top-12 left-0 z-50">
@@ -220,6 +226,9 @@ export const EventsPage: React.FC = () => {
                   </button>
                   <div className="h-4 w-px bg-gray-200 hidden lg:block"></div>
                   <span className="text-xs text-gray-400"><strong className="text-black">{filteredEvents.length}</strong> events found</span>
+                  <div className="hidden md:block">
+                     <Link to="/dashboard/events/new"><Button variant="accent" size="sm">Start Event Wizard</Button></Link>
+                  </div>
                </div>
             </div>
          </div>
@@ -347,13 +356,13 @@ export const EventsPage: React.FC = () => {
             <div className="flex flex-col md:flex-row items-center gap-16">
                <div className="md:w-1/2">
                   <div className="inline-block bg-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider mb-6">Creator Tools</div>
-                  <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">Host an Event with FashionOS.</h2>
+                  <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">Want to host your own event?</h2>
                   <p className="text-gray-400 text-lg mb-8 leading-relaxed">
                      Runway shows, pop-ups, conferences, workshops — publish your event in minutes using our creator tools. 
                      Manage ticketing, guest lists, and marketing all in one place.
                   </p>
                   <div className="flex gap-4">
-                     <Link to="/dashboard"><Button variant="white">Create Event</Button></Link>
+                     <Link to="/dashboard/events/new"><Button variant="white">Start Event Wizard</Button></Link>
                      <Button variant="outline" className="text-white border-white hover:bg-white hover:text-black">View Creator Tools</Button>
                   </div>
                </div>
@@ -378,7 +387,7 @@ export const EventsPage: React.FC = () => {
                </p>
                <div className="flex justify-center gap-4">
                   <Button variant="primary" size="lg" onClick={resetFilters}>Browse Events</Button>
-                  <Link to="/dashboard"><Button variant="outline" size="lg">Create Event</Button></Link>
+                  <Link to="/dashboard/events/new"><Button variant="outline" size="lg">Create Event</Button></Link>
                </div>
             </FadeIn>
          </div>
