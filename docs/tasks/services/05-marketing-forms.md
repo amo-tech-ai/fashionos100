@@ -1,12 +1,12 @@
 
-# Task: Functional Marketing Forms
+# Task 05: Functional Marketing Forms
 
 **Status:** Planned  
 **Priority:** P2  
 **Owner:** Frontend  
 
 ## 1. Context Summary
-The marketing pages (`PhotographyPage`, `VideoProductionPage`, `SocialPage`) contain static HTML forms. These need to be converted into React components with state management, validation, and mock submission handling.
+The marketing pages (`PhotographyPage`, `VideoProductionPage`, `SocialPage`) contain static HTML forms. These need to be converted into React components with state management, validation, and mock submission handling. This serves as a lighter lead-gen alternative to the full Booking Wizard (Task 04).
 
 ## 2. Multistep Development Prompt
 

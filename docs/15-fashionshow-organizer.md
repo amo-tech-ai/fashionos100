@@ -1,8 +1,4 @@
-# Fashion Show Organizer System Plan - Google AI Studio Prompt
-
-This document contains a comprehensive prompt designed for Google AI Studio to generate a full system plan for the Fashion Show Organizer Platform.
-
----
+# ✅ **Prompt for Google Studio AI**
 
 ## **“Create a Full Plan for a Fashion Show Organizer System”**
 
@@ -204,3 +200,9 @@ Your response must include:
 * Recommendations for scalability
 
 Make everything clean, structured, and beginner-friendly.
+
+---
+
+# ✅ END OF PROMPT
+
+Paste this entire prompt into **Google AI Studio** to generate a complete, production-ready **Event Fashion Show Organizer System Plan**.

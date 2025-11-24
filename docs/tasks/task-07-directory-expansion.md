@@ -1,65 +1,123 @@
 
-# Task: Directory Profiles & Advanced Search
+# 🪄 **Task 07: Directory & Talent Network**
 
-**Status:** Planned  
-**Priority:** P1  
-**Owner:** Frontend  
+**Status:** 🟢 Planned
+**Priority:** P1
+**Owner:** Frontend
 
-## 1. Context Summary
-The `DirectoryPage` currently displays a static grid of mock cards. We need to turn this into a functional talent network with individual profile pages, detailed portfolios, and a working search/filter engine.
+---
 
-## 2. Multistep Development Prompt
+## **1. Context Summary**
 
-### Iteration 1: Profile Detail View
-1.  **Route:** Add `/directory/:id` to `App.tsx`.
-2.  **Page Component:** Create `pages/public/ProfileDetailPage.tsx`.
-3.  **UI Structure:**
-    *   **Header:** Large cover image, Avatar, Name, Role, Location, "Hire Me" button.
-    *   **Stats:** Rating, Reviews Count, Response Time.
-    *   **Portfolio Grid:** Masonry layout of high-res images.
-    *   **About:** Bio text and specialized tags (e.g., "Sustainable", "Film Photography").
-4.  **Navigation:** Update `DirectoryPage` cards to link to this new route.
+The Directory is the discovery engine for FashionOS (`/directory`).
+It allows users to find Models, Photographers, and Venues.
+It features **AI-powered Search**, advanced filtering, and rich profile details (`/directory/:id`).
 
-### Iteration 2: Search & Filter Logic
-1.  **State:** Lift filter state (Category, Location, Price) to a custom hook `useDirectoryFilter`.
-2.  **Search Bar:** Implement text search that filters the mock `DIRECTORY_ITEMS` array by name or role.
-3.  **Filter Sidebar:** Create a responsive sidebar (desktop) / drawer (mobile) for:
-    *   Role (Checkbox list)
-    *   Location (Dropdown)
-    *   Rate (Range slider)
-4.  **Empty State:** Design a "No creatives found" state with a "Reset Filters" button.
+---
 
-### Iteration 3: Connection Flow
-1.  **"Hire Me" Action:**
-    *   Clicking "Hire Me" or "Message" on a profile should open a modal.
-    *   **Modal Content:** Simple contact form (Subject, Message, Budget).
-2.  **Feedback:** Show a success toast "Message Sent to [Name]" after submission.
+## **2. Prerequisites (Reuse First)**
 
-## 3. Success Criteria
-- [ ] Clicking a card on `/directory` opens the correct profile details.
-- [ ] Profile page shows unique data (Name, Images) for that ID.
-- [ ] Search bar allows finding "Elena" or "Photographer".
-- [ ] "Hire Me" button opens a contact interaction.
-- [ ] Mobile view stacks the profile layout correctly (Header -> Actions -> Portfolio).
+1.  `components/FadeIn.tsx`
+2.  `components/Button.tsx`
+3.  Gemini: `embedding` (Semantic Search) or `text-generation` (Filter extraction)
+4.  Supabase: `designer_profiles`, `model_profiles`, `venues`
 
-## 4. Production Checklist
-- **SEO:** (Future) Dynamic `<title>` and `<meta>` tags based on the profile name.
-- **Performance:** Image optimization for the portfolio grid (lazy loading).
-- **Data:** Ensure fallback if a profile ID doesn't exist (404 page).
+---
 
-## 5. Testing Plan
-1.  **Navigation Test:** Go to Directory -> Click Card -> Verify URL is `/directory/1` -> Verify Name matches.
-2.  **Search Test:** Type "Model". Verify only models are shown. Type "Gibberish". Verify empty state.
-3.  **Responsiveness:** Check Profile Page on mobile. Ensure "Hire Me" is easily tappable.
+## **3. Multistep Development Prompts**
 
-## 6. Diagrams
+### **Iteration 1 — Profile Detail Page**
+
+**Goal:** Rich Presentation
+**Prompt:**
+1.  Create `pages/public/ProfileDetailPage.tsx`.
+2.  Layout: Hero Header (Cover Image + Avatar) -> Stats Row -> Portfolio Grid -> Bio/Tags.
+3.  "Hire Me" button opens a contact modal.
+4.  Connect to Supabase to fetch data based on URL ID.
+
+### **Iteration 2 — Advanced Search UI**
+
+**Goal:** Discovery
+**Prompt:**
+1.  Update `DirectoryPage.tsx`.
+2.  Add Filter Sidebar (Desktop) / Drawer (Mobile).
+3.  Filters: Role, Location, Rate Range, Availability.
+4.  Grid/List view toggle.
+
+### **Iteration 3 — AI Semantic Search**
+
+**Goal:** Intelligent Query
+**Prompt:**
+1.  Search Input: "Find me a moody photographer in Brooklyn under $2k".
+2.  **Gemini Logic:** Parse query -> Extract filters `{ role: 'photographer', location: 'Brooklyn', style: 'moody', budget_max: 2000 }`.
+3.  Apply these filters to the Supabase query automatically.
+
+---
+
+### **Success Criteria for This Task**
+
+*   [ ] Profile pages render dynamic data
+*   [ ] Search input correctly filters the list
+*   [ ] Grid matches the premium aesthetic (aspect ratios consistent)
+*   [ ] "Hire Me" creates a record in `messages` table
+
+---
+
+### **Production-Ready Checklist**
+
+*   [ ] Schema validated
+*   [ ] Supabase RLS confirmed (Public read, Owner write)
+*   [ ] Image optimization (Lazy loading portfolio)
+*   [ ] Mobile layout tested
+
+---
+
+## **4. Architecture & Data Flow**
+
+### ✔ Flowchart (Search Logic)
 
 ```mermaid
 flowchart TD
-    A[Directory Grid] -->|Click Card| B[Profile Detail Page]
-    B --> C{User Action}
-    C -- "View Portfolio" --> D[Open Lightbox]
-    C -- "Hire Me" --> E[Contact Modal]
-    E --> F[Send Message]
-    F --> G[Toast Notification]
+    A[User Types Query] --> B{AI Parsing}
+    B --> C[Extract Metadata]
+    C --> D[Build Supabase Query]
+    D --> E[Fetch Results]
+    E --> F[Render Grid]
+```
+
+### ✔ ERD (Directory Entities)
+
+```mermaid
+erDiagram
+    PROFILES ||--o{ DESIGNER_PROFILES : manages
+    PROFILES ||--o{ MODEL_PROFILES : manages
+    
+    DESIGNER_PROFILES {
+        string brand_name
+        string aesthetic
+        string city
+    }
+    MODEL_PROFILES {
+        int height_cm
+        string eye_color
+        string agency
+    }
+```
+
+### ✔ Requirement Diagram
+
+```mermaid
+requirementDiagram
+    requirement Search {
+        id: 1
+        text: "Must handle natural language"
+        risk: Medium
+        verifymethod: Test
+    }
+    requirement Profile {
+        id: 2
+        text: "Must show high-res portfolio"
+        risk: Low
+        verifymethod: Demonstration
+    }
 ```
