@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
-import { Loader2, Send, Sparkles, AlertCircle } from 'lucide-react';
+import { Loader2, Send, Sparkles, AlertCircle, Lightbulb } from 'lucide-react';
 
 // Donut Chart
 export const DonutChart = () => (
@@ -37,33 +37,62 @@ interface AICopilotProps {
   title?: string;
   context?: string;
   placeholder?: string;
+  phase?: 'Concept' | 'Casting' | 'Venue' | 'Marketing' | 'Production' | string; // Added phase prop
 }
+
+const PHASE_SUGGESTIONS: Record<string, string[]> = {
+  'Casting': ['Send model release forms', 'Draft casting call email', 'Compare agency rates', 'Create fit model schedule'],
+  'Venue': ['Draft venue inquiry', 'Compare floorplan capacities', 'Check AV requirements', 'Review insurance liability'],
+  'Marketing': ['Draft press release', 'Create social content calendar', 'Write VIP invite copy', 'Suggest hashtags'],
+  'Concept': ['Suggest event themes', 'Draft mission statement', 'Create moodboard prompts', 'Identify target audience'],
+  'Production': ['Create run of show', 'Draft backstage checklist', 'Staffing requirements', 'Safety briefing points'],
+};
 
 export const AICopilotWidget: React.FC<AICopilotProps> = ({ 
   title = "AI Copilot", 
   context = "You are an expert fashion event planner and creative strategist. Your goal is to help the user optimizing schedules, drafting high-converting marketing copy, and solving logistical challenges. Keep responses professional, concise, and actionable.",
-  placeholder = "Ask to draft an invite or optimize a schedule..."
+  placeholder = "Ask to draft an invite or optimize a schedule...",
+  phase
 }) => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (phase && PHASE_SUGGESTIONS[phase]) {
+      setSuggestions(PHASE_SUGGESTIONS[phase]);
+    } else {
+      setSuggestions([]);
+    }
+  }, [phase]);
   
-  const handleAsk = async () => {
-    if (!query.trim()) return;
+  const handleAsk = async (textOverride?: string) => {
+    const promptText = textOverride || query;
+    if (!promptText.trim()) return;
+    
+    // If triggered by suggestion click, update input too
+    if (textOverride) setQuery(textOverride);
+
     setLoading(true);
     setResponse(null);
     setError(null);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      
+      // Enrich context with phase info if available
+      const phaseContext = phase ? ` The current event phase is '${phase}'. Prioritize tasks and advice relevant to this stage.` : '';
+      const fullSystemInstruction = `${context}${phaseContext}`;
+
       const result = await ai.models.generateContent({
         model: "gemini-3-pro-preview",
         contents: [{
             role: 'user',
-            parts: [{ text: query }]
+            parts: [{ text: promptText }]
         }],
         config: {
-            systemInstruction: context,
+            systemInstruction: fullSystemInstruction,
         }
       });
       setResponse(result.text);
@@ -78,9 +107,14 @@ export const AICopilotWidget: React.FC<AICopilotProps> = ({
   return (
      <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden h-full flex flex-col">
         <div className="relative z-10 flex-1 flex flex-col">
-           <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="text-yellow-300 animate-pulse" size={20} />
-              <h3 className="font-serif font-bold text-lg">{title}</h3>
+           <div className="flex justify-between items-start mb-4">
+             <div className="flex items-center gap-2">
+                <Sparkles className="text-yellow-300 animate-pulse" size={20} />
+                <div>
+                  <h3 className="font-serif font-bold text-lg leading-none">{title}</h3>
+                  {phase && <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">Phase: {phase}</span>}
+                </div>
+             </div>
            </div>
            
            <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 mb-4 flex-1 min-h-[140px] max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent border border-white/10 relative" aria-busy={loading}>
@@ -107,6 +141,26 @@ export const AICopilotWidget: React.FC<AICopilotProps> = ({
               )}
            </div>
 
+           {/* Phase Suggestions */}
+           {suggestions.length > 0 && !response && !loading && (
+             <div className="mb-3">
+               <p className="text-[10px] font-bold uppercase tracking-wider text-white/60 mb-2 flex items-center gap-1">
+                 <Lightbulb size={10} /> Suggested for {phase}
+               </p>
+               <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar mask-linear-fade">
+                 {suggestions.map((suggestion, i) => (
+                   <button
+                     key={i}
+                     onClick={() => handleAsk(suggestion)}
+                     className="whitespace-nowrap bg-white/10 hover:bg-white/20 border border-white/10 rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
+                   >
+                     {suggestion}
+                   </button>
+                 ))}
+               </div>
+             </div>
+           )}
+
            <div className="relative mt-auto">
               <input 
                 value={query}
@@ -118,7 +172,7 @@ export const AICopilotWidget: React.FC<AICopilotProps> = ({
                 disabled={loading}
               />
               <button 
-                onClick={handleAsk} 
+                onClick={() => handleAsk()} 
                 disabled={loading || !query.trim()}
                 className="absolute right-1.5 top-1.5 bg-white text-purple-600 p-2 rounded-full hover:bg-purple-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
