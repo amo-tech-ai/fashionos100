@@ -156,7 +156,7 @@ export const ProfileDetailPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {profile.portfolio?.map((img, i) => (
                 <div key={i} className={`rounded-2xl overflow-hidden group relative cursor-pointer ${i === 0 ? 'md:col-span-2 aspect-[2/1]' : 'aspect-square'}`}>
-                  <img src={img} alt={`Portfolio ${i}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <img src={img} alt={`Portfolio ${i}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
                     <Button variant="white" size="sm" className="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">View Project</Button>
                   </div>
@@ -183,7 +183,7 @@ export const ProfileDetailPage: React.FC = () => {
                   <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
                   <div>
                     <p className="text-xs font-bold">Creative Director</p>
-                    <p className="text-[10px] text-gray-400 uppercase">Zara Studios</p>
+                    <p className="text-xs text-gray-400 uppercase">Zara Studios</p>
                   </div>
                 </div>
               </div>

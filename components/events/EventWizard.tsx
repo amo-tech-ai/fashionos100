@@ -25,7 +25,8 @@ export const EventWizard: React.FC = () => {
   // AI Input State
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiUrl, setAiUrl] = useState('');
-  const [aiFile, setAiFile] = useState<File | null>(null);
+  // Changed from aiFile to aiFiles (array)
+  const [aiFiles, setAiFiles] = useState<File[]>([]);
   const [aiMoods, setAiMoods] = useState<string[]>([]);
   const [aiAudiences, setAiAudiences] = useState<string[]>([]);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -48,15 +49,16 @@ export const EventWizard: React.FC = () => {
     setState(prev => ({ ...prev, ...updates }));
   };
 
-  // Helper to convert file to base64
-  const fileToBase64 = (file: File): Promise<string> => {
+  // Helper to convert file to base64 with mimeType
+  const processFile = (file: File): Promise<{ data: string, mimeType: string }> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => {
         const result = reader.result as string;
-        // Remove data:application/pdf;base64, prefix
-        resolve(result.split(',')[1]);
+        // Remove data prefix e.g., data:application/pdf;base64,
+        const base64Data = result.split(',')[1];
+        resolve({ data: base64Data, mimeType: file.type });
       };
       reader.onerror = error => reject(error);
     });
@@ -65,17 +67,11 @@ export const EventWizard: React.FC = () => {
   // --- AI Integration ---
 
   const handleAIGenerate = async () => {
-    if (!aiPrompt.trim() && !aiUrl && !aiFile && aiMoods.length === 0 && aiAudiences.length === 0) return;
+    if (!aiPrompt.trim() && !aiUrl && aiFiles.length === 0 && aiMoods.length === 0 && aiAudiences.length === 0) return;
     setIsAiLoading(true);
 
     try {
-      let fileBase64 = null;
-      let fileType = null;
-
-      if (aiFile) {
-        fileBase64 = await fileToBase64(aiFile);
-        fileType = aiFile.type;
-      }
+      const processedFiles = await Promise.all(aiFiles.map(processFile));
 
       // Construct enhanced prompt with selected tags
       const enhancedPrompt = `
@@ -84,7 +80,7 @@ export const EventWizard: React.FC = () => {
         ${aiAudiences.length > 0 ? `\nTarget Audience: ${aiAudiences.join(', ')}.` : ''}
       `.trim();
 
-      // Call the backend Edge Function instead of client-side SDK
+      // Call the backend Edge Function
       const response = await fetch(`${supabaseUrl}/functions/v1/generate-event-draft`, {
         method: 'POST',
         headers: {
@@ -94,8 +90,7 @@ export const EventWizard: React.FC = () => {
         body: JSON.stringify({
           prompt: enhancedPrompt,
           url: aiUrl,
-          fileBase64,
-          fileType
+          files: processedFiles // Send array of files
         })
       });
 
@@ -196,12 +191,10 @@ export const EventWizard: React.FC = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        // For MVP/Demo purposes if auth is not fully set up, allow proceed or throw
-        // throw new Error("You must be logged in to publish an event.");
         console.warn("User not logged in, proceeding with mock user ID for demo.");
       }
 
-      const organizerId = user?.id || '00000000-0000-0000-0000-000000000000'; // Fallback for demo
+      const organizerId = user?.id || '00000000-0000-0000-0000-000000000000'; 
 
       const slug = `${slugify(state.title)}-${Math.random().toString(36).substring(2, 7)}`;
       const capacity = state.tickets.reduce((sum, t) => sum + t.quantity, 0);
@@ -222,8 +215,6 @@ export const EventWizard: React.FC = () => {
           end_time: state.endDate,
           capacity_limit: capacity,
           ai_summary: aiSummary,
-          // If we had venue_id from lookup, we'd add it here
-          // For now we just have location text, usually managed via venues table
         })
         .select()
         .single();
@@ -250,7 +241,6 @@ export const EventWizard: React.FC = () => {
       // 3. Insert Schedule
       if (state.schedule.length > 0) {
         const schedulePayload = state.schedule.map(s => {
-          // Parse time string "19:00" into date object relative to event start
           let scheduleStart = new Date(state.startDate || new Date());
           const [hours, minutes] = s.time.split(':').map(Number);
           scheduleStart.setHours(hours || 0, minutes || 0, 0, 0);
@@ -259,7 +249,6 @@ export const EventWizard: React.FC = () => {
             event_id: event.id,
             title: s.activity,
             start_time: scheduleStart,
-            // Default duration 1 hour if not specified
             end_time: new Date(scheduleStart.getTime() + 60 * 60 * 1000)
           };
         });
@@ -281,8 +270,6 @@ export const EventWizard: React.FC = () => {
       setIsPublishing(false);
     }
   };
-
-  // --- Render ---
 
   return (
     <div className="min-h-screen bg-[#F8F9FB] pb-24">
@@ -329,8 +316,8 @@ export const EventWizard: React.FC = () => {
               setAiPrompt={setAiPrompt}
               aiUrl={aiUrl}
               setAiUrl={setAiUrl}
-              aiFile={aiFile}
-              setAiFile={setAiFile}
+              aiFiles={aiFiles}
+              setAiFiles={setAiFiles}
               aiMoods={aiMoods}
               setAiMoods={setAiMoods}
               aiAudiences={aiAudiences}
@@ -368,7 +355,7 @@ export const EventWizard: React.FC = () => {
         </FadeIn>
       </div>
 
-      {/* Bottom Action Bar (Not for Intro or Success) */}
+      {/* Bottom Action Bar */}
       {currentStep !== Step.INTRO && currentStep !== Step.SUCCESS && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-40 lg:pl-64">
           <div className="container mx-auto px-6 max-w-4xl flex justify-between items-center">

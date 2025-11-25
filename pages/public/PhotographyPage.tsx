@@ -57,12 +57,12 @@ export const PhotographyPage: React.FC = () => {
              <FadeIn direction="left" delay={200}>
                <div className="grid grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-4 md:space-y-6 translate-y-12">
-                     <img src="https://images.unsplash.com/photo-1618331835717-801e976710b2?q=80&w=800&auto=format&fit=crop" alt="Cosmetics" className="w-full aspect-[4/5] object-cover rounded-2xl shadow-2xl" />
-                     <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=800&auto=format&fit=crop" alt="Footwear" className="w-full aspect-square object-cover rounded-2xl shadow-xl" />
+                     <img src="https://images.unsplash.com/photo-1618331835717-801e976710b2?q=80&w=800&auto=format&fit=crop" alt="Cosmetics" className="w-full aspect-[4/5] object-cover rounded-2xl shadow-2xl" loading="lazy" />
+                     <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=800&auto=format&fit=crop" alt="Footwear" className="w-full aspect-square object-cover rounded-2xl shadow-xl" loading="lazy" />
                   </div>
                   <div className="space-y-4 md:space-y-6">
-                     <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop" alt="Watch" className="w-full aspect-square object-cover rounded-2xl shadow-xl" />
-                     <img src="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?q=80&w=800&auto=format&fit=crop" alt="Perfume" className="w-full aspect-[4/5] object-cover rounded-2xl shadow-2xl" />
+                     <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop" alt="Watch" className="w-full aspect-square object-cover rounded-2xl shadow-xl" loading="lazy" />
+                     <img src="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?q=80&w=800&auto=format&fit=crop" alt="Perfume" className="w-full aspect-[4/5] object-cover rounded-2xl shadow-2xl" loading="lazy" />
                   </div>
                </div>
              </FadeIn>
@@ -84,7 +84,7 @@ export const PhotographyPage: React.FC = () => {
              "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=300&h=300&fit=crop"
            ].map((src, i) => (
              <div key={i} className="flex-none w-48 h-48 rounded-xl overflow-hidden grayscale hover:grayscale-0 transition-all duration-500 cursor-pointer">
-               <img src={src} className="w-full h-full object-cover" alt="Product thumbnail" />
+               <img src={src} className="w-full h-full object-cover" alt="Product thumbnail" loading="lazy" />
              </div>
            ))}
         </div>
@@ -110,10 +110,10 @@ export const PhotographyPage: React.FC = () => {
           <div className="lg:w-1/2">
             <FadeIn direction="left">
                <div className="grid grid-cols-2 gap-4">
-                  <img src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?q=80&w=600" className="w-full h-64 object-cover rounded-2xl" alt="Detail 1" />
-                  <img src="https://images.unsplash.com/photo-1580828343064-fde4fc206bc6?q=80&w=600" className="w-full h-64 object-cover rounded-2xl translate-y-8" alt="Detail 2" />
-                  <img src="https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?q=80&w=600" className="w-full h-64 object-cover rounded-2xl" alt="Detail 3" />
-                  <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=600" className="w-full h-64 object-cover rounded-2xl translate-y-8" alt="Detail 4" />
+                  <img src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?q=80&w=600" className="w-full h-64 object-cover rounded-2xl" alt="Detail 1" loading="lazy" />
+                  <img src="https://images.unsplash.com/photo-1580828343064-fde4fc206bc6?q=80&w=600" className="w-full h-64 object-cover rounded-2xl translate-y-8" alt="Detail 2" loading="lazy" />
+                  <img src="https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?q=80&w=600" className="w-full h-64 object-cover rounded-2xl" alt="Detail 3" loading="lazy" />
+                  <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?q=80&w=600" className="w-full h-64 object-cover rounded-2xl translate-y-8" alt="Detail 4" loading="lazy" />
                </div>
             </FadeIn>
           </div>
@@ -127,7 +127,7 @@ export const PhotographyPage: React.FC = () => {
              <div className="lg:w-1/2 order-2 lg:order-1">
                 <FadeIn>
                    <div className="relative rounded-[2rem] overflow-hidden aspect-[3/4] shadow-2xl">
-                      <img src="https://images.unsplash.com/photo-1472289065668-ce650ac443d2?q=80&w=1000" className="w-full h-full object-cover" alt="Studio Camera" />
+                      <img src="https://images.unsplash.com/photo-1472289065668-ce650ac443d2?q=80&w=1000" className="w-full h-full object-cover" alt="Studio Camera" loading="lazy" />
                       <div className="absolute bottom-8 left-8 right-8 bg-white/90 backdrop-blur p-6 rounded-2xl">
                          <div className="flex items-center gap-4">
                             <div className="bg-black text-white p-3 rounded-full"><Camera size={20} /></div>
@@ -175,7 +175,7 @@ export const PhotographyPage: React.FC = () => {
                "https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=600"  // Sunglasses
             ].map((src, i) => (
                <div key={i} className="aspect-square relative group overflow-hidden">
-                  <img src={src} alt="Vibrant" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100" />
+                  <img src={src} alt="Vibrant" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100" loading="lazy" />
                </div>
             ))}
          </div>
@@ -209,7 +209,7 @@ export const PhotographyPage: React.FC = () => {
                </div>
                <div className="lg:w-1/2">
                   <FadeIn direction="left">
-                     <img src="https://images.unsplash.com/photo-1533750349088-cd8773a6575c?q=80&w=1000" alt="Red Shoe" className="rounded-lg shadow-2xl" />
+                     <img src="https://images.unsplash.com/photo-1533750349088-cd8773a6575c?q=80&w=1000" alt="Red Shoe" className="rounded-lg shadow-2xl" loading="lazy" />
                   </FadeIn>
                </div>
             </div>
@@ -223,8 +223,8 @@ export const PhotographyPage: React.FC = () => {
                <div className="lg:w-1/2">
                    <FadeIn>
                       <div className="grid grid-cols-2 gap-4">
-                         <img src="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?q=80&w=600" className="bg-gray-50 rounded-xl" alt="Packshot 1" />
-                         <img src="https://images.unsplash.com/photo-1583394838336-acd977736f90?q=80&w=600" className="bg-gray-50 rounded-xl" alt="Packshot 2" />
+                         <img src="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?q=80&w=600" className="bg-gray-50 rounded-xl" alt="Packshot 1" loading="lazy" />
+                         <img src="https://images.unsplash.com/photo-1583394838336-acd977736f90?q=80&w=600" className="bg-gray-50 rounded-xl" alt="Packshot 2" loading="lazy" />
                       </div>
                    </FadeIn>
                </div>
@@ -319,7 +319,7 @@ export const PhotographyPage: React.FC = () => {
                   <div><Button variant="primary" size="lg">Ask for a Custom Shoot</Button></div>
                </div>
                <div className="md:w-1/2 relative min-h-[400px]">
-                  <img src="https://images.unsplash.com/photo-1563170351-be82bc888aa4?q=80&w=800" alt="Creative" className="absolute inset-0 w-full h-full object-cover" />
+                  <img src="https://images.unsplash.com/photo-1563170351-be82bc888aa4?q=80&w=800" alt="Creative" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                </div>
             </div>
          </div>
@@ -385,7 +385,7 @@ export const PhotographyPage: React.FC = () => {
                   "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?q=80&w=400"
                ].map((src, i) => (
                   <div key={i} className="rounded-sm overflow-hidden aspect-square grayscale hover:grayscale-0 transition-all duration-500">
-                     <img src={src} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="BTS" />
+                     <img src={src} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="BTS" loading="lazy" />
                   </div>
                ))}
             </div>

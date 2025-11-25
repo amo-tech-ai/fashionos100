@@ -164,7 +164,7 @@ export const VideoProductionPage: React.FC = () => {
                   <FadeIn direction="left">
                      <div className="relative">
                         <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-black aspect-[4/5] group">
-                           <img src="https://images.unsplash.com/photo-1601506521937-244b01c92805?q=80&w=800" alt="Cinema Camera" className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105" />
+                           <img src="https://images.unsplash.com/photo-1601506521937-244b01c92805?q=80&w=800" alt="Cinema Camera" className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105" loading="lazy" />
                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                            
                            {/* Floating Stats */}
@@ -227,7 +227,7 @@ export const VideoProductionPage: React.FC = () => {
                   { img: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=800", title: "Street Style", tag: "Lookbook" }
                ].map((item, i) => (
                   <div key={i} className="min-w-[300px] md:min-w-[450px] aspect-video bg-gray-900 rounded-2xl overflow-hidden relative group snap-center border border-gray-800">
-                     <img src={item.img} alt={item.title} className="w-full h-full object-cover opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" />
+                     <img src={item.img} alt={item.title} className="w-full h-full object-cover opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" loading="lazy" />
                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                      
                      <div className="absolute bottom-0 left-0 p-8 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
@@ -345,7 +345,7 @@ export const VideoProductionPage: React.FC = () => {
                   </h2>
                   <div className="flex flex-col items-center gap-2">
                      <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden mb-2">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200" alt="Client" className="w-full h-full object-cover" />
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200" alt="Client" className="w-full h-full object-cover" loading="lazy" />
                      </div>
                      <span className="font-bold text-xl">Charlotte Evans</span>
                      <span className="text-sm text-gray-500 uppercase tracking-widest font-bold">Creative Director, Atelier Nova</span>

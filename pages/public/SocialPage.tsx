@@ -77,7 +77,7 @@ const TestimonialCard = ({ quote, author, role, rating }: { quote: string, autho
     <p className="text-gray-600 text-lg leading-relaxed mb-6 italic">"{quote}"</p>
     <div className="flex items-center gap-3">
       <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-        <img src={`https://ui-avatars.com/api/?name=${author}&background=random`} alt={author} />
+        <img src={`https://ui-avatars.com/api/?name=${author}&background=random`} alt={author} loading="lazy" />
       </div>
       <div>
         <p className="font-bold text-sm">{author}</p>
@@ -141,12 +141,12 @@ export const SocialPage: React.FC = () => {
                <FadeIn direction="right">
                   <div className="grid grid-cols-2 gap-4">
                      <div className="space-y-4 translate-y-8">
-                        <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=600" className="rounded-2xl shadow-lg w-full aspect-[4/5] object-cover" alt="Social 1" />
-                        <img src="https://images.unsplash.com/photo-1611162616475-46b635cb6868?q=80&w=600" className="rounded-2xl shadow-lg w-full aspect-square object-cover" alt="Social 2" />
+                        <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=600" className="rounded-2xl shadow-lg w-full aspect-[4/5] object-cover" alt="Social 1" loading="lazy" />
+                        <img src="https://images.unsplash.com/photo-1611162616475-46b635cb6868?q=80&w=600" className="rounded-2xl shadow-lg w-full aspect-square object-cover" alt="Social 2" loading="lazy" />
                      </div>
                      <div className="space-y-4">
-                        <img src="https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?q=80&w=600" className="rounded-2xl shadow-lg w-full aspect-square object-cover" alt="Social 3" />
-                        <img src="https://images.unsplash.com/photo-1611926653458-09294b3019dc?q=80&w=600" className="rounded-2xl shadow-lg w-full aspect-[4/5] object-cover" alt="Social 4" />
+                        <img src="https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?q=80&w=600" className="rounded-2xl shadow-lg w-full aspect-square object-cover" alt="Social 3" loading="lazy" />
+                        <img src="https://images.unsplash.com/photo-1611926653458-09294b3019dc?q=80&w=600" className="rounded-2xl shadow-lg w-full aspect-[4/5] object-cover" alt="Social 4" loading="lazy" />
                      </div>
                   </div>
                </FadeIn>
@@ -316,7 +316,7 @@ export const SocialPage: React.FC = () => {
                   "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400"
                ].map((src, i) => (
                   <div key={i} className="aspect-[3/4] group relative overflow-hidden cursor-pointer">
-                     <img src={src} className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" alt="Social Content" />
+                     <img src={src} className="w-full h-full object-cover hover:scale-110 transition-transform duration-700" alt="Social Content" loading="lazy" />
                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                ))}
@@ -342,7 +342,7 @@ export const SocialPage: React.FC = () => {
                ].map((src, i) => (
                   <FadeIn key={i} delay={i * 100}>
                      <div className="group relative rounded-2xl overflow-hidden aspect-[4/5] cursor-pointer">
-                        <img src={src} alt={`Campaign ${i}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <img src={src} alt={`Campaign ${i}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         <div className="absolute bottom-0 left-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100">
                            <p className="text-xs font-bold uppercase tracking-widest mb-1 text-pink-400">Campaign</p>

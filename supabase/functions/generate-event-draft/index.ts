@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { GoogleGenAI, Type } from "https://esm.sh/@google/genai@0.1.1"
 import { corsHeaders } from "../_shared/cors.ts"
@@ -14,7 +15,7 @@ serve(async (req) => {
     const apiKey = Deno.env.get('GEMINI_API_KEY')
     if (!apiKey) throw new Error('Missing GEMINI_API_KEY')
 
-    const { prompt, url, fileBase64, fileType } = await req.json()
+    const { prompt, url, files } = await req.json() // files is Array<{ data: string, mimeType: string }>
 
     const ai = new GoogleGenAI({ apiKey })
 
@@ -58,27 +59,45 @@ serve(async (req) => {
     if (prompt) parts.push({ text: prompt })
     if (url) parts.push({ text: `Context URL to analyze: ${url}` })
 
-    if (fileBase64 && fileType) {
-      parts.push({
-        inlineData: {
-          data: fileBase64,
-          mimeType: fileType
+    // Handle multiple files
+    if (files && Array.isArray(files)) {
+      files.forEach((file: { data: string, mimeType: string }) => {
+        if (file.data && file.mimeType) {
+          parts.push({
+            inlineData: {
+              data: file.data,
+              mimeType: file.mimeType
+            }
+          });
         }
-      })
+      });
+    } else if (req.body?.fileBase64 && req.body?.fileType) {
+        // Backward compatibility if needed (though we updated frontend)
+        parts.push({
+            inlineData: {
+                data: req.body.fileBase64,
+                mimeType: req.body.fileType
+            }
+        })
     }
 
     if (parts.length === 0) {
-       throw new Error("No prompt, URL, or file provided.")
+       throw new Error("No prompt, URL, or files provided.")
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash", // Use 2.5 Flash for robust multimodal reasoning
       contents: { parts },
       config: {
         responseMimeType: "application/json",
         responseSchema: schema,
         systemInstruction: `You are the AI Event Architect for FashionOS.
         Task: Convert user input into a complete, structured fashion event plan.
+        
+        Capabilities:
+        - Analyze text, URLs, images (moodboards, flyers), and documents (contracts, schedules).
+        - Extract event details like Date, Time, Venue, and Schedule from images/PDFs.
+        - If multiple inputs are provided, synthesize them into one coherent plan.
 
         Context:
         - Year: 2025.

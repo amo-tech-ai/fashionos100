@@ -386,7 +386,7 @@ export const EventsPage: React.FC = () => {
                </div>
                <div className="md:w-1/2 relative">
                   <div className="aspect-video rounded-2xl overflow-hidden opacity-80">
-                     <img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=1000" alt="Backstage" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+                     <img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=1000" alt="Backstage" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" loading="lazy" />
                   </div>
                   <div className="absolute -bottom-6 -left-6 w-24 h-24 border-l-2 border-b-2 border-purple-500"></div>
                   <div className="absolute -top-6 -right-6 w-24 h-24 border-r-2 border-t-2 border-purple-500"></div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Calendar, MapPin, CheckCircle2, ExternalLink, AlertCircle, Sparkles, Clock } from 'lucide-react';
 import { CalendarPicker } from '../../CalendarPicker';

@@ -125,7 +125,8 @@ const ActionCard = ({ icon: Icon, title, text, cta, image, color }: { icon: any,
       <img 
         src={image} 
         alt="Background" 
-        className="absolute bottom-0 right-0 w-24 h-24 object-cover opacity-20 rounded-tl-3xl group-hover:scale-110 transition-transform duration-500" 
+        className="absolute bottom-0 right-0 w-24 h-24 object-cover opacity-20 rounded-tl-3xl group-hover:scale-110 transition-transform duration-500"
+        loading="lazy"
       />
     )}
   </div>
@@ -134,7 +135,7 @@ const ActionCard = ({ icon: Icon, title, text, cta, image, color }: { icon: any,
 const PackCard = ({ pack }: { pack: PackItem }) => (
   <div className="min-w-[280px] bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 cursor-pointer group">
     <div className="aspect-[4/3] relative overflow-hidden">
-      <img src={pack.image} alt={pack.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+      <img src={pack.image} alt={pack.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
       {pack.tag && (
         <span className={`absolute top-3 left-3 ${pack.tagColor} text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider shadow-sm`}>
           {pack.tag}
@@ -157,7 +158,7 @@ const PackCard = ({ pack }: { pack: PackItem }) => (
 const CategoryCard = ({ cat }: { cat: CategoryItem }) => (
   <div className="group cursor-pointer">
     <div className={`aspect-square rounded-2xl overflow-hidden mb-3 relative ${cat.color}`}>
-      <img src={cat.image} alt={cat.title} className="w-full h-full object-contain p-4 mix-blend-multiply group-hover:scale-110 transition-transform duration-500" />
+      <img src={cat.image} alt={cat.title} className="w-full h-full object-contain p-4 mix-blend-multiply group-hover:scale-110 transition-transform duration-500" loading="lazy" />
     </div>
     <p className="text-xs font-bold text-center capitalize">{cat.title}</p>
   </div>
@@ -300,7 +301,7 @@ export const EcommercePage: React.FC = () => {
                         talk to an expert
                      </button>
                   </div>
-                  <img src="https://images.unsplash.com/photo-1556155092-490a1ba16284?q=80&w=400" className="absolute bottom-0 right-0 w-48 h-48 object-cover rounded-tl-[3rem] shadow-lg group-hover:scale-105 transition-transform duration-500" alt="Expert" />
+                  <img src="https://images.unsplash.com/photo-1556155092-490a1ba16284?q=80&w=400" className="absolute bottom-0 right-0 w-48 h-48 object-cover rounded-tl-[3rem] shadow-lg group-hover:scale-105 transition-transform duration-500" alt="Expert" loading="lazy" />
                   <div className="absolute top-4 right-4 bg-[#84cc16] text-white text-[10px] font-bold px-2 py-1 transform rotate-45 shadow-sm hidden">FREE</div>
                </FadeIn>
 
@@ -317,7 +318,7 @@ export const EcommercePage: React.FC = () => {
                      </button>
                   </div>
                   <div className="absolute bottom-8 right-8 w-40 h-40 group-hover:scale-105 transition-transform duration-500">
-                     <img src="https://images.unsplash.com/photo-1512413914633-b5043f4041ea?q=80&w=400" className="absolute inset-0 w-full h-full object-cover rounded-2xl shadow-lg z-10" alt="Product" />
+                     <img src="https://images.unsplash.com/photo-1512413914633-b5043f4041ea?q=80&w=400" className="absolute inset-0 w-full h-full object-cover rounded-2xl shadow-lg z-10" alt="Product" loading="lazy" />
                      {/* AI Decoration */}
                      <div className="absolute -inset-4 border-2 border-dashed border-blue-400 rounded-2xl z-20 animate-pulse" />
                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/80 backdrop-blur p-2 rounded-full z-30">
@@ -336,7 +337,7 @@ export const EcommercePage: React.FC = () => {
                      <FadeIn key={i} delay={i * 50}>
                         <div className="bg-white p-3 rounded-xl border border-gray-100 hover:shadow-lg transition-all cursor-pointer group h-full">
                            <div className="aspect-square rounded-lg overflow-hidden mb-3 relative">
-                              <img src={s.image} alt={s.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                              <img src={s.image} alt={s.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
                            </div>
                            <h3 className="font-bold text-xs capitalize mb-1">{s.title}</h3>
                            <p className="text-[10px] text-gray-400 line-clamp-1">{s.desc}</p>

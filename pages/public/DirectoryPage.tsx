@@ -38,7 +38,7 @@ const FeaturedCard: React.FC<{ item: DirectoryItem }> = ({ item }) => {
   const navigate = useNavigate();
   return (
     <div className="min-w-[280px] md:min-w-[320px] relative group cursor-pointer rounded-xl overflow-hidden aspect-[3/4]" onClick={() => navigate(`/directory/${item.id}`)}>
-      <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+      <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90" />
       
       <div className="absolute top-3 left-3">
@@ -67,7 +67,7 @@ const ProfileCard: React.FC<{ item: DirectoryItem, viewMode: 'grid' | 'list' }> 
     return (
       <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center gap-6 group cursor-pointer" onClick={goToProfile}>
         <div className="w-24 h-24 rounded-lg overflow-hidden shrink-0 relative">
-           <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+           <img src={item.image} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
         </div>
         <div className="flex-1 min-w-0">
            <div className="flex justify-between items-start">
@@ -97,7 +97,7 @@ const ProfileCard: React.FC<{ item: DirectoryItem, viewMode: 'grid' | 'list' }> 
   return (
     <div className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 group flex flex-col h-full cursor-pointer" onClick={goToProfile}>
       <div className="aspect-[4/5] relative overflow-hidden bg-gray-100">
-        <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
         <button 
           className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full text-gray-400 hover:text-red-500 transition-colors"
           onClick={(e) => { e.stopPropagation(); /* Favorite logic */ }}
@@ -192,13 +192,13 @@ export const DirectoryPage: React.FC = () => {
                   <FadeIn direction="left" delay={200}>
                      <div className="grid grid-cols-3 gap-4 h-[500px]">
                         <div className="col-span-2 row-span-2 rounded-2xl overflow-hidden relative">
-                           <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=800" className="absolute inset-0 w-full h-full object-cover" alt="Main" />
+                           <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=800" className="absolute inset-0 w-full h-full object-cover" alt="Main" loading="lazy" />
                         </div>
                         <div className="rounded-2xl overflow-hidden relative">
-                           <img src="https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=400" className="absolute inset-0 w-full h-full object-cover" alt="Small 1" />
+                           <img src="https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=400" className="absolute inset-0 w-full h-full object-cover" alt="Small 1" loading="lazy" />
                         </div>
                         <div className="rounded-2xl overflow-hidden relative">
-                           <img src="https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?q=80&w=400" className="absolute inset-0 w-full h-full object-cover" alt="Small 2" />
+                           <img src="https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?q=80&w=400" className="absolute inset-0 w-full h-full object-cover" alt="Small 2" loading="lazy" />
                         </div>
                      </div>
                   </FadeIn>
@@ -374,12 +374,12 @@ export const DirectoryPage: React.FC = () => {
                </div>
                <div className="lg:w-1/2">
                    <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                      <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800" alt="Creative" className="w-full" />
+                      <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800" alt="Creative" className="w-full" loading="lazy" />
                       <div className="absolute bottom-8 left-8 right-8 bg-white/90 backdrop-blur p-6 rounded-xl">
                          <p className="font-serif text-xl italic text-gray-800 mb-4">"FashionOS transformed how I find clients. It's the LinkedIn for high fashion."</p>
                          <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-gray-200 rounded-full overflow-hidden">
-                               <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100" alt="Avatar"/>
+                               <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=100" alt="Avatar" loading="lazy" />
                             </div>
                             <div>
                                <p className="text-xs font-bold uppercase tracking-wider">Sarah J.</p>

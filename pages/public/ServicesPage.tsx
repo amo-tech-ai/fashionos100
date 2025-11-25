@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, TrendingUp, Globe, Camera, Video, ShoppingBag, MessageCircle } from 'lucide-react';
@@ -28,6 +29,7 @@ const ServiceSection: React.FC<{
                 src={image} 
                 alt={title} 
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+                loading="lazy"
               />
               <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
             </div>
@@ -65,7 +67,7 @@ const CaseStudyCard: React.FC<{
   <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
     <div className="flex items-center gap-3 mb-6">
       <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100">
-        <img src={image} alt={client} className="w-full h-full object-cover" />
+        <img src={image} alt={client} className="w-full h-full object-cover" loading="lazy" />
       </div>
       <div>
         <h4 className="font-serif font-bold text-lg">{client}</h4>

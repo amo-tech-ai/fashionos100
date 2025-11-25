@@ -32,7 +32,7 @@ const ServiceCard = ({ icon: Icon, title, desc }: { icon: any, title: string, de
 const TalentCard = ({ image, name, role, tag }: { image: string, name: string, role: string, tag: string }) => (
   <div className="min-w-[280px] md:min-w-[320px] bg-white p-3 border border-gray-100 rounded-sm hover:shadow-lg transition-shadow cursor-pointer">
     <div className="aspect-[3/4] w-full overflow-hidden mb-4 relative">
-      <img src={image} alt={name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+      <img src={image} alt={name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
       <span className="absolute top-2 left-2 bg-white/90 backdrop-blur text-[10px] font-bold px-2 py-1 uppercase tracking-wide">{tag}</span>
     </div>
     <h4 className="font-serif font-bold text-lg">{name}</h4>
@@ -50,7 +50,7 @@ const TalentCard = ({ image, name, role, tag }: { image: string, name: string, r
 
 const MarketplaceCard = ({ title, price, features, image }: { title: string, price: string, features: string[], image: string }) => (
   <div className="relative aspect-[4/5] group overflow-hidden rounded-sm cursor-pointer">
-    <img src={image} alt={title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+    <img src={image} alt={title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-8 flex flex-col justify-end text-white">
       <h3 className="font-serif font-bold text-2xl mb-1">{title}</h3>
       <p className="text-fashion-purple font-medium mb-4">{price}</p>
@@ -130,11 +130,11 @@ export const HomePage: React.FC = () => {
               <div className="grid grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-4 md:space-y-6 translate-y-8">
                   <img src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=800&auto=format&fit=crop" alt="Runway" className="w-full aspect-[3/4] object-cover rounded-sm shadow-lg" />
-                  <img src="https://images.unsplash.com/photo-1550614000-4b9519e0013f?q=80&w=800&auto=format&fit=crop" alt="Detail" className="w-full aspect-square object-cover rounded-sm shadow-lg" />
+                  <img src="https://images.unsplash.com/photo-1550614000-4b9519e0013f?q=80&w=800&auto=format&fit=crop" alt="Detail" className="w-full aspect-square object-cover rounded-sm shadow-lg" loading="lazy" />
                 </div>
                 <div className="space-y-4 md:space-y-6">
                   <img src="https://images.unsplash.com/photo-1529139574466-a302d2052505?q=80&w=800&auto=format&fit=crop" alt="Editorial" className="w-full aspect-square object-cover rounded-sm shadow-lg" />
-                  <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop" alt="Model" className="w-full aspect-[3/4] object-cover rounded-sm shadow-lg" />
+                  <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop" alt="Model" className="w-full aspect-[3/4] object-cover rounded-sm shadow-lg" loading="lazy" />
                 </div>
               </div>
             </FadeIn>
@@ -176,7 +176,7 @@ export const HomePage: React.FC = () => {
           
           <FadeIn delay={100}>
             <div className="relative w-full h-[400px] md:h-[600px] rounded-sm overflow-hidden mb-12 group">
-               <img src="https://images.unsplash.com/photo-1534595032350-92298174321c?q=80&w=2000&auto=format&fit=crop" alt="Studio Set" className="w-full h-full object-cover" />
+               <img src="https://images.unsplash.com/photo-1534595032350-92298174321c?q=80&w=2000&auto=format&fit=crop" alt="Studio Set" className="w-full h-full object-cover" loading="lazy" />
                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
             </div>
           </FadeIn>
@@ -204,7 +204,7 @@ export const HomePage: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center gap-16">
            <div className="w-full md:w-1/2">
               <FadeIn direction="right">
-                 <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1000&auto=format&fit=crop" alt="Photographer" className="w-full aspect-[4/5] object-cover rounded-sm grayscale hover:grayscale-0 transition-all duration-700" />
+                 <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1000&auto=format&fit=crop" alt="Photographer" className="w-full aspect-[4/5] object-cover rounded-sm grayscale hover:grayscale-0 transition-all duration-700" loading="lazy" />
               </FadeIn>
            </div>
            <div className="w-full md:w-1/2">
@@ -268,8 +268,8 @@ export const HomePage: React.FC = () => {
                <div className="order-1 lg:order-2 relative">
                   <FadeIn direction="left">
                      <div className="grid grid-cols-2 gap-4">
-                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=600&auto=format&fit=crop" className="rounded-sm transform translate-y-8" alt="Shoes" />
-                        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop" className="rounded-sm" alt="Watch" />
+                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=600&auto=format&fit=crop" className="rounded-sm transform translate-y-8" alt="Shoes" loading="lazy" />
+                        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop" className="rounded-sm" alt="Watch" loading="lazy" />
                      </div>
                   </FadeIn>
                </div>
@@ -390,7 +390,7 @@ export const HomePage: React.FC = () => {
       {/* 9. BEHIND THE SCENES */}
       <section className="py-24 bg-black text-white overflow-hidden relative group cursor-pointer">
          <div className="absolute inset-0 opacity-60 group-hover:opacity-40 transition-opacity duration-700">
-             <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=2000&auto=format&fit=crop" alt="BTS" className="w-full h-full object-cover" />
+             <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=2000&auto=format&fit=crop" alt="BTS" className="w-full h-full object-cover" loading="lazy" />
          </div>
          <div className="container mx-auto px-6 md:px-12 relative z-10 flex flex-col items-center justify-center h-[50vh]">
              <div className="bg-white/10 backdrop-blur-md p-6 rounded-full mb-8 border border-white/20 group-hover:scale-110 transition-transform duration-500">
@@ -423,7 +423,7 @@ export const HomePage: React.FC = () => {
                   <div><Button variant="primary" size="lg">Start a Custom Brief</Button></div>
                </div>
                <div className="w-full md:w-1/2 relative min-h-[400px]">
-                  <img src="https://images.unsplash.com/photo-1470072582277-d990675202fa?q=80&w=800&auto=format&fit=crop" alt="Creative" className="absolute inset-0 w-full h-full object-cover" />
+                  <img src="https://images.unsplash.com/photo-1470072582277-d990675202fa?q=80&w=800&auto=format&fit=crop" alt="Creative" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                </div>
             </div>
          </div>
