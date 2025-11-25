@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -132,7 +131,7 @@ export const EventWizard: React.FC = () => {
 
       const result = await ai.models.generateContent({
         model: "gemini-2.5-flash",
-        contents: { role: 'user', parts: parts },
+        contents: [{ role: 'user', parts: parts }],
         config: {
           responseMimeType: "application/json",
           responseSchema: responseSchema,
