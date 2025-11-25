@@ -26,6 +26,11 @@ export interface WizardState {
   description: string;
   category: string;
   location: string;
+  // Google Maps Grounding Fields
+  mapsPlaceId?: string;
+  mapsUri?: string;
+  mapsSources?: { title: string; uri: string }[];
+  
   startDate: Date | null;
   endDate: Date | null;
   tickets: TicketTier[];
