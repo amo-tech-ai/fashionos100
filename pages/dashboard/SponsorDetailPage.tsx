@@ -1,52 +1,91 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   ArrowLeft, Building2, Mail, Phone, Globe, MapPin, 
-  FileText, Zap, Calendar, DollarSign, CheckCircle, Clock, 
-  MoreHorizontal, ExternalLink, Plus, History
+  FileText, Zap, Calendar, DollarSign, Plus, History, Loader2
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
-import { StatCard } from '../../components/dashboard/Shared';
-
-// Mock Data
-const SPONSOR_DATA = {
-  id: '1',
-  name: 'Luxe Beauty',
-  industry: 'Cosmetics & Beauty',
-  tier: 'Gold Partner',
-  total_spent: '$145,000',
-  status: 'Active',
-  logo: 'https://images.unsplash.com/photo-1618331835717-801e976710b2?w=200',
-  contact: {
-    name: 'Sarah Jenkins',
-    role: 'Head of Partnerships',
-    email: 'sarah.j@luxebeauty.com',
-    phone: '+1 (555) 012-3456',
-    location: 'New York, NY'
-  },
-  contracts: [
-    { id: 101, event: 'Paris Fashion Week SS25', name: 'Gold Sponsorship Agreement', value: '$75,000', status: 'Active', date: 'Oct 15, 2025' },
-    { id: 102, event: 'Milan Digital Showcase', name: 'Digital Activation Addendum', value: '$25,000', status: 'Completed', date: 'June 10, 2025' },
-  ],
-  activations: [
-    { id: 201, name: 'VIP Beauty Lounge', event: 'Paris Fashion Week SS25', status: 'In Progress', date: 'Jan 2026' },
-    { id: 202, name: 'Goodie Bag Insert', event: 'NY Designer Series', status: 'Planning', date: 'Mar 2026' },
-  ],
-  history: [
-    { id: 1, action: 'Contract Signed', detail: 'Paris Fashion Week SS25', date: '2 days ago' },
-    { id: 2, action: 'Meeting', detail: 'Renewal discussion with Sarah', date: '1 week ago' },
-    { id: 3, action: 'Payment Received', detail: 'Invoice #INV-2024-001', date: '2 weeks ago' },
-  ]
-};
+import { supabase } from '../../lib/supabase';
+import { SponsorProfile, EventSponsor, SponsorActivation } from '../../types/sponsorship';
 
 export const SponsorDetailPage: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>(); // This is the Sponsor Profile ID
   const [activeTab, setActiveTab] = useState<'overview' | 'contracts' | 'activations'>('overview');
   
-  // In real app, fetch data by ID
-  const sponsor = SPONSOR_DATA; 
+  const [sponsor, setSponsor] = useState<SponsorProfile | null>(null);
+  const [deals, setDeals] = useState<EventSponsor[]>([]); 
+  const [activations, setActivations] = useState<SponsorActivation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (id) fetchData();
+  }, [id]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+        // 1. Fetch Sponsor Profile
+        const { data: profile, error: profileError } = await supabase
+            .from('sponsor_profiles')
+            .select('*')
+            .eq('id', id)
+            .single();
+        
+        if (profileError) throw profileError;
+        setSponsor(profile);
+
+        // 2. Fetch Deals (Event Sponsors)
+        const { data: eventSponsors, error: dealsError } = await supabase
+            .from('event_sponsors')
+            .select('*, event:events(title, start_time)')
+            .eq('sponsor_id', id)
+            .order('created_at', { ascending: false });
+
+        if (dealsError) throw dealsError;
+        setDeals(eventSponsors || []);
+
+        // 3. Fetch Activations for these deals
+        const dealIds = eventSponsors?.map(d => d.id) || [];
+        if (dealIds.length > 0) {
+            const { data: acts, error: actsError } = await supabase
+                .from('sponsor_activations')
+                .select('*, event_sponsor:event_sponsors(event:events(title))')
+                .in('event_sponsor_id', dealIds);
+            
+            if (actsError) throw actsError;
+            setActivations(acts || []);
+        }
+
+    } catch (error) {
+        console.error("Error loading details:", error);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+        <div className="min-h-screen flex items-center justify-center">
+            <Loader2 className="animate-spin text-purple-600" size={48} />
+        </div>
+    );
+  }
+
+  if (!sponsor) {
+      return (
+          <div className="p-12 text-center">
+              <h2 className="text-2xl font-bold mb-4">Sponsor Not Found</h2>
+              <Link to="/dashboard/sponsors"><Button>Back to List</Button></Link>
+          </div>
+      );
+  }
+
+  // Derived Stats
+  const totalSpent = deals.reduce((acc, deal) => acc + (deal.cash_value || 0), 0);
+  const activeDealsCount = deals.filter(d => d.status === 'Signed' || d.status === 'Paid').length;
+  const lastDeal = deals[0]; // Most recent
 
   return (
     <div className="animate-in fade-in duration-500 pb-20 font-sans">
@@ -62,8 +101,12 @@ export const SponsorDetailPage: React.FC = () => {
         <div className="absolute top-0 right-0 w-64 h-64 bg-purple-50 rounded-full blur-3xl -mr-12 -mt-12 opacity-50 pointer-events-none" />
         
         <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start">
-          <div className="w-24 h-24 bg-white border border-gray-200 rounded-2xl p-1 shadow-sm shrink-0">
-            <img src={sponsor.logo} alt={sponsor.name} className="w-full h-full object-cover rounded-xl" />
+          <div className="w-24 h-24 bg-white border border-gray-200 rounded-2xl p-1 shadow-sm shrink-0 flex items-center justify-center overflow-hidden">
+            {sponsor.logo_url ? (
+                <img src={sponsor.logo_url} alt={sponsor.name} className="w-full h-full object-contain rounded-xl" />
+            ) : (
+                <span className="text-2xl font-bold text-gray-300">{sponsor.name.charAt(0)}</span>
+            )}
           </div>
           
           <div className="flex-1">
@@ -71,35 +114,45 @@ export const SponsorDetailPage: React.FC = () => {
               <div>
                 <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">{sponsor.name}</h1>
                 <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <span className="flex items-center gap-1.5"><Building2 size={14} /> {sponsor.industry}</span>
-                  <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                  <span className="text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded-md">{sponsor.tier}</span>
+                  <span className="flex items-center gap-1.5"><Building2 size={14} /> {sponsor.industry || 'Industry N/A'}</span>
+                  {sponsor.website_url && (
+                      <>
+                        <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                        <a href={sponsor.website_url} target="_blank" rel="noopener noreferrer" className="hover:text-purple-600 flex items-center gap-1">
+                            <Globe size={14} /> Website
+                        </a>
+                      </>
+                  )}
                 </div>
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" size="sm">Edit Profile</Button>
-                <Button variant="primary" size="sm">New Deal</Button>
+                <Link to="/dashboard/sponsors/new-deal"><Button variant="primary" size="sm">New Deal</Button></Link>
               </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 pt-8 border-t border-gray-100">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Value</p>
-                <p className="text-xl font-bold text-gray-900">{sponsor.total_spent}</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Investment</p>
+                <p className="text-xl font-bold text-gray-900">${totalSpent.toLocaleString()}</p>
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Active Deals</p>
-                <p className="text-xl font-bold text-gray-900">{sponsor.contracts.filter(c => c.status === 'Active').length}</p>
+                <p className="text-xl font-bold text-gray-900">{activeDealsCount}</p>
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Status</p>
-                <span className="inline-flex items-center gap-1.5 text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> {sponsor.status}
-                </span>
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Latest Status</p>
+                {lastDeal ? (
+                    <span className="inline-flex items-center gap-1.5 text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> {lastDeal.status}
+                    </span>
+                ) : (
+                    <span className="text-sm text-gray-400">No deals yet</span>
+                )}
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Next Renewal</p>
-                <p className="text-sm font-bold text-gray-900">Nov 2026</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Activations</p>
+                <p className="text-sm font-bold text-gray-900">{activations.length} Planned</p>
               </div>
             </div>
           </div>
@@ -132,21 +185,25 @@ export const SponsorDetailPage: React.FC = () => {
             {activeTab === 'overview' && (
               <div className="space-y-8">
                 <div>
-                  <h3 className="font-serif font-bold text-xl mb-4">Recent Activity</h3>
-                  <div className="space-y-6 relative before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-px before:bg-gray-100">
-                    {sponsor.history.map((item) => (
-                      <div key={item.id} className="relative flex gap-4 items-start">
-                        <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center shrink-0 z-10">
-                          <History size={14} className="text-gray-400" />
+                  <h3 className="font-serif font-bold text-xl mb-4">History</h3>
+                  {deals.length > 0 ? (
+                      <div className="space-y-6 relative before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-px before:bg-gray-100">
+                        {deals.map((deal) => (
+                        <div key={deal.id} className="relative flex gap-4 items-start">
+                            <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center shrink-0 z-10">
+                            <History size={14} className="text-gray-400" />
+                            </div>
+                            <div className="pt-1">
+                            <p className="text-sm font-bold text-gray-900">Deal Updated: {deal.status}</p>
+                            <p className="text-xs text-gray-500">{deal.event?.title}</p>
+                            <span className="text-[10px] text-gray-400 mt-1 block">{new Date(deal.created_at).toLocaleDateString()}</span>
+                            </div>
                         </div>
-                        <div className="pt-1">
-                          <p className="text-sm font-bold text-gray-900">{item.action}</p>
-                          <p className="text-xs text-gray-500">{item.detail}</p>
-                          <span className="text-[10px] text-gray-400 mt-1 block">{item.date}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                        ))}
+                    </div>
+                  ) : (
+                      <div className="text-center text-gray-400 py-8">No activity recorded.</div>
+                  )}
                 </div>
               </div>
             )}
@@ -155,25 +212,26 @@ export const SponsorDetailPage: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-serif font-bold text-xl">Agreements</h3>
-                  <Button variant="outline" size="sm"><Plus size={14} className="mr-1"/> Add Contract</Button>
+                  <Link to="/dashboard/sponsors/new-deal"><Button variant="outline" size="sm"><Plus size={14} className="mr-1"/> Add Contract</Button></Link>
                 </div>
-                {sponsor.contracts.map(contract => (
-                  <div key={contract.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:border-purple-200 hover:shadow-sm transition-all group cursor-pointer">
+                {deals.map(deal => (
+                  <div key={deal.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:border-purple-200 hover:shadow-sm transition-all group cursor-pointer">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
                         <FileText size={20} />
                       </div>
                       <div>
-                        <h4 className="font-bold text-sm text-gray-900 group-hover:text-purple-600 transition-colors">{contract.name}</h4>
-                        <p className="text-xs text-gray-500">{contract.event} • {contract.date}</p>
+                        <h4 className="font-bold text-sm text-gray-900 group-hover:text-purple-600 transition-colors">{deal.level} Package</h4>
+                        <p className="text-xs text-gray-500">{deal.event?.title}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-gray-900">{contract.value}</p>
-                      <span className={`text-[10px] uppercase font-bold ${contract.status === 'Active' ? 'text-green-600' : 'text-gray-400'}`}>{contract.status}</span>
+                      <p className="font-bold text-gray-900">${deal.cash_value.toLocaleString()}</p>
+                      <span className={`text-[10px] uppercase font-bold ${deal.status === 'Signed' || deal.status === 'Paid' ? 'text-green-600' : 'text-gray-400'}`}>{deal.status}</span>
                     </div>
                   </div>
                 ))}
+                {deals.length === 0 && <div className="text-center py-10 text-gray-400">No contracts found.</div>}
               </div>
             )}
 
@@ -183,20 +241,21 @@ export const SponsorDetailPage: React.FC = () => {
                   <h3 className="font-serif font-bold text-xl">Brand Activations</h3>
                   <Button variant="outline" size="sm"><Plus size={14} className="mr-1"/> Plan Activation</Button>
                 </div>
-                {sponsor.activations.map(act => (
+                {activations.map(act => (
                   <div key={act.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:border-pink-200 hover:shadow-sm transition-all cursor-pointer">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-pink-50 text-pink-600 rounded-lg flex items-center justify-center">
                         <Zap size={20} />
                       </div>
                       <div>
-                        <h4 className="font-bold text-sm text-gray-900">{act.name}</h4>
-                        <p className="text-xs text-gray-500">{act.event} • {act.date}</p>
+                        <h4 className="font-bold text-sm text-gray-900">{act.title}</h4>
+                        <p className="text-xs text-gray-500">{act.type} • {(act as any).event_sponsor?.event?.title}</p>
                       </div>
                     </div>
                     <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-[10px] font-bold uppercase">{act.status}</span>
                   </div>
                 ))}
+                {activations.length === 0 && <div className="text-center py-10 text-gray-400">No activations planned yet.</div>}
               </div>
             )}
           </FadeIn>
@@ -212,24 +271,25 @@ export const SponsorDetailPage: React.FC = () => {
             
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-600 font-bold text-lg">
-                {sponsor.contact.name.charAt(0)}
+                {(sponsor.contact_name || sponsor.name).charAt(0)}
               </div>
               <div>
-                <p className="font-bold text-gray-900">{sponsor.contact.name}</p>
-                <p className="text-xs text-gray-500 uppercase tracking-wider">{sponsor.contact.role}</p>
+                <p className="font-bold text-gray-900">{sponsor.contact_name || 'No Contact'}</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider">Representative</p>
               </div>
             </div>
 
             <div className="space-y-4">
-              <a href={`mailto:${sponsor.contact.email}`} className="flex items-center gap-3 text-sm text-gray-600 hover:text-purple-600 transition-colors p-3 bg-gray-50 rounded-xl hover:bg-purple-50">
-                <Mail size={16} /> {sponsor.contact.email}
-              </a>
-              <a href={`tel:${sponsor.contact.phone}`} className="flex items-center gap-3 text-sm text-gray-600 hover:text-purple-600 transition-colors p-3 bg-gray-50 rounded-xl hover:bg-purple-50">
-                <Phone size={16} /> {sponsor.contact.phone}
-              </a>
-              <div className="flex items-center gap-3 text-sm text-gray-600 p-3">
-                <MapPin size={16} /> {sponsor.contact.location}
-              </div>
+              {sponsor.contact_email && (
+                <a href={`mailto:${sponsor.contact_email}`} className="flex items-center gap-3 text-sm text-gray-600 hover:text-purple-600 transition-colors p-3 bg-gray-50 rounded-xl hover:bg-purple-50">
+                    <Mail size={16} /> {sponsor.contact_email}
+                </a>
+              )}
+              {sponsor.contact_phone && (
+                <a href={`tel:${sponsor.contact_phone}`} className="flex items-center gap-3 text-sm text-gray-600 hover:text-purple-600 transition-colors p-3 bg-gray-50 rounded-xl hover:bg-purple-50">
+                    <Phone size={16} /> {sponsor.contact_phone}
+                </a>
+              )}
             </div>
           </div>
 
@@ -237,11 +297,11 @@ export const SponsorDetailPage: React.FC = () => {
           <div className="bg-yellow-50/50 p-6 rounded-3xl border border-yellow-100">
             <h3 className="font-serif font-bold text-lg text-yellow-800 mb-3">Internal Notes</h3>
             <p className="text-sm text-yellow-700/80 italic mb-4">
-              "Luxe Beauty prioritizes sustainability. Ensure all booth materials are eco-friendly for the SS25 activation."
+              "Check latest contract terms regarding social media deliverables."
             </p>
             <div className="flex items-center gap-2 text-xs text-yellow-600 font-bold uppercase tracking-wider">
-              <div className="w-5 h-5 rounded-full bg-yellow-200 flex items-center justify-center">O</div>
-              Added by Orlando
+              <div className="w-5 h-5 rounded-full bg-yellow-200 flex items-center justify-center">S</div>
+              System Note
             </div>
           </div>
         </div>

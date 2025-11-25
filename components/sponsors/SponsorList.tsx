@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Search, Filter, ArrowUpDown, SlidersHorizontal } from 'lucide-react';
-import { EventSponsor, SponsorLevel, SponsorStatus } from '../../types/sponsorship';
+import { EventSponsor, SponsorStatus } from '../../types/sponsorship';
 import { SponsorCard } from './SponsorCard';
 import { FadeIn } from '../FadeIn';
 
@@ -123,10 +123,10 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
               {uniqueTiers.map(tier => (
                 <button
                   key={tier}
-                  onClick={() => setFilterTier(tier)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${filterTier === tier ? 'bg-black text-white border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
+                  onClick={() => setFilterTier(tier || 'Unknown')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${filterTier === (tier || 'Unknown') ? 'bg-black text-white border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
                 >
-                  {tier}
+                  {tier || 'Unknown'}
                 </button>
               ))}
             </div>

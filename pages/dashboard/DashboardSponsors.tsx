@@ -1,46 +1,25 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, Plus, Sparkles, Download, 
-  DollarSign, Users, ArrowRight, X, TrendingUp, Filter
+  DollarSign, Users, ArrowRight, X, TrendingUp, Filter, Loader2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { SponsorCard } from '../../components/sponsors/SponsorCard';
 import { EventSponsor } from '../../types/sponsorship';
-import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
-import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { Input } from '../../components/forms/Input';
 import { Textarea } from '../../components/forms/Textarea';
 import { StatCard } from '../../components/dashboard/Shared';
 
-// Mock Data for MVP
-const MOCK_SPONSORS: EventSponsor[] = [
-  {
-    id: '1', event_id: 'e1', sponsor_id: 's1', level: 'Gold', status: 'Signed', cash_value: 25000, created_at: '2025-01-01',
-    active_events_count: 2,
-    sponsor: { id: 's1', name: 'Luxe Beauty', industry: 'Cosmetics', logo_url: 'https://images.unsplash.com/photo-1618331835717-801e976710b2?w=100' }
-  },
-  {
-    id: '2', event_id: 'e1', sponsor_id: 's2', level: 'Silver', status: 'Negotiating', cash_value: 10000, created_at: '2025-01-05',
-    active_events_count: 1,
-    sponsor: { id: 's2', name: 'Hydra Water', industry: 'Beverage' }
-  },
-  {
-    id: '3', event_id: 'e1', sponsor_id: 's3', level: 'Title', status: 'Paid', cash_value: 50000, created_at: '2025-01-10',
-    active_events_count: 3,
-    sponsor: { id: 's3', name: 'TechFlow', industry: 'Technology', logo_url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=100' }
-  },
-  {
-    id: '4', event_id: 'e1', sponsor_id: 's4', level: 'In-Kind', status: 'Lead', cash_value: 0, in_kind_value: 5000, created_at: '2025-02-01',
-    active_events_count: 0,
-    sponsor: { id: 's4', name: 'Urban Florals', industry: 'Decor' }
-  }
-];
-
 export const DashboardSponsors: React.FC = () => {
   const [view, setView] = useState<'Pipeline' | 'List'>('Pipeline');
+  const [sponsors, setSponsors] = useState<EventSponsor[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // AI State
   const [aiLoading, setAiLoading] = useState(false);
   const [aiIdeas, setAiIdeas] = useState<any[] | null>(null);
   const [showAiModal, setShowAiModal] = useState(false);
@@ -50,6 +29,32 @@ export const DashboardSponsors: React.FC = () => {
     eventDetails: ''
   });
 
+  // Fetch Data from Supabase
+  useEffect(() => {
+    const fetchSponsors = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('event_sponsors')
+          .select(`
+            *,
+            sponsor:sponsor_profiles(*)
+          `)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setSponsors(data || []);
+      } catch (error) {
+        console.error('Error fetching sponsors:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSponsors();
+  }, []);
+
+  // AI Agent: Ideation
   const handleAiIdeation = async () => {
     if (!aiParams.sponsorName || !aiParams.eventDetails) return;
     
@@ -75,21 +80,29 @@ export const DashboardSponsors: React.FC = () => {
       setShowAiModal(false);
     } catch (err) {
       console.error(err);
-      alert("AI Service Unavailable");
+      alert("AI Service Unavailable. Please ensure Edge Functions are deployed.");
     } finally {
       setAiLoading(false);
     }
   };
 
   // Calculated Stats
-  const totalRaised = MOCK_SPONSORS.reduce((acc, s) => acc + s.cash_value, 0);
-  const activePartners = MOCK_SPONSORS.filter(s => s.status !== 'Lead').length;
-  const avgDealValue = activePartners > 0 ? totalRaised / activePartners : 0;
+  const totalRaised = sponsors.reduce((acc, s) => acc + (s.cash_value || 0), 0);
+  const activePartners = new Set(sponsors.filter(s => s.status !== 'Lead').map(s => s.sponsor_id)).size;
+  const avgDealValue = sponsors.length > 0 ? totalRaised / sponsors.length : 0;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="animate-spin text-purple-600" size={48} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in pb-20 relative">
       
-      {/* AI Modal */}
+      {/* AI Agent Modal */}
       {showAiModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200">
@@ -125,7 +138,7 @@ export const DashboardSponsors: React.FC = () => {
               />
               <div className="pt-2">
                 <Button fullWidth variant="primary" onClick={handleAiIdeation} disabled={!aiParams.sponsorName || aiLoading}>
-                  {aiLoading ? <LoadingSpinner size={16} className="mr-2" /> : null}
+                  {aiLoading ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
                   {aiLoading ? 'Generating Ideas...' : 'Suggest Activations'}
                 </Button>
               </div>
@@ -146,9 +159,11 @@ export const DashboardSponsors: React.FC = () => {
            <Button variant="white" size="sm" className="gap-2 rounded-full border-gray-200 text-gray-600">
              <Download size={14} /> Report
            </Button>
-           <Button variant="primary" size="sm" className="gap-2 rounded-full shadow-lg shadow-purple-500/20">
-             <Plus size={16} /> Add Sponsor
-           </Button>
+           <Link to="/dashboard/sponsors/new-deal">
+             <Button variant="primary" size="sm" className="gap-2 rounded-full shadow-lg shadow-purple-500/20">
+               <Plus size={16} /> New Deal
+             </Button>
+           </Link>
         </div>
       </div>
 
@@ -186,7 +201,7 @@ export const DashboardSponsors: React.FC = () => {
               </div>
            </div>
            <p className="text-sm font-bold text-gray-900 leading-tight mt-2">Suggest Activations</p>
-           <p className="text-[10px] text-purple-500 font-bold uppercase tracking-wider mt-1">AI Agent Ready</p>
+           <p className="text-xs text-purple-500 font-bold uppercase tracking-wider mt-1">AI Agent Ready</p>
         </div>
       </div>
 
@@ -219,7 +234,6 @@ export const DashboardSponsors: React.FC = () => {
 
       {/* Kanban / List Toggle */}
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Main Content */}
         <div className="flex-1">
           <div className="flex justify-between items-center mb-6">
             <div className="flex gap-2 bg-white p-1 rounded-lg border border-gray-200">
@@ -250,18 +264,20 @@ export const DashboardSponsors: React.FC = () => {
                   <div className="flex justify-between items-center mb-4 px-1">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">{status}</h4>
                     <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      {MOCK_SPONSORS.filter(s => s.status === status).length}
+                      {sponsors.filter(s => s.status === status).length}
                     </span>
                   </div>
                   <div className="space-y-3">
-                    {MOCK_SPONSORS.filter(s => s.status === status).map(sponsor => (
-                      <Link key={sponsor.id} to={`/dashboard/sponsors/${sponsor.id}`} className="block">
+                    {sponsors.filter(s => s.status === status).map(sponsor => (
+                      <Link key={sponsor.id} to={`/dashboard/sponsors/${sponsor.sponsor_id}`} className="block">
                         <SponsorCard sponsor={sponsor} />
                       </Link>
                     ))}
-                    <button className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-xs font-bold hover:border-purple-300 hover:text-purple-500 transition-all flex items-center justify-center gap-2">
-                      <Plus size={14} /> Add Deal
-                    </button>
+                    <Link to="/dashboard/sponsors/new-deal">
+                      <button className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-xs font-bold hover:border-purple-300 hover:text-purple-500 transition-all flex items-center justify-center gap-2">
+                        <Plus size={14} /> Add Deal
+                      </button>
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -279,14 +295,14 @@ export const DashboardSponsors: React.FC = () => {
                      </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
-                     {MOCK_SPONSORS.map(s => (
+                     {sponsors.map(s => (
                         <tr key={s.id} className="hover:bg-gray-50/50">
                            <td className="px-6 py-4 font-bold text-gray-900">{s.sponsor?.name}</td>
                            <td className="px-6 py-4 text-gray-600">{s.level}</td>
                            <td className="px-6 py-4 font-medium">${s.cash_value.toLocaleString()}</td>
                            <td className="px-6 py-4"><span className="bg-gray-100 px-2 py-1 rounded text-xs font-bold">{s.status}</span></td>
                            <td className="px-6 py-4 text-purple-600 font-bold text-xs cursor-pointer hover:underline">
-                             <Link to={`/dashboard/sponsors/${s.id}`}>Manage</Link>
+                             <Link to={`/dashboard/sponsors/${s.sponsor_id}`}>View Profile</Link>
                            </td>
                         </tr>
                      ))}
