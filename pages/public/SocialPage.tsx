@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   Instagram, TrendingUp, Users, MessageCircle, BarChart3, 
@@ -9,6 +10,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { SectionTag } from '../../components/SectionTag';
+import { Input } from '../../components/forms/Input';
+import { Textarea } from '../../components/forms/Textarea';
 
 // --- Sub-Components ---
 
@@ -403,23 +406,11 @@ export const SocialPage: React.FC = () => {
                   
                   <form className="text-left space-y-4 max-w-lg mx-auto" onSubmit={(e) => e.preventDefault()}>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                           <label className="text-xs font-bold uppercase tracking-wider ml-1">Your Name</label>
-                           <input type="text" placeholder="Jane Doe" className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-200" />
-                        </div>
-                        <div className="space-y-1">
-                           <label className="text-xs font-bold uppercase tracking-wider ml-1">Email</label>
-                           <input type="email" placeholder="jane@brand.com" className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-200" />
-                        </div>
+                        <Input label="Your Name" placeholder="Jane Doe" className="bg-white" />
+                        <Input label="Email" placeholder="jane@brand.com" type="email" className="bg-white" />
                      </div>
-                     <div className="space-y-1">
-                        <label className="text-xs font-bold uppercase tracking-wider ml-1">Current Social Presence</label>
-                        <input type="text" placeholder="Instagram @handle, TikTok, etc." className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-200" />
-                     </div>
-                     <div className="space-y-1">
-                        <label className="text-xs font-bold uppercase tracking-wider ml-1">Your Goals</label>
-                        <textarea placeholder="Tell us about your brand, target audience, and what you want to achieve..." className="w-full p-3 rounded-xl border border-gray-200 h-32 resize-none focus:outline-none focus:ring-2 focus:ring-pink-200" />
-                     </div>
+                     <Input label="Current Social Presence" placeholder="Instagram @handle, TikTok, etc." className="bg-white" />
+                     <Textarea label="Your Goals" placeholder="Tell us about your brand, target audience, and what you want to achieve..." className="h-32 bg-white" />
                      <Button fullWidth variant="accent" size="lg" className="mt-4 bg-gradient-to-r from-pink-500 to-purple-600 border-none text-white">Get Your Strategy</Button>
                   </form>
                </FadeIn>

@@ -1,13 +1,16 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Camera, Zap, Sparkles, ShoppingBag, CheckCircle2, 
-  Star, Scissors, Layers, Aperture, Wand2, MapPin,
-  ArrowRight, Play, Mail, Globe, Box, Video
+  Star, Layers, Video, ArrowRight
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { SectionTag } from '../../components/SectionTag';
+import { Input } from '../../components/forms/Input';
+import { Select } from '../../components/forms/Select';
+import { Textarea } from '../../components/forms/Textarea';
 
 // --- Sub-Components ---
 
@@ -18,30 +21,6 @@ const FeatureCard = ({ icon: Icon, title, text }: { icon: any, title: string, te
     </div>
     <h3 className="text-xl font-serif font-bold mb-3">{title}</h3>
     <p className="text-gray-500 text-sm leading-relaxed">{text}</p>
-  </div>
-);
-
-const ContactInput = ({ label, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) => (
-  <div className="flex flex-col gap-1.5">
-    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">{label}</label>
-    <input 
-      {...props}
-      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all" 
-    />
-  </div>
-);
-
-const SelectInput = ({ label, options }: { label: string, options: string[] }) => (
-  <div className="flex flex-col gap-1.5">
-    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">{label}</label>
-    <div className="relative">
-      <select className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer">
-        {options.map(opt => <option key={opt}>{opt}</option>)}
-      </select>
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-        <ArrowRight size={14} className="rotate-90" />
-      </div>
-    </div>
   </div>
 );
 
@@ -353,23 +332,22 @@ export const PhotographyPage: React.FC = () => {
                <div className="text-center mb-12">
                   <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4">Get in Touch.</h2>
                </div>
-               <form className="space-y-6 bg-white p-8 md:p-12 rounded-3xl shadow-lg border border-gray-100">
+               <form className="space-y-6 bg-white p-8 md:p-12 rounded-3xl shadow-lg border border-gray-100" onSubmit={(e) => e.preventDefault()}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <ContactInput label="First Name*" placeholder="Jane" type="text" />
-                     <ContactInput label="Last Name*" placeholder="Doe" type="text" />
+                     <Input label="First Name*" placeholder="Jane" type="text" className="bg-white" />
+                     <Input label="Last Name*" placeholder="Doe" type="text" className="bg-white" />
                   </div>
-                  <ContactInput label="Email*" placeholder="jane@brand.com" type="email" />
-                  <ContactInput label="Company Name" placeholder="Brand Studio Ltd" type="text" />
+                  <Input label="Email*" placeholder="jane@brand.com" type="email" className="bg-white" />
+                  <Input label="Company Name" placeholder="Brand Studio Ltd" type="text" className="bg-white" />
                   
-                  <SelectInput label="Project Type" options={["E-commerce / Packshot", "Creative Campaign", "Video Production", "Retouching Only"]} />
+                  <Select label="Project Type" options={["E-commerce / Packshot", "Creative Campaign", "Video Production", "Retouching Only"]} className="bg-white" />
 
-                  <div className="flex flex-col gap-1.5">
-                     <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Please tell us about your proposed project</label>
-                     <textarea 
-                        placeholder="Please provide details regarding quantities, scope, photography style..."
-                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all h-32 resize-none" 
-                     />
-                  </div>
+                  <Textarea 
+                    label="Please tell us about your proposed project"
+                    placeholder="Please provide details regarding quantities, scope, photography style..."
+                    className="bg-white h-32" 
+                  />
+                  
                   <div className="pt-4">
                      <Button variant="primary" className="px-12 py-4 rounded-sm w-full md:w-auto uppercase tracking-widest font-bold">Submit</Button>
                   </div>

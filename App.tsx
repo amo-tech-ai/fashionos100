@@ -14,12 +14,15 @@ import { HomePage } from './pages/public/HomePage';
 import { ServicesPage } from './pages/public/ServicesPage';
 import { PhotographyPage } from './pages/public/PhotographyPage';
 import { VideoProductionPage } from './pages/public/VideoProductionPage';
+import { WebDesignPage } from './pages/public/WebDesignPage';
 import { DirectoryPage } from './pages/public/DirectoryPage';
+import { ProfileDetailPage } from './pages/public/ProfileDetailPage';
 import { EventsPage } from './pages/public/EventsPage';
 import { SocialPage } from './pages/public/SocialPage';
 import { EcommercePage } from './pages/public/EcommercePage';
 import { StartProjectPage } from './pages/public/StartProjectPage';
 import { ContactPage } from './pages/public/ContactPage';
+import { AboutPage } from './pages/public/AboutPage';
 
 // Dashboard Pages
 import { DashboardOverview } from './pages/dashboard/DashboardOverview';
@@ -43,6 +46,7 @@ const App: React.FC = () => {
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/services/photography" element={<PhotographyPage />} />
         <Route path="/services/video-production" element={<VideoProductionPage />} />
+        <Route path="/services/web-design" element={<WebDesignPage />} />
         <Route path="/services/social" element={<SocialPage />} />
         <Route path="/services/ecommerce" element={<EcommercePage />} />
         
@@ -50,12 +54,16 @@ const App: React.FC = () => {
         <Route path="/start-project" element={<StartProjectPage />} />
         
         {/* Main Pages */}
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        
+        {/* Directory & Profiles */}
         <Route path="/directory" element={<DirectoryPage />} />
+        <Route path="/directory/:id" element={<ProfileDetailPage />} />
+        
         <Route path="/events" element={<EventsPage />} />
         
         {/* Placeholders/Redirects */}
-        <Route path="/services/web-design" element={<ServicesPage />} />
         <Route path="/portfolio" element={<DirectoryPage />} />
         
         <Route path="/social" element={<Navigate to="/services/social" replace />} />

@@ -5,6 +5,9 @@ import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { SectionTag } from '../../components/SectionTag';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { Input } from '../../components/forms/Input';
+import { Textarea } from '../../components/forms/Textarea';
+import { Select } from '../../components/forms/Select';
 
 export const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -92,59 +95,41 @@ export const ContactPage: React.FC = () => {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <h3 className="text-2xl font-serif font-bold mb-6">Send a Message</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Name</label>
-                        <input 
-                          required
-                          type="text" 
-                          value={formData.name}
-                          onChange={e => setFormData({...formData, name: e.target.value})}
-                          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-100 transition-all"
-                          placeholder="Jane Doe"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Email</label>
-                        <input 
-                          required
-                          type="email" 
-                          value={formData.email}
-                          onChange={e => setFormData({...formData, email: e.target.value})}
-                          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-100 transition-all"
-                          placeholder="jane@brand.com"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Subject</label>
-                      <div className="relative">
-                        <select 
-                          value={formData.subject}
-                          onChange={e => setFormData({...formData, subject: e.target.value})}
-                          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-100 transition-all appearance-none cursor-pointer"
-                        >
-                          <option>General Inquiry</option>
-                          <option>Project Proposal</option>
-                          <option>Partnership</option>
-                          <option>Careers</option>
-                        </select>
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                          <ChevronDown size={16} />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Message</label>
-                      <textarea 
+                      <Input 
+                        label="Name"
+                        placeholder="Jane Doe"
                         required
-                        value={formData.message}
-                        onChange={e => setFormData({...formData, message: e.target.value})}
-                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 h-40 resize-none focus:outline-none focus:ring-2 focus:ring-purple-100 transition-all"
-                        placeholder="Tell us about your project..."
+                        value={formData.name}
+                        onChange={e => setFormData({...formData, name: e.target.value})}
+                        className="bg-white"
+                      />
+                      <Input 
+                        label="Email"
+                        placeholder="jane@brand.com"
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={e => setFormData({...formData, email: e.target.value})}
+                        className="bg-white"
                       />
                     </div>
+                    
+                    <Select
+                      label="Subject"
+                      options={["General Inquiry", "Project Proposal", "Partnership", "Careers"]}
+                      value={formData.subject}
+                      onChange={e => setFormData({...formData, subject: e.target.value})}
+                      className="bg-white"
+                    />
+
+                    <Textarea 
+                      label="Message"
+                      placeholder="Tell us about your project..."
+                      required
+                      value={formData.message}
+                      onChange={e => setFormData({...formData, message: e.target.value})}
+                      className="bg-white h-40"
+                    />
 
                     <div className="pt-2">
                       <Button 

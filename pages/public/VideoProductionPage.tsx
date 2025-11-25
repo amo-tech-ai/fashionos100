@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -8,6 +9,9 @@ import {
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { SectionTag } from '../../components/SectionTag';
+import { Input } from '../../components/forms/Input';
+import { Select } from '../../components/forms/Select';
+import { Textarea } from '../../components/forms/Textarea';
 
 // --- Sub-Components ---
 
@@ -452,14 +456,8 @@ export const VideoProductionPage: React.FC = () => {
                
                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Name</label>
-                        <input type="text" className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-fashion-purple/20" placeholder="Your Name" />
-                     </div>
-                     <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Email</label>
-                        <input type="email" className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-fashion-purple/20" placeholder="name@company.com" />
-                     </div>
+                     <Input label="Name" placeholder="Your Name" className="bg-white" />
+                     <Input label="Email" placeholder="name@company.com" type="email" className="bg-white" />
                   </div>
                   
                   <div className="space-y-2">
@@ -476,24 +474,13 @@ export const VideoProductionPage: React.FC = () => {
                      </div>
                   </div>
 
-                  <div className="space-y-2">
-                     <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Approximate Budget</label>
-                     <div className="relative">
-                        <CreditCard className="absolute left-4 top-3.5 text-gray-400" size={18} />
-                        <select className="w-full bg-white border border-gray-200 rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-fashion-purple/20 appearance-none cursor-pointer">
-                           <option>Select a range...</option>
-                           <option>$3,000 - $5,000</option>
-                           <option>$5,000 - $10,000</option>
-                           <option>$10,000 - $25,000</option>
-                           <option>$25,000+</option>
-                        </select>
-                     </div>
-                  </div>
+                  <Select 
+                    label="Approximate Budget" 
+                    options={["$3,000 - $5,000", "$5,000 - $10,000", "$10,000 - $25,000", "$25,000+"]}
+                    className="bg-white"
+                  />
 
-                  <div className="space-y-2">
-                     <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Vision / Brief</label>
-                     <textarea className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 h-32 focus:outline-none focus:ring-2 focus:ring-fashion-purple/20 resize-none" placeholder="Describe your concept, locations, and desired deliverables..." />
-                  </div>
+                  <Textarea label="Vision / Brief" placeholder="Describe your concept, locations, and desired deliverables..." className="bg-white h-32" />
 
                   <div className="pt-4">
                      <Button fullWidth variant="primary" size="lg">Submit Brief</Button>

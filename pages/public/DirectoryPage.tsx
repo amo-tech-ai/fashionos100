@@ -5,116 +5,17 @@ import {
   ChevronDown, ArrowRight, SlidersHorizontal, CheckCircle2, Camera, 
   Palette, Scissors, Mic2
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
 import { SectionTag } from '../../components/SectionTag';
 import { CategoryType } from '../../types';
 import { AICopilotWidget } from '../../components/dashboard/Widgets';
-
-// --- Mock Data ---
-const DIRECTORY_ITEMS = [
-  { 
-    id: 1,
-    name: 'Elena Rodriguez', 
-    role: 'Photographer', 
-    loc: 'Barcelona, Spain', 
-    specialty: 'Editorial & Campaign', 
-    rating: 4.9, 
-    reviews: 124, 
-    image: 'https://images.unsplash.com/photo-1554048612-387768052bf7?q=80&w=1000&auto=format&fit=crop',
-    featured: true,
-    tags: ['Editorial', 'Film']
-  },
-  { 
-    id: 2,
-    name: 'Marcus Chen', 
-    role: 'Fashion Designer', 
-    loc: 'New York, USA', 
-    specialty: 'Avant-Garde Runway', 
-    rating: 4.8, 
-    reviews: 89, 
-    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1000&auto=format&fit=crop',
-    featured: true,
-    tags: ['Sustainable', 'Couture']
-  },
-  { 
-    id: 3,
-    name: 'Studio 54', 
-    role: 'Venue', 
-    loc: 'Los Angeles, USA', 
-    specialty: 'Industrial Loft', 
-    rating: 4.6, 
-    reviews: 210, 
-    image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=1000&auto=format&fit=crop',
-    featured: false,
-    tags: ['Daylight', 'Cyclorama']
-  },
-  { 
-    id: 4,
-    name: 'Coco & Eve', 
-    role: 'Brand', 
-    loc: 'Sydney, AU', 
-    specialty: 'Swimwear', 
-    rating: 4.8, 
-    reviews: 300, 
-    image: 'https://images.unsplash.com/photo-1529139574466-a302d2052505?q=80&w=1000&auto=format&fit=crop',
-    featured: false,
-    tags: ['DTC', 'Luxury']
-  },
-  { 
-    id: 5,
-    name: 'Sarah Jenkins', 
-    role: 'Model', 
-    loc: 'London, UK', 
-    specialty: 'High Fashion', 
-    rating: 5.0, 
-    reviews: 42, 
-    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1000&auto=format&fit=crop',
-    featured: true,
-    tags: ['Runway', 'Print']
-  },
-  { 
-    id: 6,
-    name: 'David Kim', 
-    role: 'Videographer', 
-    loc: 'Seoul, KR', 
-    specialty: 'Documentary', 
-    rating: 4.9, 
-    reviews: 15, 
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',
-    featured: false,
-    tags: ['BTS', 'Drone']
-  },
-  { 
-    id: 7,
-    name: 'Lila Vossen', 
-    role: 'Stylist', 
-    loc: 'Berlin, DE', 
-    specialty: 'Commercial', 
-    rating: 4.7, 
-    reviews: 67, 
-    image: 'https://images.unsplash.com/photo-1485230405346-71acb9518d9c?q=80&w=1000&auto=format&fit=crop',
-    featured: false,
-    tags: ['Prop', 'Wardrobe']
-  },
-  { 
-    id: 8,
-    name: 'The Warehouse', 
-    role: 'Venue', 
-    loc: 'Brooklyn, USA', 
-    specialty: 'Event Space', 
-    rating: 4.5, 
-    reviews: 110, 
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop',
-    featured: false,
-    tags: ['Event', 'Large Capacity']
-  }
-];
+import { DIRECTORY_ITEMS, DirectoryItem } from '../../data/mockDirectory';
 
 // --- Sub-Components ---
 
-const CategoryPill = ({ label, active, onClick }: { label: string, active: boolean, onClick: () => void }) => (
+const CategoryPill: React.FC<{ label: string, active: boolean, onClick: () => void }> = ({ label, active, onClick }) => (
   <button 
     onClick={onClick}
     className={`px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap border ${
@@ -127,38 +28,44 @@ const CategoryPill = ({ label, active, onClick }: { label: string, active: boole
   </button>
 );
 
-const FilterDropdown = ({ label }: { label: string }) => (
+const FilterDropdown: React.FC<{ label: string }> = ({ label }) => (
   <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-full text-xs font-bold text-gray-600 hover:border-gray-400 transition-colors">
     {label} <ChevronDown size={12} />
   </button>
 );
 
-const FeaturedCard = ({ item }: { item: typeof DIRECTORY_ITEMS[0] }) => (
-  <div className="min-w-[280px] md:min-w-[320px] relative group cursor-pointer rounded-xl overflow-hidden aspect-[3/4]">
-    <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90" />
-    
-    <div className="absolute top-3 left-3">
-       <span className="bg-fashion-purple text-white text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider">Featured</span>
-    </div>
-
-    <div className="absolute bottom-0 left-0 w-full p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-      <p className="text-xs font-bold text-gray-300 uppercase tracking-widest mb-1">{item.role}</p>
-      <h3 className="font-serif font-bold text-2xl mb-2">{item.name}</h3>
-      <div className="flex items-center gap-2 mb-4">
-        <Star size={14} className="text-yellow-400 fill-yellow-400" />
-        <span className="text-sm font-medium">{item.rating}</span>
-        <span className="text-xs text-gray-400">({item.reviews} reviews)</span>
+const FeaturedCard: React.FC<{ item: DirectoryItem }> = ({ item }) => {
+  const navigate = useNavigate();
+  return (
+    <div className="min-w-[280px] md:min-w-[320px] relative group cursor-pointer rounded-xl overflow-hidden aspect-[3/4]" onClick={() => navigate(`/directory/${item.id}`)}>
+      <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90" />
+      
+      <div className="absolute top-3 left-3">
+         <span className="bg-fashion-purple text-white text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider">Featured</span>
       </div>
-      <Button variant="white" size="sm" className="w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">View Profile</Button>
-    </div>
-  </div>
-);
 
-const ProfileCard = ({ item, viewMode }: { item: typeof DIRECTORY_ITEMS[0], viewMode: 'grid' | 'list' }) => {
+      <div className="absolute bottom-0 left-0 w-full p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+        <p className="text-xs font-bold text-gray-300 uppercase tracking-widest mb-1">{item.role}</p>
+        <h3 className="font-serif font-bold text-2xl mb-2">{item.name}</h3>
+        <div className="flex items-center gap-2 mb-4">
+          <Star size={14} className="text-yellow-400 fill-yellow-400" />
+          <span className="text-sm font-medium">{item.rating}</span>
+          <span className="text-xs text-gray-400">({item.reviews} reviews)</span>
+        </div>
+        <Button variant="white" size="sm" className="w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">View Profile</Button>
+      </div>
+    </div>
+  );
+};
+
+const ProfileCard: React.FC<{ item: DirectoryItem, viewMode: 'grid' | 'list' }> = ({ item, viewMode }) => {
+  const navigate = useNavigate();
+  const goToProfile = () => navigate(`/directory/${item.id}`);
+
   if (viewMode === 'list') {
     return (
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center gap-6 group">
+      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center gap-6 group cursor-pointer" onClick={goToProfile}>
         <div className="w-24 h-24 rounded-lg overflow-hidden shrink-0 relative">
            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
         </div>
@@ -180,7 +87,7 @@ const ProfileCard = ({ item, viewMode }: { item: typeof DIRECTORY_ITEMS[0], view
            </div>
         </div>
         <div className="hidden md:flex gap-2">
-           <Button variant="outline" size="sm">Message</Button>
+           <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); /* Message logic */ }}>Message</Button>
            <Button variant="primary" size="sm">View</Button>
         </div>
       </div>
@@ -188,14 +95,17 @@ const ProfileCard = ({ item, viewMode }: { item: typeof DIRECTORY_ITEMS[0], view
   }
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 group flex flex-col h-full">
+    <div className="bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 group flex flex-col h-full cursor-pointer" onClick={goToProfile}>
       <div className="aspect-[4/5] relative overflow-hidden bg-gray-100">
         <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-        <button className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full text-gray-400 hover:text-red-500 transition-colors">
+        <button 
+          className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full text-gray-400 hover:text-red-500 transition-colors"
+          onClick={(e) => { e.stopPropagation(); /* Favorite logic */ }}
+        >
            <Heart size={16} />
         </button>
         <div className="absolute bottom-3 left-3 flex flex-wrap gap-1">
-           {item.tags.map(t => (
+           {item.tags.slice(0, 3).map(t => (
              <span key={t} className="bg-black/60 backdrop-blur text-white text-[10px] font-bold px-2 py-1 rounded-full">{t}</span>
            ))}
         </div>
@@ -214,11 +124,11 @@ const ProfileCard = ({ item, viewMode }: { item: typeof DIRECTORY_ITEMS[0], view
         </div>
         
         <div className="flex items-center gap-1 text-xs text-gray-500 mb-4">
-           <MapPin size={12} /> {item.loc}
+           <MapPin size={12} /> {item.loc}, {item.country}
         </div>
 
         <div className="mt-auto pt-4 border-t border-gray-50 flex gap-2">
-           <Button variant="outline" fullWidth size="sm" className="text-[10px]">Message</Button>
+           <Button variant="outline" fullWidth size="sm" className="text-[10px]" onClick={(e) => { e.stopPropagation(); /* Message logic */ }}>Message</Button>
            <Button variant="primary" fullWidth size="sm" className="text-[10px]">View Profile</Button>
         </div>
       </div>

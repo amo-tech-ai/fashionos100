@@ -6,6 +6,7 @@ import { WizardState } from './types';
 import { Button } from '../../Button';
 import { supabaseUrl, supabaseAnonKey } from '../../../lib/supabase';
 import { LoadingSpinner } from '../../LoadingSpinner';
+import { Input } from '../../forms/Input';
 
 interface WizardVenueProps {
   data: WizardState;

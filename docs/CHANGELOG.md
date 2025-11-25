@@ -8,11 +8,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Planned
-- **About Page:** Company story, team grid, values (`pages/public/AboutPage.tsx`).
+- **Pricing Page:** Dedicated pricing comparison page (`pages/public/PricingPage.tsx`).
+- **Portfolio Page:** Rich gallery of past work (`pages/public/PortfolioPage.tsx`).
 - **Auth:** Full integration with Supabase Auth / Clerk.
 - **Backend:** Connecting UI forms (Booking, Contact) to Supabase tables.
-- **Payments:** Stripe Connect integration for split payments between platform and creatives.
-- **Messaging:** Real-time chat for `Dashboard/Inbox`.
+- **Payments:** Stripe Connect integration.
+
+---
+
+## [0.6.1] - 2025-03-03
+### ✨ Added
+- **About Page:**
+  - Created `pages/public/AboutPage.tsx` with mission statement, core values, and team grid.
+  - Fixed missing module error in `App.tsx`.
+
+## [0.6.0] - 2025-03-03
+### ✨ Added
+- **Directory Profile Details:**
+  - Implemented `/directory/:id` route.
+  - Created `ProfileDetailPage.tsx` with rich metadata (Bio, Skills, Portfolio, Rates).
+  - Centralized mock data in `data/mockDirectory.ts`.
+- **Web Design Service Page:**
+  - Created `pages/public/WebDesignPage.tsx` with "Digital Flagships" theme.
+  - Added Portfolio, Tech Stack, and Pricing sections.
+- **Reusable Components:**
+  - Created `components/forms/` library with standardized `Input`, `Select`, `Textarea`.
+  - Implemented `LoadingSpinner` and `SkeletonLoader` for better UX.
+
+### 🛡️ Security & Architecture
+- **Edge Functions:**
+  - Moved all AI logic (Gemini, Veo) to server-side Supabase Edge Functions to secure API keys.
+  - Implemented `generate-media` for secure Veo video generation.
+  - Implemented `resolve-venue` for Google Maps grounding.
+  - Implemented `sponsor-ai` for autonomous sponsorship agents.
+
+### ♻️ Refactored
+- **Event Wizard:** Updated to use secure Edge Functions for draft generation.
+- **Code Quality:** Fixed module resolution errors in Wizard components.
+- **Forms:** Refactored various pages (`ContactPage`, `PhotographyPage`) to use the new shared form components.
 
 ---
 
@@ -24,7 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Contact Information Cards (Email, Phone, Office) using Lucide icons.
   - Map placeholder section.
   - FAQ section for common queries.
-- **Start Project Wizard:** `StartProjectPage.tsx` completed (from previous updates).
+- **Start Project Wizard:** `StartProjectPage.tsx` completed.
 
 ### ♻️ Refactored
 - **Type Safety:** Updated `RequireAuth.tsx` to use standard function component pattern instead of `React.FC` for better children prop handling.
@@ -38,7 +71,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fully implemented `EventWizard.tsx` with modular sub-components (`Intro`, `Basics`, `Venue`, `Tickets`, `Review`).
   - Integrated **Gemini 2.5 Flash** for AI-powered event draft generation from natural language prompts.
   - Added state management for complex event data (ticket tiers, schedules).
-  - Completed Task 02 from the roadmap.
 - **Veo 3.1 Video Generator:**
   - Implemented a new "AI Trailer Studio" section on the **Events Page**.
   - Users can generate 8-second cinematic event trailers using Gemini's `veo-3.1-fast-generate-preview` model.

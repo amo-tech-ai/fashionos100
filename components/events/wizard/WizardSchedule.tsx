@@ -2,6 +2,7 @@
 import React from 'react';
 import { Plus, X, Clock } from 'lucide-react';
 import { Button } from '../../Button';
+import { Input } from '../../forms/Input';
 import { WizardState } from './types';
 
 interface WizardScheduleProps {
@@ -51,21 +52,21 @@ export const WizardSchedule: React.FC<WizardScheduleProps> = ({ data, updateData
         {data.schedule.map((item, idx) => (
           <div key={idx} className="flex gap-4 items-start group">
             <div className="w-24 shrink-0">
-              <label className="text-[10px] font-bold uppercase text-gray-400 ml-1 mb-1 block">Time</label>
-              <input
+              <Input
+                label="Time"
                 type="time"
                 value={item.time}
                 onChange={(e) => updateScheduleItem(idx, 'time', e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:border-purple-400 transition-colors"
+                className="bg-gray-50 focus:bg-white"
               />
             </div>
             <div className="flex-1">
-              <label className="text-[10px] font-bold uppercase text-gray-400 ml-1 mb-1 block">Activity</label>
-              <input
+              <Input
+                label="Activity"
                 type="text"
                 value={item.activity}
                 onChange={(e) => updateScheduleItem(idx, 'activity', e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:border-purple-400 transition-colors"
+                className="bg-gray-50 focus:bg-white"
                 placeholder="e.g. Doors Open"
               />
             </div>

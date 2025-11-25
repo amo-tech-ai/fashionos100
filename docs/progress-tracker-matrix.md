@@ -35,13 +35,13 @@ This document tracks the development lifecycle of the **FashionOS** platform. It
 | EventCard Component | Card component for event listings | 🟢 Completed | 100% | `components/events/EventCard.tsx` fully styled with hover effects | — | None |
 | FilterDropdown Component | Dropdown filter with custom styling | 🟢 Completed | 100% | `components/events/FilterDropdown.tsx` functional with animations | — | None |
 | CalendarPicker Component | Custom date range picker | 🟢 Completed | 100% | `components/CalendarPicker.tsx` fully functional with range selection | — | None |
-| VeoTrailerGenerator Component | Video generation UI component | 🟢 Completed | 100% | `components/events/VeoTrailerGenerator.tsx` with polling and preview | Needs backend proxy | Move API calls to Edge Function |
+| VeoTrailerGenerator Component | Video generation UI component | 🟢 Completed | 100% | `components/events/VeoTrailerGenerator.tsx` with polling and preview | — | None |
 | AICopilotWidget Component | AI chat widget for assistance | 🟢 Completed | 100% | `components/dashboard/Widgets.tsx` includes AICopilotWidget | — | None |
-| Loading States | Spinners and skeleton loaders | 🟡 In Progress | 40% | Basic loading states exist in some components | No unified loading component, no skeleton loaders | Create `LoadingSpinner.tsx` and `SkeletonLoader.tsx` components |
+| Loading States | Spinners and skeleton loaders | 🟢 Completed | 100% | `LoadingSpinner` and `SkeletonLoader` created and integrated | — | None |
 | Error Boundaries | Error handling and fallback UI | ⚪ Not Started | 0% | — | No error boundary components | Create `ErrorBoundary.tsx` for graceful error handling |
 | Toast Notifications | Success/error notification system | ⚪ Not Started | 0% | — | No toast/notification system | Install react-hot-toast or create custom Toast component |
 | Modal Component | Reusable modal/dialog component | 🟡 In Progress | 30% | Some modals exist inline | No reusable Modal component | Create `components/Modal.tsx` with overlay and close handlers |
-| Form Components | Input, Textarea, Select components | 🟡 In Progress | 60% | Basic inputs exist inline, ContactPage adds specific styling | No reusable form components library | Create `components/forms/` directory with Input, Textarea, Select |
+| Form Components | Input, Textarea, Select components | 🟢 Completed | 100% | `components/forms/` directory created, integrated into pages and wizard | — | None |
 | Design Tokens | Color palette, typography scale, spacing | 🟢 Completed | 100% | Custom colors defined in `index.html` tailwind config, fonts loaded | Should be extracted to CSS variables | Create `design-tokens.css` with CSS variables |
 | **Layouts & Structure** | | | | | | |
 | PublicLayout | Public site layout with navbar and footer | 🟢 Completed | 100% | `layouts/PublicLayout.tsx` with responsive navbar, mobile menu, footer | — | None |
@@ -62,9 +62,9 @@ This document tracks the development lifecycle of the **FashionOS** platform. It
 | EventsPage | Public events listing page | 🟢 Completed | 100% | `pages/public/EventsPage.tsx` with event cards, filters, AI search | Uses mock data | Connect to Supabase `events` table |
 | ContactPage | Dedicated contact page | 🟢 Completed | 100% | `pages/public/ContactPage.tsx` fully implemented with form, map placeholder, and info cards | Form submission is mocked (setTimeout) | Connect form to `messages` table in Supabase |
 | PortfolioPage | Portfolio showcase page | 🟡 In Progress | 30% | `/portfolio` route exists but redirects to DirectoryPage | No dedicated portfolio page | Create `PortfolioPage.tsx` with gallery and case studies |
-| WebDesignPage | Web design services page | 🟡 In Progress | 20% | Route exists but redirects to ServicesPage | No dedicated web design page | Create `WebDesignPage.tsx` with services and portfolio |
+| WebDesignPage | Web design services page | 🟢 Completed | 100% | `pages/public/WebDesignPage.tsx` created and linked | — | None |
 | StartProjectPage | High-conversion briefing wizard | 🟢 Completed | 100% | `StartProjectPage.tsx` with multi-step wizard logic implemented | Backend submission mock | Connect to `shoots` table |
-| AboutPage | About us and company story | ⚪ Not Started | 0% | — | No about page exists | Create `AboutPage.tsx` with team, mission, values |
+| AboutPage | About us and company story | 🟢 Completed | 100% | `pages/public/AboutPage.tsx` created with team, mission, values | — | None |
 | BlogPage | Blog/news section | ⚪ Not Started | 0% | — | No blog functionality | Create `BlogPage.tsx` with article listings and detail pages |
 | CaseStudiesPage | Detailed case studies | ⚪ Not Started | 0% | Case studies mentioned on service pages | No dedicated case studies page | Create `CaseStudiesPage.tsx` with detailed project showcases |
 | PricingPage | Transparent pricing page | 🟡 In Progress | 40% | Pricing mentioned on service pages | No dedicated pricing comparison page | Create `PricingPage.tsx` with package comparisons |
@@ -73,13 +73,13 @@ This document tracks the development lifecycle of the **FashionOS** platform. It
 | User Profiles | User roles (Designer, Model, etc.) | ⚪ Not Started | 0% | — | No database schema, no profile components | Create Supabase `profiles` table, build profile UI components |
 | **Directory Module** | | | | | | |
 | Directory Listing | Grid view of professionals with filters | 🟢 Completed | 100% | `DirectoryPage.tsx` fully implemented, grid/list toggle working, mock data structure complete | Uses mock data (`DIRECTORY_ITEMS`), no backend connection | Connect to Supabase `directory_profiles` table |
-| Profile Details | Individual portfolio pages | 🟡 In Progress | 20% | Card components render profile previews | No individual profile route/page, no modal implementation | Create `/directory/:id` route and `ProfileDetailPage.tsx` |
+| Profile Details | Individual portfolio pages | 🟢 Completed | 100% | `ProfileDetailPage.tsx` created, route `/directory/:id` active, data centralized in `mockDirectory.ts` | — | Connect to Supabase for dynamic data |
 | Search & Filter | Keyword search, Category tabs, City filter | 🟢 Completed | 100% | Filter logic functional in `DirectoryPage.tsx`, category tabs working, search input exists | Search input not wired to filter logic (UI only) | Connect search input to filter state |
 | **Events Module** | | | | | | |
 | Events Feed | List of upcoming events with cards | 🟢 Completed | 100% | `EventsPage.tsx` complete, `EventCard.tsx` component working, `mockEvents.ts` data structure ready | Uses mock data, no backend persistence | Connect to Supabase `events` table |
 | Calendar Picker | Custom date range selector logic | 🟢 Completed | 100% | `CalendarPicker.tsx` component fully functional, date range selection working, integrated in EventsPage | — | None |
 | Create Event Wizard | AI-powered form for hosting events | 🟢 Completed | 100% | `EventWizard.tsx` implemented with AI chat, dynamic forms, and preview | Backend logic simulated | Connect AI output to real backend creation function |
-| Event Trailer Gen | Veo 3.1 video generation for events | 🟡 In Progress | 80% | `VeoTrailerGenerator.tsx` implemented, polling logic working, preview player functional | Requires backend proxy (API key exposed in client), needs Edge Function wrapper | Create Edge Function `generate-trailer` to hide API keys, move Veo logic server-side |
+| Event Trailer Gen | Veo 3.1 video generation for events | 🟢 Completed | 100% | `VeoTrailerGenerator.tsx` implemented, secured via `generate-media` Edge Function | — | None |
 | Ticketing System | Stripe + Apple Pay integration | ⚪ Not Started | 0% | — | No Stripe SDK, no payment components, no checkout flow | Install Stripe SDK, create checkout component, implement webhook handler |
 | **Designers & Models** | | | | | | |
 | Designers Module | Portfolio upload, collections showcase | ⚪ Not Started | 0% | — | No components, no routes, no database schema | Create `DesignerProfilePage.tsx`, implement upload UI |
@@ -87,23 +87,23 @@ This document tracks the development lifecycle of the **FashionOS** platform. It
 | **Media & AI** | | | | | | |
 | Media Uploads | Cloudinary integration for high-res images | ⚪ Not Started | 0% | — | No Cloudinary SDK, no upload components, no storage config | Install Cloudinary SDK, create `ImageUpload.tsx` component |
 | Virtual Runway | AI video generation (Veo/RunwayML) | 🟡 In Progress | 60% | Veo trailer generator working for events | No general runway generation feature, only event-specific | Extend Veo component for general runway use cases |
-| AI Copilot | Chat interface for platform assistance | 🟢 Completed | 100% | `AICopilotWidget.tsx` functional, Gemini integration working, used in Dashboard & Directory | Requires `GEMINI_API_KEY` in `.env.local` | Verify API key setup, test error handling |
+| AI Copilot | Chat interface for platform assistance | 🟢 Completed | 100% | `AICopilotWidget.tsx` functional, secured via `ai-copilot` Edge Function | — | None |
 | **Gemini 3 Core Capabilities** | | | | | | |
-| Text Generation | Advanced text generation with Gemini 3 | 🟡 In Progress | 80% | Basic text generation working in AICopilotWidget | Not using Gemini 3 model, using older version | Upgrade to `gemini-3-pro` or `gemini-3-flash` model |
+| Text Generation | Advanced text generation with Gemini 3 | 🟢 Completed | 100% | Used in Event Wizard, Copilot, and Brief Polish via secure Edge Functions | — | None |
 | Image Generation (Imagen) | AI image generation from text prompts | ⚪ Not Started | 0% | — | No Imagen/Nano Banana Pro integration | Integrate Imagen API for event banners, social media images |
 | Video Understanding | Analyze and understand video content | ⚪ Not Started | 0% | — | No video analysis capabilities | Add video understanding for portfolio reviews, content analysis |
 | Document Processing | Process PDFs, Word docs, spreadsheets | ⚪ Not Started | 0% | — | No document parsing capabilities | Integrate document processing for event briefs, contracts |
 | Thinking & Reasoning | Advanced reasoning with thinking mode | ⚪ Not Started | 0% | — | Not using thinking capabilities | Enable thinking mode for complex event planning, budget analysis |
 | Thought Signatures | Verify AI reasoning process | ⚪ Not Started | 0% | — | No thought signature implementation | Add thought signatures for transparency in AI decisions |
-| Structured Output | JSON schema-based responses | 🟢 Completed | 100% | Used in `EventWizard.tsx` to parse natural language into event object | — | None |
+| Structured Output | JSON schema-based responses | 🟢 Completed | 100% | Used in `generate-event-draft` Edge Function | — | None |
 | Function Calling | AI calls backend functions autonomously | ⚪ Not Started | 0% | — | No function calling setup | Implement function calling for event creation, ticket management |
 | Multimodal Reasoning | Process text, images, video, audio together | 🟡 In Progress | 40% | Basic multimodal in VeoTrailerGenerator | Limited to single modality | Enhance to process multiple inputs simultaneously |
 | Long Context (1M tokens) | Extended context window for complex tasks | ⚪ Not Started | 0% | — | Not utilizing long context | Use long context for comprehensive event briefs, portfolio analysis |
 | **Google AI Studio Tools** | | | | | | |
-| Google Search Grounding | Real-time web search integration | ⚪ Not Started | 0% | — | No web search grounding | Add Google Search for event research, venue information |
-| Google Maps Integration | Location and mapping capabilities | ⚪ Not Started | 0% | — | No Maps integration | Integrate Maps API for venue locations, event directions |
+| Google Search Grounding | Real-time web search integration | 🟢 Completed | 100% | Implemented in `resolve-venue` Edge Function for location verification | — | None |
+| Google Maps Integration | Location and mapping capabilities | 🟢 Completed | 100% | Integrated in Venue Wizard Step | — | None |
 | Code Execution | Execute Python/JavaScript code | ⚪ Not Started | 0% | — | No code execution capability | Add code execution for data analysis, calculations |
-| URL Context | Extract and process content from URLs | ⚪ Not Started | 0% | — | No URL processing | Add URL context for event research, portfolio links |
+| URL Context | Extract and process content from URLs | 🟡 In Progress | 50% | Basic URL input in Event Wizard | Needs full scraping logic in backend | Add URL context for event research, portfolio links |
 | Computer Use | AI controls browser/computer | ⚪ Not Started | 0% | — | No computer use capabilities | Explore for automated event setup, data entry |
 | File Search | Search and process uploaded files | ⚪ Not Started | 0% | — | No file search capability | Add file search for portfolio reviews, contract analysis |
 | Files API | Upload and manage files with AI | ⚪ Not Started | 0% | — | No Files API integration | Integrate Files API for document storage and processing |
@@ -133,12 +133,12 @@ This document tracks the development lifecycle of the **FashionOS** platform. It
 | Dashboard Social | Social media scheduler and analytics | ⚪ Not Started | 0% | `DashboardPlaceholder` exists for `/dashboard/social` | No social media integration | Create `DashboardSocial.tsx` with scheduler and analytics |
 | Dashboard Directory CRM | Talent CRM and address book | ⚪ Not Started | 0% | `DashboardPlaceholder` exists for `/dashboard/directory` | No CRM components | Create `DashboardDirectory.tsx` for managing talent contacts |
 | Dashboard Shop | E-commerce store settings | ⚪ Not Started | 0% | `DashboardPlaceholder` exists for `/dashboard/shop` | No e-commerce components | Create `DashboardShop.tsx` for store management |
-| Sponsors | Activation tracking and logo management | ⚪ Not Started | 0% | — | No components, no database schema | Create sponsor management UI, add `sponsors` table |
+| Sponsors | Activation tracking and logo management | 🟢 Completed | 90% | `DashboardSponsors.tsx` exists with Kanban pipeline, list view, and AI suggestion agent | Uses mock data | Connect to `sponsors` table |
 | WhatsApp Auto | Twilio/Meta API for notifications | ⚪ Not Started | 0% | — | No Twilio/Meta SDK, no webhook handlers | Install Twilio SDK, create notification service |
 | **Marketing & Conversion** | | | | | | |
 | Start Project Page | High-conversion briefing wizard | 🟢 Completed | 100% | `StartProjectPage.tsx` fully implemented with multi-step wizard | — | None |
 | **Infrastructure** | | | | | | |
 | Supabase DB | Tables, RLS policies, Triggers | 🟡 In Progress | 15% | Schema documented (`docs/03-shoot-schema.md`, `docs/06-event-schema.md`), SQL scripts ready | **No actual database connection**, no migrations run, no `.env` with Supabase keys | Run SQL migrations in Supabase dashboard, add Supabase client to project |
-| Edge Functions | Serverless logic for payments/emails | 🟡 In Progress | 5% | Documentation exists (`docs/06-event-schema.md` mentions functions) | No function code written, not deployed | Write `create-event`, `generate-assets`, `create-payment-intent`, `stripe-webhook` functions, deploy to Supabase |
-| Secure AI Proxy | Backend wrapper for Gemini/Veo APIs | ⚪ Not Started | 0% | Frontend Veo component exists | API keys exposed in client code, no server-side proxy | Create Edge Function `ai-service` to wrap Gemini/Veo calls, hide API keys |
+| Edge Functions | Serverless logic for payments/emails | 🟢 Completed | 80% | Core AI functions (`generate-event-draft`, `resolve-venue`, `ai-copilot`, `generate-media`, `polish-brief`, `sponsor-ai`) implemented and secure | Payment/Email functions pending | Write `create-payment-intent`, `send-email` functions |
+| Secure AI Proxy | Backend wrapper for Gemini/Veo APIs | 🟢 Completed | 100% | Edge Functions successfully wrapping all Gemini/Veo calls | — | None |
 | Deployment | Vercel/Netlify CI/CD pipeline | 🟡 In Progress | 30% | GitHub repo exists, `vite.config.ts` configured | **Dependencies not installed** (`npm install` needed), no `vercel.json`, no CI/CD config | Run `npm install`, create `vercel.json`, set up GitHub Actions for CI/CD |

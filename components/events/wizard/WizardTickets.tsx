@@ -1,6 +1,8 @@
+
 import React from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '../../Button';
+import { Input } from '../../forms/Input';
 import { WizardState } from './types';
 
 interface WizardTicketsProps {
@@ -39,41 +41,43 @@ export const WizardTickets: React.FC<WizardTicketsProps> = ({ data, updateData }
 
         <div className="space-y-4">
           {data.tickets.map((ticket, idx) => (
-            <div key={idx} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-gray-50 p-4 rounded-xl border border-gray-200 group">
-              <div className="flex-1 space-y-1 w-full">
-                <label className="text-[10px] font-bold uppercase text-gray-400 ml-1">Ticket Name</label>
-                <input 
-                  type="text" 
+            <div key={idx} className="flex flex-col sm:flex-row gap-4 items-start bg-gray-50 p-4 rounded-xl border border-gray-200 group transition-all hover:border-purple-200">
+              <div className="flex-1 w-full">
+                <Input 
+                  label="Ticket Name"
+                  placeholder="e.g. VIP"
                   value={ticket.name}
                   onChange={(e) => updateTicket(idx, 'name', e.target.value)}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-bold"
-                  placeholder="e.g. VIP"
+                  className="bg-white"
                 />
               </div>
-              <div className="w-full sm:w-32 space-y-1">
-                <label className="text-[10px] font-bold uppercase text-gray-400 ml-1">Price ($)</label>
-                <input 
-                  type="number" 
+              <div className="w-full sm:w-32">
+                <Input 
+                  label="Price ($)"
+                  type="number"
+                  min="0"
                   value={ticket.price}
                   onChange={(e) => updateTicket(idx, 'price', parseFloat(e.target.value) || 0)}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                  className="bg-white"
                 />
               </div>
-              <div className="w-full sm:w-32 space-y-1">
-                <label className="text-[10px] font-bold uppercase text-gray-400 ml-1">Quantity</label>
-                <input 
-                  type="number" 
+              <div className="w-full sm:w-32">
+                <Input 
+                  label="Quantity"
+                  type="number"
+                  min="0"
                   value={ticket.quantity}
                   onChange={(e) => updateTicket(idx, 'quantity', parseInt(e.target.value) || 0)}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                  className="bg-white"
                 />
               </div>
               {data.tickets.length > 1 && (
                 <button 
                   onClick={() => removeTicket(idx)}
-                  className="p-2 text-gray-400 hover:text-red-500 sm:mt-5"
+                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors sm:mt-7"
+                  title="Remove Tier"
                 >
-                  <X size={18} />
+                  <Trash2 size={18} />
                 </button>
               )}
             </div>
