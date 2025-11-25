@@ -16,6 +16,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.0] - 2025-03-03
+### ✨ Added
+- **Web Design Page:**
+  - Launched dedicated `/services/web-design` landing page.
+  - Included features for "Digital Flagships", "Headless Commerce", and "UX Audits".
+  - Integrated with new `PricingTier` and `PortfolioItem` sub-components.
+- **Event Security Upgrade:**
+  - Moved `generate-media` (Veo) and `ai-copilot` logic to server-side Supabase Edge Functions.
+  - Secured `GEMINI_API_KEY` env vars, removing them from client-side builds.
+
+### 🛠 Verified
+- **Directory Profile:** Confirmed `/directory/:id` routing and data passing.
+- **Event Wizard:** Validated end-to-end flow with secure AI draft generation.
+
 ## [0.6.1] - 2025-03-03
 ### ✨ Added
 - **About Page:**
@@ -28,9 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Implemented `/directory/:id` route.
   - Created `ProfileDetailPage.tsx` with rich metadata (Bio, Skills, Portfolio, Rates).
   - Centralized mock data in `data/mockDirectory.ts`.
-- **Web Design Service Page:**
-  - Created `pages/public/WebDesignPage.tsx` with "Digital Flagships" theme.
-  - Added Portfolio, Tech Stack, and Pricing sections.
 - **Reusable Components:**
   - Created `components/forms/` library with standardized `Input`, `Select`, `Textarea`.
   - Implemented `LoadingSpinner` and `SkeletonLoader` for better UX.

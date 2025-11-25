@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
@@ -20,12 +21,24 @@ export const PublicLayout: React.FC = () => {
     setIsOpen(false);
   }, [location]);
 
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Services', path: '/services' },
     { name: 'Directory', path: '/directory' },
-    { name: 'Marketplace', path: '/shop' }, // New Link
-    { name: 'BTS', path: '/social' }, // Mapping BTS to social/content for now
+    { name: 'Marketplace', path: '/shop' }, 
+    { name: 'BTS', path: '/social' }, 
   ];
 
   return (
@@ -56,34 +69,42 @@ export const PublicLayout: React.FC = () => {
           </div>
 
           {/* Mobile Toggle */}
-          <button className="md:hidden z-50 relative" onClick={() => setIsOpen(!isOpen)}>
+          <button className="md:hidden z-50 relative p-2 -mr-2" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle Menu">
             {isOpen ? <X /> : <Menu />}
           </button>
         </div>
-
-        {/* Mobile Menu */}
-        {isOpen && (
-          <div className="fixed inset-0 bg-white z-40 flex flex-col justify-center px-8 animate-in slide-in-from-right-10 duration-300">
-            <div className="flex flex-col space-y-6">
-              {navLinks.map((link) => (
-                <NavLink 
-                  key={link.name} 
-                  to={link.path}
-                  className={({ isActive }) => 
-                    `text-3xl font-serif font-bold ${isActive ? 'text-fashion-purpleDark' : 'text-black'}`
-                  }
-                >
-                  {link.name}
-                </NavLink>
-              ))}
-              <div className="pt-8 border-t border-gray-100 flex flex-col gap-4">
-                <Link to="/dashboard" className="text-lg font-medium text-gray-500">Log In</Link>
-                <Link to="/dashboard"><Button size="lg" className="w-full text-base">Book a Shoot</Button></Link>
-              </div>
-            </div>
-          </div>
-        )}
       </nav>
+
+      {/* Mobile Overlay */}
+      <div 
+        className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity duration-500 md:hidden ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setIsOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* Mobile Menu Panel */}
+      <div 
+        className={`fixed inset-y-0 right-0 w-full max-w-xs bg-white z-40 shadow-2xl transform transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) md:hidden flex flex-col pt-24 px-8 pb-8 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+         <div className="flex flex-col space-y-6 h-full overflow-y-auto">
+            {navLinks.map((link) => (
+              <NavLink 
+                key={link.name} 
+                to={link.path}
+                onClick={() => setIsOpen(false)}
+                className={({ isActive }) => 
+                  `text-2xl font-serif font-bold tracking-tight transition-colors duration-300 ${isActive ? 'text-fashion-purpleDark' : 'text-black hover:text-gray-600'}`
+                }
+              >
+                {link.name}
+              </NavLink>
+            ))}
+            <div className="pt-8 border-t border-gray-100 flex flex-col gap-4 mt-auto">
+              <Link to="/dashboard" onClick={() => setIsOpen(false)} className="text-lg font-medium text-gray-500 hover:text-black transition-colors">Log In</Link>
+              <Link to="/dashboard" onClick={() => setIsOpen(false)}><Button size="lg" className="w-full text-base">Book a Shoot</Button></Link>
+            </div>
+         </div>
+      </div>
 
       <main className="flex-grow">
         <Outlet />
