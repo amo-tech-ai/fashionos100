@@ -1,6 +1,5 @@
 
 import React, { useState, useMemo } from 'react';
-import { GoogleGenAI } from "@google/genai";
 import { 
   Search, Sparkles, Calendar, Ticket, ChevronDown, MapPin, 
   ArrowRight, Star, Plus, X, SlidersHorizontal, Loader2
@@ -10,6 +9,7 @@ import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { CalendarPicker } from '../../components/CalendarPicker';
 import { SectionTag } from '../../components/SectionTag';
+import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 
 // Imported Components & Data
 import { FilterDropdown } from '../../components/events/FilterDropdown';
@@ -34,7 +34,7 @@ export const EventsPage: React.FC = () => {
     setShowCalendar(false);
   };
 
-  // AI Search Logic
+  // AI Search Logic (Secure)
   const handleAISearch = async () => {
     if (!searchQuery.trim()) {
       setAiMatches(null);
@@ -43,27 +43,29 @@ export const EventsPage: React.FC = () => {
 
     setIsAiLoading(true);
     try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         const eventsContext = EVENTS_DATA.map(e => ({
             id: e.id, title: e.title, category: e.category, tags: e.tags, location: e.location, date: e.date, price: e.price
         }));
 
-        const prompt = `
-        Act as an event search engine. Query: "${searchQuery}"
-        Data: ${JSON.stringify(eventsContext)}
-        Return JSON: { "matchIds": [id1, id2] } based on semantic relevance.
-        `;
-
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: { responseMimeType: "application/json" }
+        const response = await fetch(`${supabaseUrl}/functions/v1/search-events`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseAnonKey}`
+          },
+          body: JSON.stringify({
+            query: searchQuery,
+            eventsContext
+          })
         });
 
-        const result = JSON.parse(response.text || "{}");
+        if (!response.ok) throw new Error('AI Search failed');
+
+        const result = await response.json();
         setAiMatches(result.matchIds || []);
     } catch (error) {
         console.error("AI Search failed", error);
+        alert("Search unavailable at the moment.");
     } finally {
         setIsAiLoading(false);
     }

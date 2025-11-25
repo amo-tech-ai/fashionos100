@@ -8,7 +8,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
-import { GoogleGenAI } from "@google/genai";
+import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 
 // --- Types ---
 type ServiceType = 'photography' | 'video' | 'web' | null;
@@ -101,22 +101,29 @@ export const StartProjectPage: React.FC = () => {
     return true;
   };
 
-  // AI Brief Polish
+  // AI Brief Polish (Secure)
   const handlePolishBrief = async () => {
     if (!booking.brief) return;
     setLoadingAI(true);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: `Rewrite this creative brief to be more professional, structured, and clear for a fashion production team. Keep the original intent but organize it with headings like 'Concept', 'Mood', 'Lighting'. Input: "${booking.brief}"`
+      const response = await fetch(`${supabaseUrl}/functions/v1/polish-brief`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`
+        },
+        body: JSON.stringify({ brief: booking.brief })
       });
+
+      if (!response.ok) throw new Error('AI service unavailable');
       
-      if (response.text) {
-        setBooking(prev => ({ ...prev, brief: response.text }));
+      const data = await response.json();
+      if (data.text) {
+        setBooking(prev => ({ ...prev, brief: data.text }));
       }
     } catch (e) {
       console.error("AI Polish failed", e);
+      alert("Could not connect to AI service. Please try again.");
     } finally {
       setLoadingAI(false);
     }
