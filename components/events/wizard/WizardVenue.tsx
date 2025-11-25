@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Calendar, MapPin, CheckCircle2, ExternalLink, AlertCircle, Sparkles, Clock, ChevronRight, ChevronDown } from 'lucide-react';
+import { Calendar, MapPin, CheckCircle2, ExternalLink, AlertCircle, Sparkles, Clock } from 'lucide-react';
 import { CalendarPicker } from '../../CalendarPicker';
 import { WizardState } from './types';
 import { Button } from '../../Button';
@@ -22,7 +22,6 @@ interface OptimizationResult {
     confidence_score: number;
     reason: string;
   }[];
-  unresolvable_conflicts?: string[];
 }
 
 export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) => {
@@ -121,12 +120,6 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
     const startDate = new Date(year, month, day);
     const endDate = new Date(year, month, day);
 
-    // Parse time HH:MM
-    const [startH, startM] = slot.start_time.split(':').map(Number);
-    const [endH, endM] = slot.end_time.split(':').map(Number);
-
-    // We only store date in startDate for now in this simple wizard structure, 
-    // but we can update state.
     updateData({ 
       startDate: startDate,
       endDate: endDate

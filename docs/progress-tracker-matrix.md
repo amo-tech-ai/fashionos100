@@ -37,30 +37,30 @@ This document tracks the development lifecycle of the **FashionOS** platform. It
 | CalendarPicker Component | Custom date range picker | 🟢 Completed | 100% | `components/CalendarPicker.tsx` fully functional with range selection | — | None |
 | VeoTrailerGenerator Component | Video generation UI component | 🟢 Completed | 100% | `components/events/VeoTrailerGenerator.tsx` with polling and preview | — | None |
 | AICopilotWidget Component | AI chat widget for assistance | 🟢 Completed | 100% | `components/dashboard/Widgets.tsx` includes AICopilotWidget | — | None |
-| Loading States | Spinners and skeleton loaders | 🟢 Completed | 100% | `LoadingSpinner` and `SkeletonLoader` created and integrated | — | None |
+| Loading States | Spinners and skeleton loaders | 🟢 Completed | 100% | `LoadingSpinner` and `SkeletonLoader` created and integrated across all pages | — | None |
 | Error Boundaries | Error handling and fallback UI | ⚪ Not Started | 0% | — | No error boundary components | Create `ErrorBoundary.tsx` for graceful error handling |
 | Toast Notifications | Success/error notification system | ⚪ Not Started | 0% | — | No toast/notification system | Install react-hot-toast or create custom Toast component |
 | Modal Component | Reusable modal/dialog component | 🟡 In Progress | 30% | Some modals exist inline | No reusable Modal component | Create `components/Modal.tsx` with overlay and close handlers |
-| Form Components | Input, Textarea, Select components | 🟢 Completed | 100% | `components/forms/` directory created, integrated into pages and wizard | — | None |
+| Form Components | Input, Textarea, Select components | 🟢 Completed | 100% | `components/forms/` directory created, integrated into public pages and wizard | — | None |
 | Design Tokens | Color palette, typography scale, spacing | 🟢 Completed | 100% | Custom colors defined in `index.html` tailwind config, fonts loaded | Should be extracted to CSS variables | Create `design-tokens.css` with CSS variables |
 | **Layouts & Structure** | | | | | | |
 | PublicLayout | Public site layout with navbar and footer | 🟢 Completed | 100% | `layouts/PublicLayout.tsx` with responsive navbar, mobile menu, footer | — | None |
 | DashboardLayout | Dashboard layout with sidebar and header | 🟢 Completed | 100% | `layouts/DashboardLayout.tsx` with sidebar navigation, search, user menu | Needs real user data integration | Connect to auth context for user info |
 | Navbar Component | Public site navigation bar | 🟢 Completed | 100% | Navbar integrated in `PublicLayout.tsx` with scroll effects | — | None |
 | Footer Component | Site footer with links and info | 🟢 Completed | 100% | `components/Footer.tsx` exists with links and social icons | — | None |
-| Mobile Navigation | Responsive mobile menu | 🟢 Completed | 100% | Mobile menu implemented in `PublicLayout.tsx` with slide animation | — | None |
+| Mobile Navigation | Responsive mobile menu | 🟢 Completed | 100% | Mobile menu implemented in `PublicLayout.tsx` with smooth slide animation and backdrop | — | None |
 | Dashboard Sidebar | Sidebar navigation for dashboard | 🟢 Completed | 100% | Sidebar in `DashboardLayout.tsx` with menu items and icons | Needs active state highlighting | Enhance active state visual feedback |
 | Dashboard Header | Top header bar with search and user menu | 🟢 Completed | 90% | Header exists with search input and user area | User menu dropdown not implemented | Create user dropdown menu with profile/logout |
 | **Marketing & Public Pages** | | | | | | |
 | HomePage | Landing page with hero and features | 🟢 Completed | 100% | `pages/public/HomePage.tsx` complete with hero, services, CTA sections | Uses mock data | Connect testimonials and stats to backend |
 | ServicesPage | Main services overview page | 🟢 Completed | 100% | `pages/public/ServicesPage.tsx` with service cards and descriptions | — | None |
-| PhotographyPage | Photography services detail page | 🟢 Completed | 100% | `pages/public/PhotographyPage.tsx` with packages, portfolio, contact form | Contact form not connected | Connect form to backend/email service |
+| PhotographyPage | Photography services detail page | 🟢 Completed | 100% | `pages/public/PhotographyPage.tsx` with packages, portfolio, contact form (refactored inputs) | Contact form not connected | Connect form to backend/email service |
 | VideoProductionPage | Video production services page | 🟢 Completed | 100% | `pages/public/VideoProductionPage.tsx` complete with services and testimonials | Contact form not connected | Connect form to backend |
 | SocialPage | Social media services page | 🟢 Completed | 100% | `pages/public/SocialPage.tsx` with service offerings and case studies | Contact form not connected | Connect form to backend |
 | EcommercePage | E-commerce content services page | 🟢 Completed | 100% | `pages/public/EcommercePage.tsx` with packages and pricing | Contact form not connected | Connect form to backend |
 | DirectoryPage | Talent directory with filters | 🟢 Completed | 100% | `pages/public/DirectoryPage.tsx` with grid/list view, filters, search | Uses mock data | Connect to Supabase `profiles` table |
 | EventsPage | Public events listing page | 🟢 Completed | 100% | `pages/public/EventsPage.tsx` with event cards, filters, AI search | Uses mock data | Connect to Supabase `events` table |
-| ContactPage | Dedicated contact page | 🟢 Completed | 100% | `pages/public/ContactPage.tsx` fully implemented with form, map placeholder, and info cards | Form submission is mocked (setTimeout) | Connect form to `messages` table in Supabase |
+| ContactPage | Dedicated contact page | 🟢 Completed | 100% | `pages/public/ContactPage.tsx` fully implemented with form components and loading states | Form submission is mocked (setTimeout) | Connect form to `messages` table in Supabase |
 | PortfolioPage | Portfolio showcase page | 🟡 In Progress | 30% | `/portfolio` route exists but redirects to DirectoryPage | No dedicated portfolio page | Create `PortfolioPage.tsx` with gallery and case studies |
 | WebDesignPage | Web design services page | 🟢 Completed | 100% | `pages/public/WebDesignPage.tsx` created and linked | — | None |
 | StartProjectPage | High-conversion briefing wizard | 🟢 Completed | 100% | `StartProjectPage.tsx` with multi-step wizard logic implemented | Backend submission mock | Connect to `shoots` table |
@@ -136,7 +136,7 @@ This document tracks the development lifecycle of the **FashionOS** platform. It
 | Sponsors | Activation tracking and logo management | 🟢 Completed | 90% | `DashboardSponsors.tsx` exists with Kanban pipeline, list view, and AI suggestion agent | Uses mock data | Connect to `sponsors` table |
 | WhatsApp Auto | Twilio/Meta API for notifications | ⚪ Not Started | 0% | — | No Twilio/Meta SDK, no webhook handlers | Install Twilio SDK, create notification service |
 | **Marketing & Conversion** | | | | | | |
-| Start Project Page | High-conversion briefing wizard | 🟢 Completed | 100% | `StartProjectPage.tsx` fully implemented with multi-step wizard | — | None |
+| Start Project Wizard | High-conversion briefing wizard | 🟢 Completed | 100% | `StartProjectPage.tsx` fully implemented with multi-step wizard | — | None |
 | **Infrastructure** | | | | | | |
 | Supabase DB | Tables, RLS policies, Triggers | 🟡 In Progress | 15% | Schema documented (`docs/03-shoot-schema.md`, `docs/06-event-schema.md`), SQL scripts ready | **No actual database connection**, no migrations run, no `.env` with Supabase keys | Run SQL migrations in Supabase dashboard, add Supabase client to project |
 | Edge Functions | Serverless logic for payments/emails | 🟢 Completed | 80% | Core AI functions (`generate-event-draft`, `resolve-venue`, `ai-copilot`, `generate-media`, `polish-brief`, `sponsor-ai`) implemented and secure | Payment/Email functions pending | Write `create-payment-intent`, `send-email` functions |

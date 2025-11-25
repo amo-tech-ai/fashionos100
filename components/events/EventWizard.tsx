@@ -26,6 +26,8 @@ export const EventWizard: React.FC = () => {
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiUrl, setAiUrl] = useState('');
   const [aiFile, setAiFile] = useState<File | null>(null);
+  const [aiMoods, setAiMoods] = useState<string[]>([]);
+  const [aiAudiences, setAiAudiences] = useState<string[]>([]);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -63,7 +65,7 @@ export const EventWizard: React.FC = () => {
   // --- AI Integration ---
 
   const handleAIGenerate = async () => {
-    if (!aiPrompt.trim() && !aiUrl && !aiFile) return;
+    if (!aiPrompt.trim() && !aiUrl && !aiFile && aiMoods.length === 0 && aiAudiences.length === 0) return;
     setIsAiLoading(true);
 
     try {
@@ -75,6 +77,13 @@ export const EventWizard: React.FC = () => {
         fileType = aiFile.type;
       }
 
+      // Construct enhanced prompt with selected tags
+      const enhancedPrompt = `
+        ${aiPrompt}
+        ${aiMoods.length > 0 ? `\nDesired Mood/Vibe: ${aiMoods.join(', ')}.` : ''}
+        ${aiAudiences.length > 0 ? `\nTarget Audience: ${aiAudiences.join(', ')}.` : ''}
+      `.trim();
+
       // Call the backend Edge Function instead of client-side SDK
       const response = await fetch(`${supabaseUrl}/functions/v1/generate-event-draft`, {
         method: 'POST',
@@ -83,7 +92,7 @@ export const EventWizard: React.FC = () => {
           'Authorization': `Bearer ${supabaseAnonKey}`
         },
         body: JSON.stringify({
-          prompt: aiPrompt,
+          prompt: enhancedPrompt,
           url: aiUrl,
           fileBase64,
           fileType
@@ -120,7 +129,7 @@ export const EventWizard: React.FC = () => {
           titleSuggestions: data.eventTitleSuggestions || [],
           description: data.descriptionLong || data.descriptionShort || prev.description,
           category: (CATEGORIES.includes(data.category) ? data.category : 'Runway'),
-          targetAudience: data.targetAudience || prev.targetAudience,
+          targetAudience: data.targetAudience || (aiAudiences.length > 0 ? aiAudiences.join(', ') : prev.targetAudience),
           location: data.location || prev.location,
           startDate: newStartDate,
           endDate: newEndDate,
@@ -322,6 +331,10 @@ export const EventWizard: React.FC = () => {
               setAiUrl={setAiUrl}
               aiFile={aiFile}
               setAiFile={setAiFile}
+              aiMoods={aiMoods}
+              setAiMoods={setAiMoods}
+              aiAudiences={aiAudiences}
+              setAiAudiences={setAiAudiences}
               onGenerate={handleAIGenerate}
               onSkip={() => setCurrentStep(Step.BASICS)}
               isLoading={isAiLoading}

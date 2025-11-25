@@ -1,15 +1,18 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Camera, Video, Monitor, ArrowRight, ArrowLeft, Check, 
-  ChevronUp, ChevronDown, ShoppingBag, Image as ImageIcon, 
-  Smartphone, Calendar, Info, X, Wand2
+  ChevronUp, ChevronDown, Info, X, Wand2, Calendar, Clock, MapPin
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { Input } from '../../components/forms/Input';
+import { Select } from '../../components/forms/Select';
+import { Textarea } from '../../components/forms/Textarea';
+import { CalendarPicker } from '../../components/CalendarPicker';
 
 // --- Types ---
 type ServiceType = 'photography' | 'video' | 'web' | null;
@@ -20,7 +23,9 @@ interface BookingState {
   category: CategoryType;
   quantity: number;
   brief: string;
-  date: string;
+  date: Date | null;
+  time: string;
+  location: string;
 }
 
 // --- Constants & Mock Data ---
@@ -65,6 +70,7 @@ export const StartProjectPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
   
   // Booking State
   const [booking, setBooking] = useState<BookingState>({
@@ -72,7 +78,9 @@ export const StartProjectPage: React.FC = () => {
     category: null,
     quantity: 10, // default looks/seconds/pages
     brief: '',
-    date: '',
+    date: null,
+    time: '',
+    location: ''
   });
 
   // Scroll to top on step change
@@ -82,7 +90,7 @@ export const StartProjectPage: React.FC = () => {
 
   // Navigation Handlers
   const handleNext = () => {
-    if (currentStep < 4) setCurrentStep(curr => curr + 1);
+    if (currentStep < 5) setCurrentStep(curr => curr + 1);
     else {
       // Submit Logic
       console.log('Booking submitted:', booking);
@@ -98,7 +106,9 @@ export const StartProjectPage: React.FC = () => {
   const canProceed = () => {
     if (currentStep === 0) return !!booking.service;
     if (currentStep === 1) return !!booking.category;
-    if (currentStep === 3) return booking.brief.length > 10;
+    // Step 2 is Quantity (always valid due to default)
+    if (currentStep === 3) return !!booking.date && !!booking.time && !!booking.location;
+    if (currentStep === 4) return booking.brief.length > 10;
     return true;
   };
 
@@ -229,6 +239,76 @@ export const StartProjectPage: React.FC = () => {
     </div>
   );
 
+  const renderLogisticsStep = () => (
+    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
+      <h3 className="font-serif font-bold text-2xl mb-6">When & Where</h3>
+      
+      {/* Date Picker */}
+      <div className="mb-8 relative">
+        <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">Date</label>
+        <button 
+          onClick={() => setShowCalendar(!showCalendar)}
+          className="w-full p-4 border border-gray-200 rounded-xl flex items-center justify-between hover:border-fashion-purple transition-colors text-left"
+        >
+          <div className="flex items-center gap-3">
+            <Calendar className="text-fashion-purple" size={20} />
+            <span className={booking.date ? "text-fashion-black font-medium" : "text-gray-400"}>
+              {booking.date ? booking.date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : "Select a date"}
+            </span>
+          </div>
+          <ChevronDown size={16} className="text-gray-400" />
+        </button>
+        
+        {showCalendar && (
+          <div className="absolute top-full left-0 z-20 mt-2">
+             <CalendarPicker 
+               onClose={() => setShowCalendar(false)}
+               onApply={(start) => {
+                 setBooking(prev => ({ ...prev, date: start }));
+                 setShowCalendar(false);
+               }}
+               initialStart={booking.date}
+               initialEnd={null}
+             />
+          </div>
+        )}
+      </div>
+
+      {/* Time Slots */}
+      <div className="mb-8">
+         <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">Start Time</label>
+         <div className="grid grid-cols-3 gap-3">
+            {["09:00 AM", "11:00 AM", "01:00 PM", "03:00 PM", "05:00 PM"].map(time => (
+               <button
+                 key={time}
+                 onClick={() => setBooking(prev => ({ ...prev, time }))}
+                 className={`py-3 px-4 rounded-xl text-sm font-medium border transition-all ${booking.time === time ? 'bg-fashion-black text-white border-fashion-black' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
+               >
+                 {time}
+               </button>
+            ))}
+         </div>
+      </div>
+
+      {/* Location */}
+      <div>
+         <label className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 block">Location</label>
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {['Studio A (Brooklyn)', 'Studio B (Manhattan)'].map(loc => (
+               <button
+                  key={loc}
+                  onClick={() => setBooking(prev => ({ ...prev, location: loc }))}
+                  className={`p-4 rounded-xl border text-left transition-all flex items-center gap-3 ${booking.location === loc ? 'border-fashion-purple bg-purple-50 ring-1 ring-fashion-purple' : 'border-gray-200 hover:border-gray-300'}`}
+               >
+                  <MapPin className={booking.location === loc ? "text-fashion-purple" : "text-gray-400"} size={20} />
+                  <span className={`text-sm font-medium ${booking.location === loc ? 'text-fashion-purple' : 'text-gray-600'}`}>{loc}</span>
+               </button>
+            ))}
+         </div>
+      </div>
+    </div>
+  );
+
   const renderBriefStep = () => (
     <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden">
       <div className="flex justify-between items-center mb-4">
@@ -242,11 +322,11 @@ export const StartProjectPage: React.FC = () => {
           {loadingAI ? "Polishing..." : "AI Polish"}
         </button>
       </div>
-      <textarea
+      <Textarea
         value={booking.brief}
         onChange={(e) => setBooking(prev => ({ ...prev, brief: e.target.value }))}
         placeholder="Describe your vision... e.g. 'Minimalist aesthetic, harsh lighting, focus on textures. Reference Balenciaga SS24 campaign.'"
-        className="w-full h-64 p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-fashion-purple/20 focus:bg-white focus:outline-none transition-all resize-none text-base leading-relaxed"
+        className="h-64"
       />
       <div className="mt-4 flex justify-between items-center">
         <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Minimum 10 characters</p>
@@ -278,6 +358,14 @@ export const StartProjectPage: React.FC = () => {
           <span className="text-gray-500 text-sm">Scope</span>
           <span className="font-bold text-lg">{booking.quantity} {booking.service === 'web' ? 'Pages' : (booking.service === 'video' ? 'Seconds' : 'Looks')}</span>
         </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-500 text-sm">Date</span>
+          <span className="font-bold text-lg">{booking.date?.toLocaleDateString() || 'Not selected'}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-500 text-sm">Location</span>
+          <span className="font-bold text-lg">{booking.location}</span>
+        </div>
         <div className="flex justify-between items-center pt-2">
           <span className="text-gray-500 text-sm">Estimated Total</span>
           <span className="font-serif font-bold text-3xl text-fashion-purple">${calculateTotal(booking).toLocaleString()}</span>
@@ -297,8 +385,9 @@ export const StartProjectPage: React.FC = () => {
       case 0: return renderServiceStep();
       case 1: return renderCategoryStep();
       case 2: return renderScopeStep();
-      case 3: return renderBriefStep();
-      case 4: return renderReviewStep();
+      case 3: return renderLogisticsStep();
+      case 4: return renderBriefStep();
+      case 5: return renderReviewStep();
       default: return null;
     }
   };
@@ -308,6 +397,7 @@ export const StartProjectPage: React.FC = () => {
     { title: "Select Service", sub: "What type of content do you need?" },
     { title: "Choose Style", sub: "Pick a category that matches your vision." },
     { title: "Define Scope", sub: "How much content do you need?" },
+    { title: "Logistics", sub: "When and where should we shoot?" },
     { title: "Creative Brief", sub: "Tell us about your vision." },
     { title: "Review", sub: "Confirm your booking details." },
   ];
@@ -319,13 +409,13 @@ export const StartProjectPage: React.FC = () => {
       <div className="fixed top-20 left-0 right-0 z-30 bg-[#FBF8F5]/95 backdrop-blur-sm border-b border-gray-200/50 transition-all">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">
-            <span>Step {currentStep + 1} of 5</span>
-            <span>{Math.round(((currentStep + 1) / 5) * 100)}% Complete</span>
+            <span>Step {currentStep + 1} of 6</span>
+            <span>{Math.round(((currentStep + 1) / 6) * 100)}% Complete</span>
           </div>
           <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
             <div 
               className="h-full bg-fashion-black transition-all duration-500 ease-out" 
-              style={{ width: `${((currentStep + 1) / 5) * 100}%` }} 
+              style={{ width: `${((currentStep + 1) / 6) * 100}%` }} 
             />
           </div>
         </div>
@@ -369,6 +459,12 @@ export const StartProjectPage: React.FC = () => {
                   <span className="text-sm text-gray-500">Quantity</span>
                   <span className="text-sm font-bold">{booking.quantity}</span>
                 </div>
+                {booking.date && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-500">Date</span>
+                    <span className="text-sm font-bold">{booking.date.toLocaleDateString()}</span>
+                  </div>
+                )}
               </div>
 
               <div className="pt-4 border-t border-gray-100">
@@ -429,7 +525,7 @@ export const StartProjectPage: React.FC = () => {
             variant="primary" 
             className="flex-1 h-[52px] text-sm" // Large touch target
           >
-            {currentStep === 4 ? 'Confirm' : 'Next'} <ArrowRight size={16} className="ml-2" />
+            {currentStep === 5 ? 'Confirm' : 'Next'} <ArrowRight size={16} className="ml-2" />
           </Button>
         </div>
       </div>
@@ -441,7 +537,7 @@ export const StartProjectPage: React.FC = () => {
             <ArrowLeft size={16} className="mr-2" /> Back
           </Button>
           <Button onClick={handleNext} disabled={!canProceed()} variant="primary" className="px-12">
-            {currentStep === 4 ? 'Confirm Booking' : 'Next Step'} <ArrowRight size={16} className="ml-2" />
+            {currentStep === 5 ? 'Confirm Booking' : 'Next Step'} <ArrowRight size={16} className="ml-2" />
           </Button>
         </div>
       </div>

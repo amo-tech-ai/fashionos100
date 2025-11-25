@@ -1,6 +1,6 @@
 
 import React, { useRef } from 'react';
-import { Sparkles, Link as LinkIcon, FileText, Upload, X } from 'lucide-react';
+import { Sparkles, Link as LinkIcon, FileText, Upload, X, Tag } from 'lucide-react';
 import { Button } from '../../Button';
 import { LoadingSpinner } from '../../LoadingSpinner';
 
@@ -11,15 +11,26 @@ interface WizardIntroProps {
   setAiUrl: (val: string) => void;
   aiFile: File | null;
   setAiFile: (val: File | null) => void;
+  // New selection props
+  aiMoods: string[];
+  setAiMoods: (vals: string[]) => void;
+  aiAudiences: string[];
+  setAiAudiences: (vals: string[]) => void;
+  
   onGenerate: () => void;
   onSkip: () => void;
   isLoading: boolean;
 }
 
+const MOOD_OPTIONS = ["Luxurious", "Sustainable", "Edgy", "Minimalist", "High Energy", "Professional", "Exclusive", "Playful"];
+const AUDIENCE_OPTIONS = ["Gen Z", "VIPs", "Industry Insiders", "Press/Media", "General Public", "Buyers", "Influencers"];
+
 export const WizardIntro: React.FC<WizardIntroProps> = ({ 
   aiPrompt, setAiPrompt, 
   aiUrl, setAiUrl, 
   aiFile, setAiFile, 
+  aiMoods, setAiMoods,
+  aiAudiences, setAiAudiences,
   onGenerate, onSkip, isLoading 
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -30,12 +41,20 @@ export const WizardIntro: React.FC<WizardIntroProps> = ({
     }
   };
 
+  const toggleSelection = (list: string[], setList: (vals: string[]) => void, item: string) => {
+    if (list.includes(item)) {
+      setList(list.filter(i => i !== item));
+    } else {
+      setList([...list, item]);
+    }
+  };
+
   return (
-    <div className="max-w-2xl mx-auto text-center pt-8">
+    <div className="max-w-2xl mx-auto text-center pt-4">
       <div className="inline-flex items-center gap-2 bg-purple-50 text-purple-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6 border border-purple-100">
         <Sparkles size={14} /> AI Event Creator
       </div>
-      <h1 className="text-4xl md:text-5xl font-serif font-bold mb-6 text-gray-900">
+      <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 text-gray-900">
         Describe your event. <br />
         <span className="text-gray-400">We'll handle the details.</span>
       </h1>
@@ -54,8 +73,51 @@ export const WizardIntro: React.FC<WizardIntroProps> = ({
           onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onGenerate(); } }}
         />
 
+        {/* Guidance Chips */}
+        <div className="px-4 pb-4 flex flex-col gap-3">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <Tag size={12} /> Guide the AI
+            </div>
+            
+            {/* Moods */}
+            <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+              {MOOD_OPTIONS.map(mood => (
+                <button
+                  key={mood}
+                  onClick={() => toggleSelection(aiMoods, setAiMoods, mood)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap border ${
+                    aiMoods.includes(mood) 
+                      ? 'bg-black text-white border-black shadow-sm' 
+                      : 'bg-white text-gray-500 border-gray-200 hover:border-purple-300'
+                  }`}
+                >
+                  {mood}
+                </button>
+              ))}
+            </div>
+
+            {/* Audiences */}
+            <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
+              {AUDIENCE_OPTIONS.map(aud => (
+                <button
+                  key={aud}
+                  onClick={() => toggleSelection(aiAudiences, setAiAudiences, aud)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap border ${
+                    aiAudiences.includes(aud) 
+                      ? 'bg-black text-white border-black shadow-sm' 
+                      : 'bg-white text-gray-500 border-gray-200 hover:border-purple-300'
+                  }`}
+                >
+                  {aud}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Attachments Area */}
-        <div className="px-4 pb-2 flex flex-col gap-3">
+        <div className="px-4 pb-2 flex flex-col gap-3 border-t border-gray-50 pt-3">
           
           {/* URL Input */}
           <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2 border border-gray-100 focus-within:border-purple-300 transition-colors">
@@ -111,7 +173,7 @@ export const WizardIntro: React.FC<WizardIntroProps> = ({
               size="sm" 
               className="rounded-full px-6"
               onClick={onGenerate}
-              disabled={isLoading || (!aiPrompt.trim() && !aiUrl && !aiFile)}
+              disabled={isLoading || (!aiPrompt.trim() && !aiUrl && !aiFile && aiMoods.length === 0 && aiAudiences.length === 0)}
             >
               {isLoading ? <LoadingSpinner size={16} /> : <Sparkles size={16} />}
               {isLoading ? 'Analyzing...' : 'Generate Draft'}

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { GoogleGenAI } from "https://esm.sh/@google/genai"
 
@@ -21,7 +20,7 @@ serve(async (req: Request) => {
     const ai = new GoogleGenAI({ apiKey })
     
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash', // Fast model for chat
+      model: 'gemini-3-pro-preview', // Upgraded to Gemini 3 Pro
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         systemInstruction: systemInstruction || "You are a helpful assistant.",

@@ -113,7 +113,10 @@ export const AICopilotWidget: React.FC<AICopilotProps> = ({
                 <Sparkles className="text-yellow-300 animate-pulse" size={20} />
                 <div>
                   <h3 className="font-serif font-bold text-lg leading-none">{title}</h3>
-                  {phase && <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">Phase: {phase}</span>}
+                  <div className="flex items-center gap-2 mt-1">
+                    {phase && <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">Phase: {phase}</span>}
+                    <span className="text-[9px] bg-white/20 px-1.5 py-0.5 rounded text-white/90 font-medium backdrop-blur-sm">Gemini 3</span>
+                  </div>
                 </div>
              </div>
            </div>

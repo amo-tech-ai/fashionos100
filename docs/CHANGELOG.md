@@ -16,6 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.1] - 2025-03-03
+### ✨ UI/UX Polish
+- **Mobile Navigation:** Implemented smooth slide-in menu with backdrop blur and scroll locking for premium mobile feel.
+- **Loading States:** Replaced ad-hoc loading text with standardized `LoadingSpinner` and `SkeletonLoader` components across all pages.
+- **Form Components:** Refactored `ContactPage`, `Wizard`, and Service pages to use a shared library of `Input`, `Select`, and `Textarea` components for visual consistency.
+
+### 🐛 Fixed
+- **Module Resolution:** Fixed critical "Failed to resolve module specifier" errors by replacing alias imports (`@/`) with relative paths (`../../`) in Wizard and Service pages.
+
 ## [0.7.0] - 2025-03-03
 ### ✨ Added
 - **Web Design Page:**
