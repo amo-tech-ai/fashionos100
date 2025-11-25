@@ -76,25 +76,30 @@ export const EventWizard: React.FC = () => {
           responseSchema: {
             type: Type.OBJECT,
             properties: {
-              eventTitleSuggestions: { 
-                type: Type.ARRAY, 
-                items: { type: Type.STRING } 
-              },
-              eventDescriptionShort: { type: Type.STRING },
-              eventDescriptionLong: { type: Type.STRING },
-              category: { type: Type.STRING },
-              location: { type: Type.STRING },
-              date: { type: Type.STRING },
-              ticket_price_estimate: { type: Type.NUMBER },
-              ticket_name_estimate: { type: Type.STRING },
-              ticket_quantity_estimate: { type: Type.NUMBER },
-              schedule: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    time: { type: Type.STRING },
-                    activity: { type: Type.STRING }
+              autoFilled: {
+                type: Type.OBJECT,
+                properties: {
+                  eventTitleSuggestions: { 
+                    type: Type.ARRAY, 
+                    items: { type: Type.STRING } 
+                  },
+                  eventDescriptionShort: { type: Type.STRING },
+                  eventDescriptionLong: { type: Type.STRING },
+                  category: { type: Type.STRING },
+                  location: { type: Type.STRING },
+                  date: { type: Type.STRING },
+                  ticket_price_estimate: { type: Type.NUMBER },
+                  ticket_name_estimate: { type: Type.STRING },
+                  ticket_quantity_estimate: { type: Type.NUMBER },
+                  schedule: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        time: { type: Type.STRING },
+                        activity: { type: Type.STRING }
+                      }
+                    }
                   }
                 }
               }
@@ -103,19 +108,20 @@ export const EventWizard: React.FC = () => {
         }
       });
 
-      const data = JSON.parse(response.text || "{}");
+      const result = JSON.parse(response.text || "{}");
+      const data = result.autoFilled || {};
 
       // Merge AI data into state
       setState(prev => ({
         ...prev,
-        title: data.eventTitleSuggestions?.[0] || data.title || prev.title,
+        title: data.eventTitleSuggestions?.[0] || prev.title,
         titleSuggestions: data.eventTitleSuggestions || [],
-        description: data.eventDescriptionLong || data.description || prev.description,
+        description: data.eventDescriptionLong || prev.description,
         category: data.category || prev.category,
         location: data.location || prev.location,
         startDate: data.date ? new Date(data.date) : prev.startDate,
         tickets: data.ticket_price_estimate ? [{
-          name: data.ticket_name_estimate || 'General',
+          name: data.ticket_name_estimate || 'General Admission',
           price: data.ticket_price_estimate,
           quantity: data.ticket_quantity_estimate || 100
         }] : prev.tickets,
