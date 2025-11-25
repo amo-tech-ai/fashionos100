@@ -1,16 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { GoogleGenAI, Type } from "https://esm.sh/@google/genai"
+import { GoogleGenAI, Type } from "https://esm.sh/@google/genai@0.1.1"
+import { corsHeaders } from "../_shared/cors.ts"
 
-// Fix: Declare Deno to avoid TypeScript errors in environments that don't have Deno types globally available
 declare const Deno: any;
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-serve(async (req: Request) => {
-  // Handle CORS
+serve(async (req) => {
+  // 1. Handle CORS Preflight Request
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -23,7 +18,6 @@ serve(async (req: Request) => {
 
     const ai = new GoogleGenAI({ apiKey })
 
-    // Define Schema
     const schema = {
       type: Type.OBJECT,
       properties: {
@@ -74,10 +68,7 @@ serve(async (req: Request) => {
     }
 
     if (parts.length === 0) {
-       return new Response(JSON.stringify({ error: "No input provided" }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      })
+       throw new Error("No prompt, URL, or file provided.")
     }
 
     const response = await ai.models.generateContent({
@@ -95,11 +86,18 @@ serve(async (req: Request) => {
 
         Reasoning Steps:
         1. Analyze the input for explicit details (Date, Location, Theme, Target Audience).
-        2. If details are missing, INFER reasonable defaults based on the event type (e.g., Runways usually happen in the evening, Workshops in the morning).
-        3. Generate a professional description and catchy title suggestions.
-        4. Structure ticket tiers (e.g., VIP vs General).
-        5. Create a default schedule if one is not provided.
-        6. Identify or INFER the 'targetAudience' if not explicitly provided.
+        2. If details are missing, INFER reasonable defaults based on the event type.
+           - Runways typically happen in the evening. Workshops in the morning.
+        3. Infer 'targetAudience' based on category if not provided:
+           - 'Runway' -> 'Industry Professionals, Buyers'
+           - 'Pop-up' -> 'General Public'
+           - 'Workshop' -> 'Aspiring Designers, Students'
+           - 'Party' -> 'Influencers, VIPs'
+        4. Generate a professional description and catchy title suggestions.
+        5. Structure ticket tiers if not provided:
+           - Suggest 'General Admission' and 'VIP' with reasonable prices based on the vibe.
+        6. Create a default schedule if one is not provided:
+           - E.g. 'Doors Open', 'Main Event', 'Networking'.
 
         Output:
         - Return ONLY valid JSON matching the schema.`,
@@ -110,10 +108,11 @@ serve(async (req: Request) => {
 
     return new Response(responseText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200
     })
 
   } catch (error: any) {
-    console.error(error)
+    console.error("Error:", error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,

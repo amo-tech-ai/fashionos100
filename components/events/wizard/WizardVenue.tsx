@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Calendar, MapPin, Loader2, CheckCircle2, ExternalLink, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, Loader2, CheckCircle2, ExternalLink, AlertCircle, Sparkles, Clock, ChevronRight, ChevronDown } from 'lucide-react';
 import { CalendarPicker } from '../../CalendarPicker';
 import { WizardState } from './types';
 import { Button } from '../../Button';
@@ -11,10 +11,29 @@ interface WizardVenueProps {
   updateData: (updates: Partial<WizardState>) => void;
 }
 
+interface OptimizationResult {
+  thought_process: string;
+  suggested_slots: {
+    date: string;
+    start_time: string;
+    end_time: string;
+    confidence_score: number;
+    reason: string;
+  }[];
+  unresolvable_conflicts?: string[];
+}
+
 export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
+  
+  // Scheduler State
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [venueConstraints, setVenueConstraints] = useState('');
+  const [talentSchedules, setTalentSchedules] = useState('');
+  const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
 
   const handleVerifyLocation = async () => {
     if (!data.location.trim()) return;
@@ -22,7 +41,6 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
     setVerifyError(null);
 
     try {
-      // Call the Supabase Edge Function
       if (!supabaseUrl || !supabaseAnonKey) {
         throw new Error("Missing Supabase configuration");
       }
@@ -40,7 +58,7 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
 
       if (result.success && result.data) {
         updateData({
-          location: result.data.location, // Use the official Maps name
+          location: result.data.location,
           mapsUri: result.data.googleMapsUri,
           mapsSources: result.data.sources
         });
@@ -49,11 +67,70 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
       }
     } catch (error) {
       console.error("Verification failed", error);
-      // Fallback for demo purposes if backend is not connected
       setVerifyError("Verification service unavailable (Backend not connected).");
     } finally {
       setIsVerifying(false);
     }
+  };
+
+  const handleOptimizeSchedule = async () => {
+    if (!venueConstraints && !talentSchedules) return;
+    setIsOptimizing(true);
+    setOptimizationResult(null);
+
+    try {
+      const response = await fetch(`${supabaseUrl}/functions/v1/schedule-optimizer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`
+        },
+        body: JSON.stringify({
+          eventDetails: {
+            title: data.title,
+            category: data.category,
+            targetAudience: data.targetAudience
+          },
+          venueConstraints,
+          talentSchedules,
+          deadline: "2025-12-31" // Default or add input for deadline
+        })
+      });
+
+      const result = await response.json();
+      if (result.error) throw new Error(result.error);
+      setOptimizationResult(result);
+
+    } catch (error) {
+      console.error("Optimization failed", error);
+      alert("Failed to optimize schedule. Please try again.");
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
+
+  const applySlot = (slot: { date: string, start_time: string, end_time: string }) => {
+    // Parse date string YYYY-MM-DD
+    const dateParts = slot.date.split('-');
+    const year = parseInt(dateParts[0]);
+    const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
+    const day = parseInt(dateParts[2]);
+
+    const startDate = new Date(year, month, day);
+    const endDate = new Date(year, month, day);
+
+    // Parse time HH:MM
+    const [startH, startM] = slot.start_time.split(':').map(Number);
+    const [endH, endM] = slot.end_time.split(':').map(Number);
+
+    // We only store date in startDate for now in this simple wizard structure, 
+    // but we can update state.
+    updateData({ 
+      startDate: startDate,
+      endDate: endDate
+    });
+    
+    setShowScheduler(false);
   };
 
   return (
@@ -62,7 +139,91 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
       <div className="space-y-6">
         
         <div className="space-y-2 relative">
-          <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Date & Time</label>
+          <div className="flex justify-between items-end">
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Date & Time</label>
+            <button 
+              onClick={() => setShowScheduler(!showScheduler)}
+              className="text-[10px] font-bold uppercase tracking-widest text-purple-600 flex items-center gap-1 hover:text-purple-800 transition-colors"
+            >
+              <Sparkles size={12} />
+              {showScheduler ? 'Hide Assistant' : 'AI Scheduler'}
+            </button>
+          </div>
+
+          {/* AI Scheduler Panel */}
+          {showScheduler && (
+            <div className="mb-4 bg-purple-50 border border-purple-100 rounded-xl p-4 animate-in slide-in-from-top-2">
+              <h3 className="text-sm font-bold text-purple-800 mb-2 flex items-center gap-2">
+                <Clock size={16} /> Smart Schedule Optimizer
+              </h3>
+              <p className="text-xs text-purple-600 mb-4">
+                Paste availability emails or notes. Gemini will reason through conflicts to find the best slots.
+              </p>
+              
+              <div className="grid grid-cols-1 gap-3 mb-4">
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-purple-400 mb-1 block">Venue Constraints</label>
+                  <textarea 
+                    value={venueConstraints}
+                    onChange={(e) => setVenueConstraints(e.target.value)}
+                    placeholder="e.g. Available Mon-Fri after 6pm, Weekends all day..."
+                    className="w-full p-2 text-xs border border-purple-200 rounded-lg focus:outline-none focus:border-purple-400 bg-white h-16 resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-purple-400 mb-1 block">Model/Talent Schedules</label>
+                  <textarea 
+                    value={talentSchedules}
+                    onChange={(e) => setTalentSchedules(e.target.value)}
+                    placeholder="e.g. Lead model traveling June 10-15. Photographer only free Tuesdays..."
+                    className="w-full p-2 text-xs border border-purple-200 rounded-lg focus:outline-none focus:border-purple-400 bg-white h-16 resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button 
+                  size="sm" 
+                  variant="accent" 
+                  onClick={handleOptimizeSchedule}
+                  disabled={isOptimizing || (!venueConstraints && !talentSchedules)}
+                  className="text-xs h-8 px-4"
+                >
+                  {isOptimizing ? <Loader2 className="animate-spin" size={12} /> : <Sparkles size={12} className="mr-1" />}
+                  Find Best Slots
+                </Button>
+              </div>
+
+              {/* AI Reasoning Output */}
+              {optimizationResult && (
+                <div className="mt-4 pt-4 border-t border-purple-200/50">
+                  <div className="bg-white rounded-lg p-3 mb-3 border border-purple-100">
+                    <p className="text-[10px] font-bold uppercase text-gray-400 mb-1">AI Reasoning</p>
+                    <p className="text-xs text-gray-600 italic leading-relaxed">"{optimizationResult.thought_process}"</p>
+                  </div>
+
+                  <p className="text-[10px] font-bold uppercase text-gray-400 mb-2">Suggested Options</p>
+                  <div className="space-y-2">
+                    {optimizationResult.suggested_slots.map((slot, i) => (
+                      <div key={i} className="bg-white border border-gray-200 rounded-lg p-3 flex justify-between items-center hover:border-purple-300 transition-colors group cursor-pointer" onClick={() => applySlot(slot)}>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-gray-800">{slot.date}</span>
+                            <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">{slot.confidence_score}% Match</span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5">{slot.start_time} - {slot.end_time} • {slot.reason}</p>
+                        </div>
+                        <Button size="sm" variant="ghost" className="text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                          Apply
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <div 
             className="w-full p-3 border border-gray-200 rounded-xl flex items-center gap-3 cursor-pointer hover:border-purple-400 transition-colors bg-gray-50/50"
             onClick={() => setShowCalendar(!showCalendar)}

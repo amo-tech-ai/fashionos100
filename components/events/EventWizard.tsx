@@ -15,6 +15,7 @@ import { WizardTickets } from './wizard/WizardTickets';
 import { WizardSchedule } from './wizard/WizardSchedule';
 import { WizardReview } from './wizard/WizardReview';
 import { WizardState, Step, MOCK_PREVIEW_IMAGE, CATEGORIES } from './wizard/types';
+import { WizardSuccess } from './wizard/WizardSuccess';
 
 export const EventWizard: React.FC = () => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ export const EventWizard: React.FC = () => {
     setState(prev => ({ ...prev, ...updates }));
   };
 
-  // Helper to convert file to base64 for backend
+  // Helper to convert file to base64
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -66,15 +67,14 @@ export const EventWizard: React.FC = () => {
 
     try {
       let fileBase64 = null;
+      let fileType = null;
+
       if (aiFile) {
         fileBase64 = await fileToBase64(aiFile);
+        fileType = aiFile.type;
       }
 
-      if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error("Supabase configuration missing. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
-      }
-
-      // Call the Supabase Edge Function
+      // Call the backend Edge Function instead of client-side SDK
       const response = await fetch(`${supabaseUrl}/functions/v1/generate-event-draft`, {
         method: 'POST',
         headers: {
@@ -84,14 +84,14 @@ export const EventWizard: React.FC = () => {
         body: JSON.stringify({
           prompt: aiPrompt,
           url: aiUrl,
-          fileBase64: fileBase64,
-          fileType: aiFile?.type
+          fileBase64,
+          fileType
         })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `API Error: ${response.statusText}`);
+        throw new Error(errorData.error || 'Failed to generate event draft');
       }
 
       const data = await response.json();
@@ -157,6 +157,29 @@ export const EventWizard: React.FC = () => {
 
   const handlePublish = async () => {
     if (isPublishing) return;
+
+    // Validation Checks
+    if (!state.title.trim()) {
+      alert("Please enter an event title.");
+      return;
+    }
+    if (!state.startDate) {
+      alert("Please select a start date and time.");
+      return;
+    }
+    if (!state.endDate) {
+      alert("Please select an end date and time.");
+      return;
+    }
+    if (state.endDate < state.startDate) {
+      alert("End date cannot be before start date.");
+      return;
+    }
+    if (!state.location.trim()) {
+      alert("Please enter a location.");
+      return;
+    }
+
     setIsPublishing(true);
 
     try {
@@ -238,8 +261,8 @@ export const EventWizard: React.FC = () => {
         if (scheduleError) throw scheduleError;
       }
 
-      // Success
-      navigate('/dashboard/events');
+      // Transition to Success Step
+      setCurrentStep(Step.SUCCESS);
 
     } catch (error) {
       console.error("Publishing failed", error);
@@ -254,32 +277,38 @@ export const EventWizard: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F8F9FB] pb-24">
       {/* Top Progress Bar */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
-            <button onClick={prevStep} className="p-2 hover:bg-gray-50 rounded-full text-gray-500 transition-colors">
-              <ArrowLeft size={20} />
-            </button>
-            
-            <div className="flex-1 mx-8">
-              <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
-                <span>{currentStep === Step.INTRO ? 'AI Setup' : `Step ${currentStep} of 5`}</span>
-                <span className="hidden sm:inline">{currentStep === Step.REVIEW ? 'Final Review' : 'Drafting'}</span>
+      {currentStep !== Step.SUCCESS && (
+        <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
+          <div className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-between max-w-4xl mx-auto">
+              <button 
+                onClick={prevStep} 
+                className="p-2 hover:bg-gray-50 rounded-full text-gray-500 transition-colors disabled:opacity-50"
+                disabled={currentStep === Step.INTRO}
+              >
+                <ArrowLeft size={20} />
+              </button>
+              
+              <div className="flex-1 mx-8">
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                  <span>{currentStep === Step.INTRO ? 'AI Setup' : `Step ${currentStep} of 5`}</span>
+                  <span className="hidden sm:inline">{currentStep === Step.REVIEW ? 'Final Review' : 'Drafting'}</span>
+                </div>
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-fashion-purple transition-all duration-500 ease-out" 
+                    style={{ width: `${(currentStep / 5) * 100}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-fashion-purple transition-all duration-500 ease-out" 
-                  style={{ width: `${(currentStep / 5) * 100}%` }}
-                />
-              </div>
-            </div>
 
-            <button onClick={() => navigate('/dashboard/events')} className="p-2 hover:bg-gray-50 rounded-full text-gray-400 transition-colors">
-              <X size={20} />
-            </button>
+              <button onClick={() => navigate('/dashboard/events')} className="p-2 hover:bg-gray-50 rounded-full text-gray-400 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Content Area */}
       <div className="container mx-auto px-6 pt-12">
@@ -316,11 +345,17 @@ export const EventWizard: React.FC = () => {
               onPublish={handlePublish} 
             />
           )}
+          {currentStep === Step.SUCCESS && (
+            <WizardSuccess 
+              data={state}
+              onClose={() => navigate('/dashboard/events')}
+            />
+          )}
         </FadeIn>
       </div>
 
-      {/* Bottom Action Bar (Not for Intro) */}
-      {currentStep !== Step.INTRO && (
+      {/* Bottom Action Bar (Not for Intro or Success) */}
+      {currentStep !== Step.INTRO && currentStep !== Step.SUCCESS && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-40 lg:pl-64">
           <div className="container mx-auto px-6 max-w-4xl flex justify-between items-center">
             <Button variant="ghost" onClick={prevStep}>Back</Button>

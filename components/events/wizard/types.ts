@@ -7,7 +7,8 @@ export enum Step {
   VENUE = 2,
   TICKETS = 3,
   SCHEDULE = 4,
-  REVIEW = 5
+  REVIEW = 5,
+  SUCCESS = 6
 }
 
 export interface TicketTier {
