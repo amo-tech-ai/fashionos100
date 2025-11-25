@@ -18,7 +18,10 @@ export interface ActivationItem {
 export interface DealState {
   // Qualification
   sponsorId: string;
+  sponsorName?: string; // Display name
+  sponsorIndustry: string; // Added for AI Context
   eventId: string;
+  eventName?: string; // Display name
   leadScore: number;
   leadNotes: string;
   

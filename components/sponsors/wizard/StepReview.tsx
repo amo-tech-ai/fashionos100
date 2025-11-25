@@ -25,7 +25,7 @@ export const StepReview: React.FC<Props> = ({ data }) => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Partnership</p>
-              <h3 className="text-2xl font-serif font-bold">{data.sponsorId} x {data.eventId}</h3>
+              <h3 className="text-2xl font-serif font-bold">{data.sponsorName || data.sponsorId} x {data.eventName || data.eventId}</h3>
             </div>
             <div className="text-right">
               <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Value</p>

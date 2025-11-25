@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
-import { Plus, X, MapPin, Sparkles } from 'lucide-react';
+import { Plus, X, MapPin, Sparkles, ArrowRight } from 'lucide-react';
 import { Input } from '../../forms/Input';
 import { Button } from '../../Button';
 import { DealState, ActivationItem } from '../../../types/deal';
 import { supabaseUrl, supabaseAnonKey } from '../../../lib/supabase';
 import { LoadingSpinner } from '../../LoadingSpinner';
+import { FadeIn } from '../../FadeIn';
 
 interface Props {
   data: DealState;
@@ -15,6 +16,7 @@ interface Props {
 export const StepActivations: React.FC<Props> = ({ data, update }) => {
   const [newItem, setNewItem] = useState<ActivationItem>({ type: '', description: '', location: '' });
   const [isGenerating, setIsGenerating] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
 
   const handleAdd = () => {
     if (!newItem.type) return;
@@ -30,6 +32,7 @@ export const StepActivations: React.FC<Props> = ({ data, update }) => {
 
   const handleAiSuggest = async () => {
     setIsGenerating(true);
+    setSuggestions([]);
     try {
         const response = await fetch(`${supabaseUrl}/functions/v1/sponsor-ai`, {
             method: 'POST',
@@ -40,24 +43,30 @@ export const StepActivations: React.FC<Props> = ({ data, update }) => {
             body: JSON.stringify({
                 action: 'activation-ideas',
                 sponsorName: data.sponsorId,
-                sponsorIndustry: 'Fashion',
+                sponsorIndustry: data.sponsorIndustry, // Use context
                 eventDetails: data.eventId
             })
         });
         const res = await response.json();
         if (res.ideas) {
-            const aiActivations = res.ideas.map((idea: any) => ({
-                type: idea.title,
-                description: idea.description,
-                location: 'TBD'
-            }));
-            update({ activations: [...data.activations, ...aiActivations] });
+            setSuggestions(res.ideas);
         }
     } catch(e) {
         console.error(e);
     } finally {
         setIsGenerating(false);
     }
+  };
+
+  const acceptSuggestion = (idea: any) => {
+      update({ 
+          activations: [...data.activations, {
+              type: idea.title,
+              description: idea.description,
+              location: 'TBD'
+          }] 
+      });
+      setSuggestions(suggestions.filter(s => s !== idea));
   };
 
   return (
@@ -67,14 +76,30 @@ export const StepActivations: React.FC<Props> = ({ data, update }) => {
         <p className="text-gray-500">Define physical and digital brand moments.</p>
       </div>
 
+      {/* Main Card */}
       <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
         <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-lg">Planned Activations</h3>
-            <Button variant="ghost" size="sm" onClick={handleAiSuggest} disabled={isGenerating} className="text-purple-600">
+            <Button variant="ghost" size="sm" onClick={handleAiSuggest} disabled={isGenerating} className="text-purple-600 bg-purple-50 hover:bg-purple-100">
                 {isGenerating ? <LoadingSpinner size={14} /> : <Sparkles size={14} className="mr-2" />}
-                AI Suggestions
+                Get AI Ideas
             </Button>
         </div>
+
+        {/* Suggestion Panel */}
+        {suggestions.length > 0 && (
+            <FadeIn className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4 bg-purple-50/50 p-4 rounded-2xl border border-purple-100">
+                {suggestions.map((idea, i) => (
+                    <div key={i} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group" onClick={() => acceptSuggestion(idea)}>
+                        <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-bold text-sm text-gray-900">{idea.title}</h4>
+                            <Plus size={16} className="text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{idea.description}</p>
+                    </div>
+                ))}
+            </FadeIn>
+        )}
 
         <div className="space-y-4 mb-8">
           {data.activations.map((item, idx) => (

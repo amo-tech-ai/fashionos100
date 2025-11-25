@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Calendar, MapPin, Upload, Download, FileText, CheckCircle, 
-  Loader2, User, Eye, Heart, Share2, TrendingUp, Plus, Sparkles
+  Loader2, User, Eye, Heart, Share2, TrendingUp, Plus, Sparkles, DollarSign, CreditCard
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
@@ -18,6 +18,7 @@ export const SponsorPortal: React.FC = () => {
   const [deliverables, setDeliverables] = useState<SponsorDeliverable[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   useEffect(() => {
     fetchSponsorData();
@@ -75,11 +76,10 @@ export const SponsorPortal: React.FC = () => {
     setUploadingId(deliverableId);
     setAnalyzing(true);
     try {
-        // 1. Upload to Storage (Secure Path: sponsor-assets/{sponsorId}/{deliverableId}/{filename})
         const filePath = `sponsor-assets/${sponsorProfile.id}/${deliverableId}/${file.name}`;
         
         const { error: uploadError } = await supabase.storage
-            .from('documents') // Assuming 'documents' is the general bucket
+            .from('documents') 
             .upload(filePath, file);
 
         if (uploadError) throw uploadError;
@@ -88,7 +88,7 @@ export const SponsorPortal: React.FC = () => {
             .from('documents')
             .getPublicUrl(filePath);
 
-        // 2. AI Analysis (Media Agent)
+        // AI Analysis
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = async () => {
@@ -103,7 +103,6 @@ export const SponsorPortal: React.FC = () => {
                 })
             });
             
-            // 3. Update DB
             await supabase
             .from('sponsor_deliverables')
             .update({ status: 'uploaded', asset_url: publicUrl })
@@ -118,6 +117,39 @@ export const SponsorPortal: React.FC = () => {
         alert("Upload failed. Please try again.");
         setUploadingId(null);
         setAnalyzing(false);
+    }
+  };
+
+  const handlePayment = async (dealId: string, amount: number) => {
+    setProcessingPayment(true);
+    try {
+      const response = await fetch(`${supabaseUrl}/functions/v1/create-checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`
+        },
+        body: JSON.stringify({
+          amount,
+          title: `Sponsorship Payment: ${dealId}`
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.url) {
+        // In a real app, we would redirect. For demo, we just show alert
+        alert("Redirecting to Secure Payment Gateway...");
+        
+        // Simulate success update for demo
+        await supabase.from('event_sponsors').update({ status: 'Paid' }).eq('id', dealId);
+        fetchSponsorData();
+      }
+    } catch (error) {
+      console.error("Payment error", error);
+      alert("Payment initialization failed.");
+    } finally {
+      setProcessingPayment(false);
     }
   };
 
@@ -143,7 +175,24 @@ export const SponsorPortal: React.FC = () => {
             {activeDeal && (
                 <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 text-right">
                     <p className="text-sm font-bold uppercase tracking-widest mb-1">{activeDeal.event?.title}</p>
-                    <p className="text-xs text-purple-100">{activeDeal.level} Partner</p>
+                    <p className="text-xs text-purple-100 mb-3">{activeDeal.level} Partner</p>
+                    {activeDeal.status !== 'Paid' && (
+                        <Button 
+                            size="sm" 
+                            variant="white" 
+                            onClick={() => handlePayment(activeDeal.id, activeDeal.cash_value)}
+                            disabled={processingPayment}
+                            className="gap-2 text-xs"
+                        >
+                            {processingPayment ? <Loader2 size={12} className="animate-spin" /> : <CreditCard size={12} />}
+                            {processingPayment ? 'Processing...' : 'Pay Invoice'}
+                        </Button>
+                    )}
+                    {activeDeal.status === 'Paid' && (
+                        <span className="inline-flex items-center gap-1 bg-green-500/20 text-green-100 px-2 py-1 rounded text-xs font-bold border border-green-500/30">
+                            <CheckCircle size={10} /> Paid
+                        </span>
+                    )}
                 </div>
             )}
         </div>

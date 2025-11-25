@@ -2,10 +2,12 @@
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, Calendar, CalendarCheck, Ticket, Wallet, Share2, Users, 
-  ShoppingBag, Settings, LogOut, Menu, Search, Bell, FileText, Image, MessageSquare, Heart,
+  ShoppingBag, Settings, LogOut, Menu, Search, FileText, Image, MessageSquare, Heart,
   Briefcase, Target, Package, Mic2, BarChart3, Globe, TrendingUp
 } from 'lucide-react';
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
+import { NotificationsMenu } from '../components/dashboard/NotificationsMenu';
+import { supabase } from '../lib/supabase';
 
 export const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -29,8 +31,9 @@ export const DashboardLayout: React.FC = () => {
     { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
   ];
 
-  const handleSignOut = () => {
-    navigate('/');
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
   };
 
   return (
@@ -99,7 +102,7 @@ export const DashboardLayout: React.FC = () => {
                 </div>
              </div>
              <div className="flex items-center gap-4">
-                <button className="relative p-2 hover:bg-gray-50 rounded-full transition-colors text-gray-500"><Bell size={20} /></button>
+                <NotificationsMenu />
                 <div className="flex items-center gap-3 pl-4 border-l border-gray-100">
                    <div className="text-right hidden sm:block"><p className="text-sm font-bold leading-none">Orlando L.</p><p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Admin</p></div>
                    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden"><img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" alt="User" /></div>

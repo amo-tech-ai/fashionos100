@@ -27,14 +27,17 @@ export const StepContract: React.FC<Props> = ({ data, update }) => {
         body: JSON.stringify({
           action: 'draft-contract',
           sponsorName: data.sponsorId,
+          // Pass industry for smarter clauses
+          sponsorIndustry: data.sponsorIndustry, 
           contractTerms: {
             tier: data.packageTier,
             value: data.cashValue,
+            inKind: data.inKindValue,
             event: data.eventId
           }
         })
       });
-      const res = await response.text(); // AI returns plain text markdown
+      const res = await response.text();
       update({ terms: res });
     } catch (e) {
       console.error(e);
@@ -70,7 +73,7 @@ export const StepContract: React.FC<Props> = ({ data, update }) => {
               variant="ghost" 
               onClick={handleAIDraft} 
               disabled={isDrafting}
-              className="text-purple-600"
+              className="text-purple-600 hover:bg-purple-50"
             >
               {isDrafting ? <LoadingSpinner size={14} /> : <Wand2 size={14} className="mr-2" />}
               AI Draft Terms

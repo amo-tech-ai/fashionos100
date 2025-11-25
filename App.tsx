@@ -8,6 +8,7 @@ import { DashboardLayout } from './layouts/DashboardLayout';
 
 // Auth
 import { RequireAuth } from './components/auth/RequireAuth';
+import { LoginPage } from './pages/auth/LoginPage';
 
 // Public Pages
 import { HomePage } from './pages/public/HomePage';
@@ -52,6 +53,9 @@ import { EventWizard } from './components/events/EventWizard';
 const App: React.FC = () => {
   return (
     <Routes>
+      {/* --- Auth --- */}
+      <Route path="/login" element={<LoginPage />} />
+
       {/* --- Public Zone --- */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />

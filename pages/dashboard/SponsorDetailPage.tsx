@@ -10,6 +10,7 @@ import { Button } from '../../components/Button';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { SponsorProfile, EventSponsor, SponsorActivation } from '../../types/sponsorship';
 import { Input } from '../../components/forms/Input';
+import { SponsorForm } from '../../components/sponsors/SponsorForm';
 
 export const SponsorDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +25,9 @@ export const SponsorDetailPage: React.FC = () => {
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
+
+  // Edit State
+  const [showEditForm, setShowEditForm] = useState(false);
 
   useEffect(() => {
     if (id) fetchData();
@@ -157,7 +161,7 @@ export const SponsorDetailPage: React.FC = () => {
                 </div>
               </div>
               <div className="flex gap-3">
-                <Button variant="outline" size="sm">Edit Profile</Button>
+                <Button variant="outline" size="sm" onClick={() => setShowEditForm(true)}>Edit Profile</Button>
                 <Link to="/dashboard/sponsors/new-deal"><Button variant="primary" size="sm">New Deal</Button></Link>
               </div>
             </div>
@@ -233,7 +237,6 @@ export const SponsorDetailPage: React.FC = () => {
               </div>
             )}
             
-            {/* Other tabs remain unchanged for brevity, they were correct in previous file */}
             {activeTab === 'contracts' && <div className="text-center py-10 text-gray-400">Contract list would go here...</div>}
             {activeTab === 'activations' && <div className="text-center py-10 text-gray-400">Activation list would go here...</div>}
           </FadeIn>
@@ -302,6 +305,15 @@ export const SponsorDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {showEditForm && (
+        <SponsorForm 
+          sponsor={sponsor}
+          onClose={() => setShowEditForm(false)}
+          onSave={fetchData}
+        />
+      )}
     </div>
   );
 };

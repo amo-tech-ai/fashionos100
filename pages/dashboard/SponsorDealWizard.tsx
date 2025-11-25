@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { DealStep, DealState } from '../../types/deal';
+import { supabase } from '../../lib/supabase';
 
 // Steps
 import { StepQualification } from '../../components/sponsors/wizard/StepQualification';
@@ -16,7 +17,10 @@ import { StepReview } from '../../components/sponsors/wizard/StepReview';
 
 const INITIAL_STATE: DealState = {
   sponsorId: '',
+  sponsorName: '',
+  sponsorIndustry: '',
   eventId: '',
+  eventName: '',
   leadScore: 0,
   leadNotes: '',
   packageTier: 'Gold',
@@ -39,6 +43,11 @@ export const SponsorDealWizard: React.FC = () => {
   const updateData = (updates: Partial<DealState>) => setData(prev => ({ ...prev, ...updates }));
 
   const handleNext = () => {
+    // Basic validation
+    if (step === DealStep.QUALIFICATION && (!data.sponsorId || !data.eventId)) {
+      alert("Please select a sponsor and an event.");
+      return;
+    }
     if (step < DealStep.REVIEW) setStep(step + 1);
   };
 
@@ -49,10 +58,52 @@ export const SponsorDealWizard: React.FC = () => {
 
   const handleSubmit = async () => {
     setIsSaving(true);
-    // Mock API Call to Supabase
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSaving(false);
-    navigate('/dashboard/sponsors'); // Should ideally go to detail page
+    try {
+      // 1. Create Deal (Event Sponsor)
+      const { data: deal, error: dealError } = await supabase
+        .from('event_sponsors')
+        .insert({
+          sponsor_id: data.sponsorId,
+          event_id: data.eventId,
+          status: data.contractStatus === 'Signed' ? 'Signed' : 'Negotiating',
+          level: data.packageTier,
+          cash_value: data.cashValue,
+          in_kind_value: data.inKindValue,
+          // Store AI/Fit notes in a metadata JSON column if it existed, but standard columns are sufficient for MVP
+        })
+        .select()
+        .single();
+
+      if (dealError) throw dealError;
+
+      // 2. Create Activations
+      if (data.activations.length > 0) {
+        const activationsPayload = data.activations.map(act => ({
+          event_sponsor_id: deal.id,
+          title: act.type,
+          type: act.type,
+          status: 'planning',
+          location_in_venue: act.location,
+          description: act.description
+        }));
+
+        const { error: actError } = await supabase
+          .from('sponsor_activations')
+          .insert(activationsPayload);
+          
+        if (actError) throw actError;
+      }
+
+      // 3. ROI Goals (Optional - if you had a table for it, insert here)
+      // For now, just navigating back.
+
+      navigate('/dashboard/sponsors'); 
+    } catch (error: any) {
+      console.error("Deal creation failed:", error);
+      alert(`Failed to create deal: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const renderStep = () => {

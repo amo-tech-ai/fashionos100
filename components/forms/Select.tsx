@@ -1,9 +1,15 @@
+
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 
+export interface SelectOption {
+  label: string;
+  value: string | number;
+}
+
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
-  options: string[];
+  options: (string | SelectOption)[];
 }
 
 export const Select: React.FC<SelectProps> = ({ label, options, className = '', ...props }) => (
@@ -14,9 +20,13 @@ export const Select: React.FC<SelectProps> = ({ label, options, className = '', 
         className={`w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer text-gray-700 ${className}`}
         {...props}
       >
-        {options.map(opt => (
-          <option key={opt} value={opt}>{opt}</option>
-        ))}
+        <option value="" disabled>Select an option</option>
+        {options.map((opt, i) => {
+          if (typeof opt === 'object' && opt !== null) {
+            return <option key={i} value={opt.value}>{opt.label}</option>;
+          }
+          return <option key={i} value={opt as string}>{opt as string}</option>;
+        })}
       </select>
       <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
     </div>

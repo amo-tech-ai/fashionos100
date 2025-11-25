@@ -1,13 +1,13 @@
 
-import React, { useState } from 'react';
-import { Sparkles, Building2, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles } from 'lucide-react';
 import { Input } from '../../forms/Input';
-import { Select } from '../../forms/Select';
+import { Select, SelectOption } from '../../forms/Select';
 import { Textarea } from '../../forms/Textarea';
 import { Button } from '../../Button';
 import { LoadingSpinner } from '../../LoadingSpinner';
 import { DealState } from '../../../types/deal';
-import { supabaseUrl, supabaseAnonKey } from '../../../lib/supabase';
+import { supabase, supabaseUrl, supabaseAnonKey } from '../../../lib/supabase';
 
 interface Props {
   data: DealState;
@@ -16,10 +16,40 @@ interface Props {
 
 export const StepQualification: React.FC<Props> = ({ data, update }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [sponsors, setSponsors] = useState<{id: string, name: string, industry?: string}[]>([]);
+  const [events, setEvents] = useState<{id: string, title: string}[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
 
-  // Mock Options (In real app, fetch from Supabase)
-  const sponsors = ["Luxe Beauty", "TechFlow", "Hydra Water", "Urban Florals"];
-  const events = ["Paris Fashion Week SS25", "NY Designer Series", "Milan Digital Showcase"];
+  useEffect(() => {
+    const fetchOptions = async () => {
+      const { data: sData } = await supabase.from('sponsor_profiles').select('id, name, industry');
+      const { data: eData } = await supabase.from('events').select('id, title');
+      
+      setSponsors(sData || []);
+      setEvents(eData || []);
+      setLoadingOptions(false);
+    };
+    fetchOptions();
+  }, []);
+
+  const handleSponsorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    const sponsor = sponsors.find(s => s.id === selectedId);
+    update({ 
+      sponsorId: selectedId, 
+      sponsorName: sponsor?.name,
+      sponsorIndustry: sponsor?.industry || data.sponsorIndustry 
+    });
+  };
+
+  const handleEventChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    const event = events.find(e => e.id === selectedId);
+    update({ 
+      eventId: selectedId,
+      eventName: event?.title
+    });
+  };
 
   const handleAnalyzeFit = async () => {
     if (!data.sponsorId || !data.eventId) return;
@@ -33,16 +63,15 @@ export const StepQualification: React.FC<Props> = ({ data, update }) => {
         },
         body: JSON.stringify({
           action: 'lead-score',
-          sponsorName: data.sponsorId,
-          sponsorIndustry: 'Luxury Retail', // Mock context
-          eventDetails: data.eventId
+          sponsorName: data.sponsorName || 'Unknown',
+          sponsorIndustry: data.sponsorIndustry || 'General',
+          eventDetails: data.eventName || 'Unknown Event'
         })
       });
       const res = await response.json();
-      // Parse AI response logic here
       update({ 
-        leadScore: 85, // Mock result
-        leadNotes: res.reasoning || "High brand alignment detected based on audience demographics."
+        leadScore: res.score || 75, 
+        leadNotes: res.reasoning || "AI Analysis complete."
       });
     } catch (e) {
       console.error(e);
@@ -50,6 +79,11 @@ export const StepQualification: React.FC<Props> = ({ data, update }) => {
       setIsAnalyzing(false);
     }
   };
+
+  if (loadingOptions) return <div className="p-12 text-center"><LoadingSpinner /></div>;
+
+  const sponsorOptions: SelectOption[] = sponsors.map(s => ({ label: s.name, value: s.id }));
+  const eventOptions: SelectOption[] = events.map(e => ({ label: e.title, value: e.id }));
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
@@ -60,21 +94,31 @@ export const StepQualification: React.FC<Props> = ({ data, update }) => {
 
       <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Select
-            label="Select Sponsor"
-            options={sponsors}
-            value={data.sponsorId}
-            onChange={(e) => update({ sponsorId: e.target.value })}
-            className="bg-gray-50"
-          />
+          <div className="space-y-4">
+            <Select
+              label="Select Sponsor"
+              options={sponsorOptions}
+              value={data.sponsorId}
+              onChange={handleSponsorChange}
+              className="bg-gray-50"
+            />
+          </div>
           <Select
             label="Select Event"
-            options={events}
+            options={eventOptions}
             value={data.eventId}
-            onChange={(e) => update({ eventId: e.target.value })}
+            onChange={handleEventChange}
             className="bg-gray-50"
           />
         </div>
+
+        <Input
+          label="Sponsor Industry"
+          placeholder="e.g. Cosmetics, Automotive, Fintech"
+          value={data.sponsorIndustry}
+          onChange={(e) => update({ sponsorIndustry: e.target.value })}
+          className="bg-gray-50"
+        />
 
         <div className="border-t border-gray-100 pt-6">
           <div className="flex justify-between items-center mb-4">
@@ -93,7 +137,7 @@ export const StepQualification: React.FC<Props> = ({ data, update }) => {
           
           {data.leadScore > 0 && (
             <div className="mb-4 flex items-center gap-4 bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-100">
-              <div className="flex flex-col items-center justify-center bg-white w-16 h-16 rounded-full shadow-sm border border-purple-100">
+              <div className="flex flex-col items-center justify-center bg-white w-16 h-16 rounded-full shadow-sm border border-purple-100 shrink-0">
                 <span className="text-xl font-bold text-purple-700">{data.leadScore}</span>
                 <span className="text-[10px] text-gray-400 uppercase">Score</span>
               </div>
