@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { GoogleGenAI } from "https://esm.sh/@google/genai@0.1.1"
+import { GoogleGenAI, Type } from "https://esm.sh/@google/genai@0.1.1"
 import { corsHeaders } from "../_shared/cors.ts"
 
 declare const Deno: any;
@@ -14,32 +14,45 @@ serve(async (req) => {
 
     const { action, sponsorName, sponsorIndustry, eventDetails, contractTerms } = await req.json()
     const ai = new GoogleGenAI({ apiKey })
-    const model = ai.models.getGenerativeModel({ model: 'gemini-2.5-flash' })
-
+    
     let prompt = "";
+    let responseMimeType = 'application/json';
+    let responseSchema = undefined;
+    let systemInstruction = "You are a helpful AI assistant for fashion event production.";
     
     if (action === 'activation-ideas') {
+      systemInstruction = `You are a Creative Director for a high-end fashion event agency.
+      Your goal is to generate innovative, luxury-focused, and shareable brand activation ideas.
+      Focus on experiential luxury, audience engagement, and social media impact.`;
+
       prompt = `
-        Act as a Creative Director for a high-end fashion event.
+        Sponsor: ${sponsorName} (${sponsorIndustry})
+        Event Context: ${eventDetails}
         
-        Context:
-        - Sponsor: ${sponsorName} (${sponsorIndustry})
-        - Event: ${eventDetails}
-        
-        Task: Generate 3 creative, high-impact "Activation Ideas" for this sponsor at this event.
-        Focus on experiential luxury, audience engagement, and social media shareability.
-        
-        Output JSON format:
-        {
-          "ideas": [
-            { "title": "string", "description": "string", "estimated_cost": "string" }
-          ]
-        }
+        Task: Generate 3 creative, high-impact activation ideas for this sponsor at this event.
       `;
+
+      responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+          ideas: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                title: { type: Type.STRING },
+                description: { type: Type.STRING },
+                estimated_cost: { type: Type.STRING }
+              },
+              required: ["title", "description", "estimated_cost"]
+            }
+          }
+        }
+      };
+
     } else if (action === 'draft-contract') {
+      systemInstruction = "Act as a Legal Assistant for a fashion production agency.";
       prompt = `
-        Act as a Legal Assistant for a fashion production agency.
-        
         Context:
         - Sponsor: ${sponsorName}
         - Terms: ${JSON.stringify(contractTerms)}
@@ -49,9 +62,11 @@ serve(async (req) => {
         
         Output format: Plain text with Markdown formatting.
       `;
+      responseMimeType = 'text/plain';
+
     } else if (action === 'lead-score') {
+      systemInstruction = "Act as a Sales Analyst for event sponsorships.";
       prompt = `
-        Act as a Sales Analyst.
         Evaluate the fit of ${sponsorName} (${sponsorIndustry}) for a fashion event described as: ${eventDetails}.
         Return a JSON object with: "score" (0-100), "reasoning" (string), and "suggested_pitch_angle" (string).
       `;
@@ -59,15 +74,18 @@ serve(async (req) => {
       throw new Error("Invalid action");
     }
 
-    const result = await model.generateContent({
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        responseMimeType: action === 'draft-contract' ? 'text/plain' : 'application/json'
+      config: {
+        responseMimeType: responseMimeType,
+        responseSchema: responseSchema,
+        systemInstruction: systemInstruction
       }
     });
 
-    return new Response(result.response.text(), {
-      headers: { ...corsHeaders, 'Content-Type': action === 'draft-contract' ? 'text/plain' : 'application/json' },
+    return new Response(response.text || "", {
+      headers: { ...corsHeaders, 'Content-Type': responseMimeType },
     })
 
   } catch (error: any) {

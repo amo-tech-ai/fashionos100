@@ -255,7 +255,7 @@ export const EventsPage: React.FC = () => {
                   <h2 className="text-sm font-bold uppercase tracking-widest">Featured This Week</h2>
                </div>
                <div className="group relative rounded-3xl overflow-hidden aspect-[16/9] md:aspect-[21/9] shadow-2xl cursor-pointer">
-                  <img src={FEATURED_EVENT.image} alt="Featured" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                  <img src={FEATURED_EVENT.image} alt="Featured" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-8 md:p-12 max-w-2xl text-white">
                      <div className="flex flex-wrap gap-2 mb-4">
@@ -413,4 +413,4 @@ export const EventsPage: React.FC = () => {
 
     </div>
   );
-};
+}

@@ -80,4 +80,4 @@ export const WizardSchedule: React.FC<WizardScheduleProps> = ({ data, updateData
       </div>
     </div>
   );
-};
+}

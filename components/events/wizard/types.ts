@@ -45,23 +45,42 @@ export const CATEGORIES = ["Runway", "Party", "Workshop", "Exhibition", "Pop-up"
 export const MOCK_PREVIEW_IMAGE = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80&w=1000";
 
 export const transformToEventCard = (state: WizardState): Event => {
-  const priceString = state.tickets.length > 0 
-    ? (Math.min(...state.tickets.map(t => t.price)) === 0 ? 'Free' : `From $${Math.min(...state.tickets.map(t => t.price))}`)
-    : 'TBD';
+  // 1. Calculate Pricing Display
+  let priceString = 'TBD';
+  if (state.tickets.length > 0) {
+    const prices = state.tickets.map(t => Number(t.price));
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    
+    if (minPrice === 0) {
+      priceString = prices.length > 1 ? 'Free+' : 'Free';
+    } else {
+      priceString = `From $${minPrice}`;
+    }
+  }
 
-  const capacity = state.tickets.reduce((acc, curr) => acc + curr.quantity, 0);
+  // 2. Calculate Capacity
+  const capacity = state.tickets.reduce((acc, curr) => acc + Number(curr.quantity), 0);
+
+  // 3. Generate Dynamic Tags
+  // Combine Category + First 2 items from Target Audience
+  const audienceTags = state.targetAudience
+    ? state.targetAudience.split(',').map(s => s.trim()).filter(s => s.length > 0).slice(0, 2)
+    : ['New'];
+  
+  const tags = [state.category, ...audienceTags].slice(0, 3);
 
   return {
-    id: 999, // Temp ID
+    id: 999, // Temp ID for preview
     title: state.title || "Untitled Event",
     category: state.category || "Event",
     timing: "Upcoming",
     date: state.startDate ? state.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Date TBD",
     time: state.startDate ? state.startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "Time TBD",
     location: state.location || "Location TBD",
-    image: state.image,
-    tags: ["New"],
+    image: state.image || MOCK_PREVIEW_IMAGE,
+    tags: tags,
     price: priceString,
-    capacity: `${capacity} Seats`
+    capacity: capacity > 0 ? `${capacity} Seats` : 'Open'
   };
 };

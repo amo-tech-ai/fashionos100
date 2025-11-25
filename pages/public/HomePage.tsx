@@ -129,11 +129,11 @@ export const HomePage: React.FC = () => {
             <FadeIn direction="left" delay={200}>
               <div className="grid grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-4 md:space-y-6 translate-y-8">
-                  <img src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=800&auto=format&fit=crop" alt="Runway" className="w-full aspect-[3/4] object-cover rounded-sm shadow-lg" />
+                  <img src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=800&auto=format&fit=crop" alt="Runway" className="w-full aspect-[3/4] object-cover rounded-sm shadow-lg" loading="lazy" />
                   <img src="https://images.unsplash.com/photo-1550614000-4b9519e0013f?q=80&w=800&auto=format&fit=crop" alt="Detail" className="w-full aspect-square object-cover rounded-sm shadow-lg" loading="lazy" />
                 </div>
                 <div className="space-y-4 md:space-y-6">
-                  <img src="https://images.unsplash.com/photo-1529139574466-a302d2052505?q=80&w=800&auto=format&fit=crop" alt="Editorial" className="w-full aspect-square object-cover rounded-sm shadow-lg" />
+                  <img src="https://images.unsplash.com/photo-1529139574466-a302d2052505?q=80&w=800&auto=format&fit=crop" alt="Editorial" className="w-full aspect-square object-cover rounded-sm shadow-lg" loading="lazy" />
                   <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop" alt="Model" className="w-full aspect-[3/4] object-cover rounded-sm shadow-lg" loading="lazy" />
                 </div>
               </div>
@@ -431,4 +431,4 @@ export const HomePage: React.FC = () => {
 
     </div>
   );
-};
+}

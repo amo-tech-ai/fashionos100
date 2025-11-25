@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { 
   Search, Plus, Sparkles, Download, PieChart, 
-  DollarSign, Users, ArrowRight 
+  DollarSign, Users, ArrowRight, X 
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
@@ -10,6 +9,8 @@ import { SponsorCard } from '../../components/sponsors/SponsorCard';
 import { EventSponsor } from '../../types/sponsorship';
 import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { Input } from '../../components/forms/Input';
+import { Textarea } from '../../components/forms/Textarea';
 
 // Mock Data for MVP
 const MOCK_SPONSORS: EventSponsor[] = [
@@ -35,9 +36,19 @@ export const DashboardSponsors: React.FC = () => {
   const [view, setView] = useState<'Pipeline' | 'List'>('Pipeline');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiIdeas, setAiIdeas] = useState<any[] | null>(null);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiParams, setAiParams] = useState({
+    sponsorName: '',
+    industry: '',
+    eventDetails: ''
+  });
 
   const handleAiIdeation = async () => {
+    if (!aiParams.sponsorName || !aiParams.eventDetails) return;
+    
     setAiLoading(true);
+    setAiIdeas(null);
+
     try {
       const response = await fetch(`${supabaseUrl}/functions/v1/sponsor-ai`, {
         method: 'POST',
@@ -47,13 +58,14 @@ export const DashboardSponsors: React.FC = () => {
         },
         body: JSON.stringify({
           action: 'activation-ideas',
-          sponsorName: 'Luxe Beauty',
-          sponsorIndustry: 'Cosmetics',
-          eventDetails: 'Summer Runway Show in Miami, 500 VIP guests, sustainable theme.'
+          sponsorName: aiParams.sponsorName,
+          sponsorIndustry: aiParams.industry,
+          eventDetails: aiParams.eventDetails
         })
       });
       const data = await response.json();
       setAiIdeas(data.ideas);
+      setShowAiModal(false);
     } catch (err) {
       console.error(err);
       alert("AI Service Unavailable");
@@ -63,8 +75,51 @@ export const DashboardSponsors: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in pb-20">
+    <div className="space-y-8 animate-in fade-in pb-20 relative">
       
+      {/* AI Modal */}
+      {showAiModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-serif font-bold flex items-center gap-2">
+                <Sparkles className="text-purple-600" size={20} /> Sponsor AI Agent
+              </h3>
+              <button onClick={() => setShowAiModal(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <Input 
+                label="Sponsor Name" 
+                placeholder="e.g. Luxe Beauty" 
+                value={aiParams.sponsorName}
+                onChange={(e) => setAiParams({...aiParams, sponsorName: e.target.value})}
+              />
+              <Input 
+                label="Industry" 
+                placeholder="e.g. Cosmetics" 
+                value={aiParams.industry}
+                onChange={(e) => setAiParams({...aiParams, industry: e.target.value})}
+              />
+              <Textarea 
+                label="Event Context" 
+                placeholder="e.g. Summer Runway Show in Miami, 500 VIP guests, sustainable theme." 
+                className="h-24"
+                value={aiParams.eventDetails}
+                onChange={(e) => setAiParams({...aiParams, eventDetails: e.target.value})}
+              />
+              <div className="pt-2">
+                <Button fullWidth variant="primary" onClick={handleAiIdeation} disabled={!aiParams.sponsorName || aiLoading}>
+                  {aiLoading ? <LoadingSpinner size={16} className="mr-2" /> : null}
+                  {aiLoading ? 'Generating Ideas...' : 'Suggest Activations'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-end gap-4">
         <div>
@@ -107,13 +162,16 @@ export const DashboardSponsors: React.FC = () => {
            <p className="text-2xl font-bold text-gray-900">75%</p>
            <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Goal Reached</p>
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:border-purple-300 transition-colors group" onClick={handleAiIdeation}>
+        <div 
+          className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:border-purple-300 transition-colors group" 
+          onClick={() => setShowAiModal(true)}
+        >
            <div className="flex justify-between items-start mb-2">
               <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-lg shadow-md group-hover:scale-110 transition-transform">
-                {aiLoading ? <LoadingSpinner size={18} className="text-white" /> : <Sparkles size={18} />}
+                <Sparkles size={18} />
               </div>
            </div>
-           <p className="text-sm font-bold text-gray-900 leading-tight mt-2">Generate Activation Ideas</p>
+           <p className="text-sm font-bold text-gray-900 leading-tight mt-2">Suggest Activations</p>
            <p className="text-[10px] text-purple-500 font-bold uppercase tracking-wider mt-1">AI Agent Ready</p>
         </div>
       </div>
@@ -122,15 +180,21 @@ export const DashboardSponsors: React.FC = () => {
       {aiIdeas && (
         <FadeIn>
           <div className="bg-purple-50 border border-purple-100 rounded-2xl p-6">
-            <h3 className="text-purple-900 font-bold mb-4 flex items-center gap-2"><Sparkles size={16} /> AI Activation Concepts for Luxe Beauty</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-purple-900 font-bold flex items-center gap-2">
+                <Sparkles size={16} /> 
+                AI Concepts for {aiParams.sponsorName || 'Sponsor'}
+              </h3>
+              <button onClick={() => setAiIdeas(null)} className="text-purple-400 hover:text-purple-700"><X size={16} /></button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {aiIdeas.map((idea, i) => (
-                <div key={i} className="bg-white p-4 rounded-xl border border-purple-100 shadow-sm">
-                  <h4 className="font-serif font-bold text-lg mb-2">{idea.title}</h4>
-                  <p className="text-sm text-gray-600 mb-3">{idea.description}</p>
-                  <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-                    <span className="text-xs font-bold text-gray-400">Est. Cost: {idea.estimated_cost}</span>
-                    <button className="text-purple-600 hover:bg-purple-50 p-1 rounded"><ArrowRight size={14}/></button>
+                <div key={i} className="bg-white p-4 rounded-xl border border-purple-100 shadow-sm hover:shadow-md transition-shadow">
+                  <h4 className="font-serif font-bold text-lg mb-2 text-gray-900">{idea.title}</h4>
+                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">{idea.description}</p>
+                  <div className="flex justify-between items-center pt-3 border-t border-gray-50">
+                    <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded">Est: {idea.estimated_cost}</span>
+                    <button className="text-purple-600 hover:bg-purple-50 p-1 rounded transition-colors"><ArrowRight size={16}/></button>
                   </div>
                 </div>
               ))}
@@ -217,4 +281,4 @@ export const DashboardSponsors: React.FC = () => {
       </div>
     </div>
   );
-};
+}

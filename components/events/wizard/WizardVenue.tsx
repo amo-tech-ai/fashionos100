@@ -334,4 +334,4 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
       </div>
     </div>
   );
-};
+}

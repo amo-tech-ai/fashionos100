@@ -17,6 +17,7 @@ import { VideoProductionPage } from './pages/public/VideoProductionPage';
 import { WebDesignPage } from './pages/public/WebDesignPage';
 import { DirectoryPage } from './pages/public/DirectoryPage';
 import { ProfileDetailPage } from './pages/public/ProfileDetailPage';
+import { DesignerProfilePage } from './pages/public/DesignerProfilePage'; // Import added
 import { EventsPage } from './pages/public/EventsPage';
 import { SocialPage } from './pages/public/SocialPage';
 import { EcommercePage } from './pages/public/EcommercePage';
@@ -60,6 +61,7 @@ const App: React.FC = () => {
         {/* Directory & Profiles */}
         <Route path="/directory" element={<DirectoryPage />} />
         <Route path="/directory/:id" element={<ProfileDetailPage />} />
+        <Route path="/designers/:id" element={<DesignerProfilePage />} /> {/* Route added */}
         
         <Route path="/events" element={<EventsPage />} />
         

@@ -96,4 +96,4 @@ export const WizardTickets: React.FC<WizardTicketsProps> = ({ data, updateData }
       </div>
     </div>
   );
-};
+}

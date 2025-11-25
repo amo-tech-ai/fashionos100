@@ -269,4 +269,4 @@ export const ServicesPage: React.FC = () => {
 
     </div>
   );
-};
+}
