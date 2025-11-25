@@ -1,8 +1,8 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Search, Sparkles, Calendar, Ticket, ChevronDown, MapPin, 
-  ArrowRight, Star, Plus, X, SlidersHorizontal, Loader2
+  ArrowRight, Star, Plus, X, SlidersHorizontal
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
@@ -10,10 +10,12 @@ import { FadeIn } from '../../components/FadeIn';
 import { CalendarPicker } from '../../components/CalendarPicker';
 import { SectionTag } from '../../components/SectionTag';
 import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 // Imported Components & Data
 import { FilterDropdown } from '../../components/events/FilterDropdown';
 import { EventCard } from '../../components/events/EventCard';
+import { EventCardSkeleton } from '../../components/events/EventCardSkeleton';
 import { VeoTrailerGenerator } from '../../components/events/VeoTrailerGenerator';
 import { EVENTS_DATA, FEATURED_EVENT, CATEGORIES } from '../../data/mockEvents';
 
@@ -28,6 +30,14 @@ export const EventsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiMatches, setAiMatches] = useState<number[] | null>(null);
+  
+  // Simulate initial data loading
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleApplyDate = (start: Date | null, end: Date | null) => {
     setDateRange({ start, end });
@@ -133,7 +143,7 @@ export const EventsPage: React.FC = () => {
                      />
                      <div className="hidden md:flex items-center gap-2 border-l border-gray-100 pl-3 pr-3">
                         <span className={`text-[10px] font-bold flex items-center gap-1 transition-colors ${isAiLoading ? 'text-purple-600' : 'text-purple-500'}`}>
-                           {isAiLoading ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />} 
+                           {isAiLoading ? <LoadingSpinner size={10} /> : <Sparkles size={10} />} 
                            {isAiLoading ? "Thinking..." : "AI Copilot"}
                         </span>
                      </div>
@@ -274,7 +284,13 @@ export const EventsPage: React.FC = () => {
       {/* 5. Event Grid */}
       <section className="py-12">
          <div className="container mx-auto px-6 md:px-12">
-            {filteredEvents.length > 0 ? (
+            {isLoading ? (
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                     <EventCardSkeleton key={i} />
+                  ))}
+               </div>
+            ) : filteredEvents.length > 0 ? (
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredEvents.map((event, i) => (
                      <FadeIn key={event.id} delay={i * 50}>
@@ -293,7 +309,7 @@ export const EventsPage: React.FC = () => {
                </div>
             )}
             
-            {filteredEvents.length > 0 && (
+            {filteredEvents.length > 0 && !isLoading && (
               <div className="mt-16 text-center">
                  <Button variant="outline" size="lg">Load More Events</Button>
               </div>

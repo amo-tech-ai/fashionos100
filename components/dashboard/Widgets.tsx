@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { Loader2, Send, Sparkles, AlertCircle, Lightbulb } from 'lucide-react';
+import { Send, Sparkles, AlertCircle, Lightbulb } from 'lucide-react';
 import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
+import { LoadingSpinner } from '../LoadingSpinner';
 
 // Donut Chart
 export const DonutChart = () => (
@@ -120,7 +121,7 @@ export const AICopilotWidget: React.FC<AICopilotProps> = ({
            <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 mb-4 flex-1 min-h-[140px] max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent border border-white/10 relative" aria-busy={loading}>
               {loading ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                  <Loader2 className="animate-spin text-white/80" size={24} />
+                  <LoadingSpinner className="text-white/80" size={24} />
                   <span className="text-xs font-medium text-white/70 animate-pulse">Generating suggestions...</span>
                 </div>
               ) : error ? (
@@ -176,7 +177,7 @@ export const AICopilotWidget: React.FC<AICopilotProps> = ({
                 disabled={loading || !query.trim()}
                 className="absolute right-1.5 top-1.5 bg-white text-purple-600 p-2 rounded-full hover:bg-purple-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
-                 {loading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                 {loading ? <LoadingSpinner size={14} /> : <Send size={14} />}
               </button>
            </div>
         </div>

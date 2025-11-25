@@ -1,7 +1,12 @@
+
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
-export const RequireAuth = ({ children }: { children: React.ReactNode }) => {
+interface RequireAuthProps {
+  children: React.ReactNode;
+}
+
+export const RequireAuth = ({ children }: RequireAuthProps) => {
   // Mock Authentication - Toggle this to false to test redirect
   const isAuthenticated = true; 
   const location = useLocation();

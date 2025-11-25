@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
-import { Film, Sparkles, Loader2, Play } from 'lucide-react';
+import { Film, Sparkles, Play } from 'lucide-react';
 import { Button } from '../Button';
 import { FadeIn } from '../FadeIn';
 import { FeaturedEvent } from '../../data/mockEvents';
 import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
+import { LoadingSpinner } from '../LoadingSpinner';
 
 interface VeoTrailerGeneratorProps {
   featuredEvent: FeaturedEvent;
@@ -136,7 +137,7 @@ export const VeoTrailerGenerator: React.FC<VeoTrailerGeneratorProps> = ({ featur
                       onClick={handleGenerate}
                       disabled={loading}
                    >
-                      {loading ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
+                      {loading ? <LoadingSpinner size={20} /> : <Sparkles size={20} />}
                       {loading ? "Generating..." : "Generate 8s Trailer"}
                    </Button>
                    <p className="text-xs text-gray-500 mt-4 ml-1">* Approx 1-2 min generation time.</p>
@@ -159,10 +160,10 @@ export const VeoTrailerGenerator: React.FC<VeoTrailerGeneratorProps> = ({ featur
                          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
                             {loading ? (
                                <>
-                                  <div className="relative w-20 h-20 mb-6">
+                                  <div className="relative w-20 h-20 mb-6 flex items-center justify-center">
                                      <div className="absolute inset-0 border-4 border-purple-500/30 rounded-full"></div>
-                                     <div className="absolute inset-0 border-4 border-t-purple-500 rounded-full animate-spin"></div>
-                                     <Sparkles className="absolute inset-0 m-auto text-white animate-pulse" size={24} />
+                                     <LoadingSpinner size={80} className="text-purple-500 absolute inset-0" />
+                                     <Sparkles className="relative text-white animate-pulse" size={24} />
                                   </div>
                                   <h3 className="text-xl font-bold mb-2 animate-pulse">{statusStep || "Initializing..."}</h3>
                                   <p className="text-gray-500 text-sm">Creating high-fidelity frames...</p>

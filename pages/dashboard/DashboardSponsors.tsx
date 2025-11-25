@@ -1,14 +1,15 @@
 
 import React, { useState } from 'react';
 import { 
-  Search, Filter, Plus, Sparkles, Download, PieChart, 
-  TrendingUp, DollarSign, Users, ArrowRight 
+  Search, Plus, Sparkles, Download, PieChart, 
+  DollarSign, Users, ArrowRight 
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { SponsorCard } from '../../components/sponsors/SponsorCard';
-import { EventSponsor, SponsorStatus } from '../../types/sponsorship';
+import { EventSponsor } from '../../types/sponsorship';
 import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 // Mock Data for MVP
 const MOCK_SPONSORS: EventSponsor[] = [
@@ -109,7 +110,7 @@ export const DashboardSponsors: React.FC = () => {
         <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:border-purple-300 transition-colors group" onClick={handleAiIdeation}>
            <div className="flex justify-between items-start mb-2">
               <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-lg shadow-md group-hover:scale-110 transition-transform">
-                {aiLoading ? <Sparkles size={18} className="animate-spin" /> : <Sparkles size={18} />}
+                {aiLoading ? <LoadingSpinner size={18} className="text-white" /> : <Sparkles size={18} />}
               </div>
            </div>
            <p className="text-sm font-bold text-gray-900 leading-tight mt-2">Generate Activation Ideas</p>

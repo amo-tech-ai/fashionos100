@@ -173,7 +173,7 @@ const MediaCard = ({ item }: { item: MediaItem }) => (
 
 // --- Main Component ---
 
-export const DashboardGallery = () => {
+export const DashboardGallery: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   

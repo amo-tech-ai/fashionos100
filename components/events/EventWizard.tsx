@@ -6,6 +6,7 @@ import { Button } from '../Button';
 import { FadeIn } from '../FadeIn';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { slugify } from '../../lib/utils';
+import { LoadingSpinner } from '../LoadingSpinner';
 
 // Sub-components
 import { WizardIntro } from './wizard/WizardIntro';
@@ -362,7 +363,9 @@ export const EventWizard: React.FC = () => {
             
             {currentStep === Step.REVIEW ? (
               <Button variant="primary" className="px-8 gap-2" onClick={handlePublish} disabled={isPublishing}>
-                {isPublishing ? 'Publishing...' : 'Publish Event'} <CheckCircle2 size={16} />
+                {isPublishing ? <LoadingSpinner size={16} /> : null}
+                {isPublishing ? 'Publishing...' : 'Publish Event'} 
+                {!isPublishing && <CheckCircle2 size={16} />}
               </Button>
             ) : (
               <Button variant="primary" className="px-8 gap-2" onClick={nextStep}>

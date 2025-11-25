@@ -2,13 +2,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Camera, Video, Monitor, ArrowRight, ArrowLeft, Check, 
-  ChevronUp, ChevronDown, Sparkles, ShoppingBag, Image as ImageIcon, 
+  ChevronUp, ChevronDown, ShoppingBag, Image as ImageIcon, 
   Smartphone, Calendar, Info, X, Wand2
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 // --- Types ---
 type ServiceType = 'photography' | 'video' | 'web' | null;
@@ -237,7 +238,7 @@ export const StartProjectPage: React.FC = () => {
           disabled={loadingAI || !booking.brief}
           className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-fashion-purple hover:text-purple-700 disabled:opacity-50 transition-colors"
         >
-          {loadingAI ? <Sparkles className="animate-spin" size={14} /> : <Wand2 size={14} />}
+          {loadingAI ? <LoadingSpinner size={14} /> : <Wand2 size={14} />}
           {loadingAI ? "Polishing..." : "AI Polish"}
         </button>
       </div>

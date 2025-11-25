@@ -1,3 +1,4 @@
+
 # Changelog
 
 All notable changes to the **FashionOS** project will be documented in this file.
@@ -7,10 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Planned
+- **About Page:** Company story, team grid, values (`pages/public/AboutPage.tsx`).
 - **Auth:** Full integration with Supabase Auth / Clerk.
 - **Backend:** Connecting UI forms (Booking, Contact) to Supabase tables.
 - **Payments:** Stripe Connect integration for split payments between platform and creatives.
 - **Messaging:** Real-time chat for `Dashboard/Inbox`.
+
+---
+
+## [0.5.0] - 2025-03-02
+### ✨ Added
+- **Contact Page:** Full-featured contact page at `/contact` featuring:
+  - Responsive Hero section with "Get in Touch" branding.
+  - Multi-field contact form (Name, Email, Subject, Message) with validation states.
+  - Contact Information Cards (Email, Phone, Office) using Lucide icons.
+  - Map placeholder section.
+  - FAQ section for common queries.
+- **Start Project Wizard:** `StartProjectPage.tsx` completed (from previous updates).
+
+### ♻️ Refactored
+- **Type Safety:** Updated `RequireAuth.tsx` to use standard function component pattern instead of `React.FC` for better children prop handling.
+- **Component Hygiene:** Refactored `DirectoryPage.tsx` and `DashboardGallery.tsx` sub-components to remove implicit `React.FC` usage, improving TypeScript strictness and React 18 compatibility.
 
 ---
 

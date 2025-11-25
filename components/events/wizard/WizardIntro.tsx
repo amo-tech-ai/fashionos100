@@ -1,7 +1,8 @@
 
 import React, { useRef } from 'react';
-import { Sparkles, Loader2, Link as LinkIcon, FileText, Upload, X } from 'lucide-react';
+import { Sparkles, Link as LinkIcon, FileText, Upload, X } from 'lucide-react';
 import { Button } from '../../Button';
+import { LoadingSpinner } from '../../LoadingSpinner';
 
 interface WizardIntroProps {
   aiPrompt: string;
@@ -112,7 +113,7 @@ export const WizardIntro: React.FC<WizardIntroProps> = ({
               onClick={onGenerate}
               disabled={isLoading || (!aiPrompt.trim() && !aiUrl && !aiFile)}
             >
-              {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Sparkles size={16} />}
+              {isLoading ? <LoadingSpinner size={16} /> : <Sparkles size={16} />}
               {isLoading ? 'Analyzing...' : 'Generate Draft'}
             </Button>
           </div>

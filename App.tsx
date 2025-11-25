@@ -19,6 +19,7 @@ import { EventsPage } from './pages/public/EventsPage';
 import { SocialPage } from './pages/public/SocialPage';
 import { EcommercePage } from './pages/public/EcommercePage';
 import { StartProjectPage } from './pages/public/StartProjectPage';
+import { ContactPage } from './pages/public/ContactPage';
 
 // Dashboard Pages
 import { DashboardOverview } from './pages/dashboard/DashboardOverview';
@@ -28,6 +29,7 @@ import { DashboardEvents } from './pages/dashboard/DashboardEvents';
 import { DashboardFinancials } from './pages/dashboard/DashboardFinancials';
 import { DashboardGallery } from './pages/dashboard/DashboardGallery';
 import { DashboardPlaceholder } from './pages/dashboard/DashboardPlaceholder';
+import { DashboardSponsors } from './pages/dashboard/DashboardSponsors';
 
 // Components
 import { EventWizard } from './components/events/EventWizard';
@@ -47,15 +49,15 @@ const App: React.FC = () => {
         {/* Booking Wizard */}
         <Route path="/start-project" element={<StartProjectPage />} />
         
-        {/* Placeholders for future pages ensuring links work */}
-        <Route path="/services/web-design" element={<ServicesPage />} />
-        <Route path="/portfolio" element={<DirectoryPage />} /> {/* Using Directory as Portfolio fallback for now */}
-        <Route path="/contact" element={<ServicesPage />} /> {/* Using Services as Contact fallback for now */}
-        
+        {/* Main Pages */}
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/directory" element={<DirectoryPage />} />
         <Route path="/events" element={<EventsPage />} />
         
-        {/* Legacy redirects */}
+        {/* Placeholders/Redirects */}
+        <Route path="/services/web-design" element={<ServicesPage />} />
+        <Route path="/portfolio" element={<DirectoryPage />} />
+        
         <Route path="/social" element={<Navigate to="/services/social" replace />} />
         <Route path="/shop" element={<Navigate to="/services/ecommerce" />} />
       </Route>
@@ -86,7 +88,7 @@ const App: React.FC = () => {
         <Route path="feedback" element={<DashboardPlaceholder title="Client Feedback" />} />
         
         <Route path="social" element={<DashboardPlaceholder title="Social Analytics" />} />
-        <Route path="directory" element={<DashboardPlaceholder title="Talent CRM" />} />
+        <Route path="directory" element={<DashboardSponsors />} />
         <Route path="shop" element={<DashboardPlaceholder title="E-Commerce" />} />
         <Route path="settings" element={<DashboardPlaceholder title="Settings" />} />
       </Route>

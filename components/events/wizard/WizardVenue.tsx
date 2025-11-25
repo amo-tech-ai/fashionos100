@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
-import { Calendar, MapPin, Loader2, CheckCircle2, ExternalLink, AlertCircle, Sparkles, Clock, ChevronRight, ChevronDown } from 'lucide-react';
+import { Calendar, MapPin, CheckCircle2, ExternalLink, AlertCircle, Sparkles, Clock, ChevronRight, ChevronDown } from 'lucide-react';
 import { CalendarPicker } from '../../CalendarPicker';
 import { WizardState } from './types';
 import { Button } from '../../Button';
 import { supabaseUrl, supabaseAnonKey } from '../../../lib/supabase';
+import { LoadingSpinner } from '../../LoadingSpinner';
 
 interface WizardVenueProps {
   data: WizardState;
@@ -189,7 +190,7 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
                   disabled={isOptimizing || (!venueConstraints && !talentSchedules)}
                   className="text-xs h-8 px-4"
                 >
-                  {isOptimizing ? <Loader2 className="animate-spin" size={12} /> : <Sparkles size={12} className="mr-1" />}
+                  {isOptimizing ? <LoadingSpinner size={12} /> : <Sparkles size={12} className="mr-1" />}
                   Find Best Slots
                 </Button>
               </div>
@@ -280,7 +281,7 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
                   onClick={handleVerifyLocation}
                   disabled={isVerifying || !data.location}
                 >
-                  {isVerifying ? <Loader2 className="animate-spin" size={14} /> : 'Verify'}
+                  {isVerifying ? <LoadingSpinner size={14} /> : 'Verify'}
                 </Button>
               )}
             </div>
