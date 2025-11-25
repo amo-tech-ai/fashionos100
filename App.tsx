@@ -43,7 +43,8 @@ import { SponsorDealWizard } from './pages/dashboard/SponsorDealWizard';
 import { EventOpportunitiesPage } from './pages/dashboard/EventOpportunitiesPage';
 import { DashboardContracts, DashboardActivations, DashboardMedia } from './pages/dashboard/OperationsPages';
 import { ActivationDetailPage } from './pages/dashboard/ActivationDetailPage';
-import { DashboardROI, SponsorPortal } from './pages/dashboard/AnalyticsPages';
+import { DashboardROI } from './pages/dashboard/AnalyticsPages';
+import { SponsorPortal } from './pages/dashboard/SponsorPortal';
 
 // Components
 import { EventWizard } from './components/events/EventWizard';

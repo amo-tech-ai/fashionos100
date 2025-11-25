@@ -1,20 +1,22 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Search, Plus, Sparkles, Download, 
-  DollarSign, Users, ArrowRight, X, TrendingUp, Filter, Loader2
+  Plus, Sparkles, Download, 
+  ArrowRight, X
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { SponsorCard } from '../../components/sponsors/SponsorCard';
+import { SponsorList } from '../../components/sponsors/SponsorList';
+import { SponsorKPIWidget } from '../../components/sponsors/SponsorKPIWidget';
 import { EventSponsor } from '../../types/sponsorship';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { Input } from '../../components/forms/Input';
 import { Textarea } from '../../components/forms/Textarea';
-import { StatCard } from '../../components/dashboard/Shared';
 
 export const DashboardSponsors: React.FC = () => {
+  const navigate = useNavigate();
   const [view, setView] = useState<'Pipeline' | 'List'>('Pipeline');
   const [sponsors, setSponsors] = useState<EventSponsor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,19 +88,6 @@ export const DashboardSponsors: React.FC = () => {
     }
   };
 
-  // Calculated Stats
-  const totalRaised = sponsors.reduce((acc, s) => acc + (s.cash_value || 0), 0);
-  const activePartners = new Set(sponsors.filter(s => s.status !== 'Lead').map(s => s.sponsor_id)).size;
-  const avgDealValue = sponsors.length > 0 ? totalRaised / sponsors.length : 0;
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="animate-spin text-purple-600" size={48} />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8 animate-in fade-in pb-20 relative">
       
@@ -138,7 +127,6 @@ export const DashboardSponsors: React.FC = () => {
               />
               <div className="pt-2">
                 <Button fullWidth variant="primary" onClick={handleAiIdeation} disabled={!aiParams.sponsorName || aiLoading}>
-                  {aiLoading ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
                   {aiLoading ? 'Generating Ideas...' : 'Suggest Activations'}
                 </Button>
               </div>
@@ -167,43 +155,12 @@ export const DashboardSponsors: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard 
-          label="Total Raised" 
-          value={`$${totalRaised.toLocaleString()}`} 
-          icon={DollarSign} 
-          trend="+12%" 
-          trendUp 
-          color="text-green-600 bg-green-50" 
-        />
-        <StatCard 
-          label="Active Partners" 
-          value={activePartners.toString()} 
-          icon={Users} 
-          color="text-blue-600 bg-blue-50" 
-        />
-        <StatCard 
-          label="Avg Deal Value" 
-          value={`$${Math.round(avgDealValue).toLocaleString()}`} 
-          icon={TrendingUp} 
-          color="text-pink-600 bg-pink-50" 
-          trend="+5%" 
-          trendUp 
-        />
-        <div 
-          className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:border-purple-300 transition-colors group" 
-          onClick={() => setShowAiModal(true)}
-        >
-           <div className="flex justify-between items-start mb-2">
-              <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-lg shadow-md group-hover:scale-110 transition-transform">
-                <Sparkles size={18} />
-              </div>
-           </div>
-           <p className="text-sm font-bold text-gray-900 leading-tight mt-2">Suggest Activations</p>
-           <p className="text-xs text-purple-500 font-bold uppercase tracking-wider mt-1">AI Agent Ready</p>
-        </div>
-      </div>
+      {/* KPI Widget */}
+      <SponsorKPIWidget 
+        sponsors={sponsors} 
+        loading={loading} 
+        onAiTrigger={() => setShowAiModal(true)} 
+      />
 
       {/* AI Suggestions Panel */}
       {aiIdeas && (
@@ -250,11 +207,6 @@ export const DashboardSponsors: React.FC = () => {
                 List View
               </button>
             </div>
-            
-            <div className="relative hidden md:block">
-               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-               <input type="text" placeholder="Search partners..." className="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-full text-xs font-medium w-64 focus:outline-none focus:ring-2 focus:ring-purple-100" />
-            </div>
           </div>
 
           {view === 'Pipeline' ? (
@@ -283,32 +235,10 @@ export const DashboardSponsors: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-               <table className="w-full text-left text-sm">
-                  <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
-                     <tr>
-                        <th className="px-6 py-4">Sponsor</th>
-                        <th className="px-6 py-4">Level</th>
-                        <th className="px-6 py-4">Value</th>
-                        <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4">Actions</th>
-                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                     {sponsors.map(s => (
-                        <tr key={s.id} className="hover:bg-gray-50/50">
-                           <td className="px-6 py-4 font-bold text-gray-900">{s.sponsor?.name}</td>
-                           <td className="px-6 py-4 text-gray-600">{s.level}</td>
-                           <td className="px-6 py-4 font-medium">${s.cash_value.toLocaleString()}</td>
-                           <td className="px-6 py-4"><span className="bg-gray-100 px-2 py-1 rounded text-xs font-bold">{s.status}</span></td>
-                           <td className="px-6 py-4 text-purple-600 font-bold text-xs cursor-pointer hover:underline">
-                             <Link to={`/dashboard/sponsors/${s.sponsor_id}`}>View Profile</Link>
-                           </td>
-                        </tr>
-                     ))}
-                  </tbody>
-               </table>
-            </div>
+            <SponsorList 
+              sponsors={sponsors} 
+              onSponsorClick={(s) => navigate(`/dashboard/sponsors/${s.sponsor_id}`)}
+            />
           )}
         </div>
       </div>

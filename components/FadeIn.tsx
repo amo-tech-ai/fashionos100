@@ -1,13 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
 
-interface FadeInProps {
+interface FadeInProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   delay?: number;
   direction?: 'up' | 'down' | 'left' | 'right' | 'none';
   className?: string;
 }
 
-export const FadeIn: React.FC<FadeInProps> = ({ children, delay = 0, direction = 'up', className = '' }) => {
+export const FadeIn: React.FC<FadeInProps> = ({ children, delay = 0, direction = 'up', className = '', ...props }) => {
   const [isVisible, setIsVisible] = useState(false);
   const domRef = useRef<HTMLDivElement>(null);
 
@@ -43,6 +43,7 @@ export const FadeIn: React.FC<FadeInProps> = ({ children, delay = 0, direction =
         transform: getTransform(),
         transitionDelay: `${delay}ms`
       }}
+      {...props}
     >
       {children}
     </div>

@@ -4,6 +4,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'white' | 'pill' | 'accent';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
+  // Fix: Add 'as' prop to support rendering as different elements (e.g. span, div, Link)
+  as?: React.ElementType;
 }
 
 export const Button: React.FC<ButtonProps> = ({ 
@@ -12,6 +14,8 @@ export const Button: React.FC<ButtonProps> = ({
   size = 'md', 
   fullWidth = false,
   className = '', 
+  // Fix: Default 'as' to 'button'
+  as: Component = 'button',
   ...props 
 }) => {
   const baseStyles = "inline-flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
@@ -40,11 +44,11 @@ export const Button: React.FC<ButtonProps> = ({
   }
 
   return (
-    <button 
+    <Component 
       className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${widthClass} ${className}`}
       {...props}
     >
       {children}
-    </button>
+    </Component>
   );
 };

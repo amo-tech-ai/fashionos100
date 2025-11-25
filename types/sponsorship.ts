@@ -58,3 +58,28 @@ export interface SponsorActivation {
   // Joined fields
   event_sponsor?: EventSponsor;
 }
+
+export interface SponsorDeliverable {
+  id: string;
+  event_sponsor_id: string;
+  title: string;
+  type: 'logo' | 'image' | 'video' | 'doc';
+  status: DeliverableStatus;
+  due_date: string;
+  asset_url?: string;
+  
+  // Joined fields
+  event_sponsor?: {
+    sponsor: { name: string };
+    event: { title: string };
+  };
+}
+
+export interface SponsorRoiMetric {
+  id: string;
+  event_sponsor_id: string;
+  metric_name: string;
+  metric_value: number;
+  unit: string;
+  created_at: string;
+}
