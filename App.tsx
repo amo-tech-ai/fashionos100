@@ -17,13 +17,14 @@ import { VideoProductionPage } from './pages/public/VideoProductionPage';
 import { WebDesignPage } from './pages/public/WebDesignPage';
 import { DirectoryPage } from './pages/public/DirectoryPage';
 import { ProfileDetailPage } from './pages/public/ProfileDetailPage';
-import { DesignerProfilePage } from './pages/public/DesignerProfilePage'; // Import added
+import { DesignerProfilePage } from './pages/public/DesignerProfilePage';
 import { EventsPage } from './pages/public/EventsPage';
 import { SocialPage } from './pages/public/SocialPage';
 import { EcommercePage } from './pages/public/EcommercePage';
 import { StartProjectPage } from './pages/public/StartProjectPage';
 import { ContactPage } from './pages/public/ContactPage';
 import { AboutPage } from './pages/public/AboutPage';
+import { PricingPage } from './pages/public/PricingPage';
 
 // Dashboard Pages
 import { DashboardOverview } from './pages/dashboard/DashboardOverview';
@@ -34,6 +35,11 @@ import { DashboardFinancials } from './pages/dashboard/DashboardFinancials';
 import { DashboardGallery } from './pages/dashboard/DashboardGallery';
 import { DashboardPlaceholder } from './pages/dashboard/DashboardPlaceholder';
 import { DashboardSponsors } from './pages/dashboard/DashboardSponsors';
+
+// New Dashboard Pages
+import { DashboardLeads, DashboardSponsorsList, DashboardPackages } from './pages/dashboard/SponsorshipPages';
+import { DashboardContracts, DashboardActivations, DashboardMedia } from './pages/dashboard/OperationsPages';
+import { DashboardROI, SponsorPortal } from './pages/dashboard/AnalyticsPages';
 
 // Components
 import { EventWizard } from './components/events/EventWizard';
@@ -57,11 +63,12 @@ const App: React.FC = () => {
         {/* Main Pages */}
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
         
         {/* Directory & Profiles */}
         <Route path="/directory" element={<DirectoryPage />} />
         <Route path="/directory/:id" element={<ProfileDetailPage />} />
-        <Route path="/designers/:id" element={<DesignerProfilePage />} /> {/* Route added */}
+        <Route path="/designers/:id" element={<DesignerProfilePage />} />
         
         <Route path="/events" element={<EventsPage />} />
         
@@ -92,14 +99,24 @@ const App: React.FC = () => {
         <Route path="financials" element={<DashboardFinancials />} />
         <Route path="gallery" element={<DashboardGallery />} />
         
-        {/* New Modules */}
+        {/* Sponsorship & Sales */}
+        <Route path="leads" element={<DashboardLeads />} />
+        <Route path="sponsors" element={<DashboardSponsors />} />
+        <Route path="packages" element={<DashboardPackages />} />
+        
+        {/* Operations */}
+        <Route path="contracts" element={<DashboardContracts />} />
+        <Route path="activations" element={<DashboardActivations />} />
+        <Route path="media" element={<DashboardMedia />} />
+        
+        {/* Analytics */}
+        <Route path="roi" element={<DashboardROI />} />
+        <Route path="portal" element={<SponsorPortal />} />
+        
+        {/* Misc */}
         <Route path="invoices" element={<DashboardPlaceholder title="Invoices & Billing" />} />
         <Route path="messages" element={<DashboardPlaceholder title="Messages & Inbox" />} />
         <Route path="feedback" element={<DashboardPlaceholder title="Client Feedback" />} />
-        
-        <Route path="social" element={<DashboardPlaceholder title="Social Analytics" />} />
-        <Route path="directory" element={<DashboardSponsors />} />
-        <Route path="shop" element={<DashboardPlaceholder title="E-Commerce" />} />
         <Route path="settings" element={<DashboardPlaceholder title="Settings" />} />
       </Route>
 

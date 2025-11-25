@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
-  MapPin, Star, Globe, Instagram, Mail, 
-  Layers, Scissors, Calendar, Play, ArrowRight, CheckCircle2
+  MapPin, Star, Globe, Instagram, Layers, Scissors, 
+  Calendar, Play, ArrowRight, CheckCircle2, MessageSquare
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
@@ -11,7 +11,7 @@ import { SectionTag } from '../../components/SectionTag';
 import { Input } from '../../components/forms/Input';
 import { Textarea } from '../../components/forms/Textarea';
 
-// Mock Data for a specific designer
+// --- Mock Data (Ideally fetched from Supabase) ---
 const MOCK_DESIGNER = {
   id: 1,
   name: 'Marcus Chen',
@@ -47,23 +47,30 @@ const MOCK_DESIGNER = {
 
 export const DesignerProfilePage: React.FC = () => {
   const { id } = useParams();
-  // In a real app, fetch data using id
+  // In a real app, fetch designer data using id
   const designer = MOCK_DESIGNER; 
 
+  const scrollToContact = () => {
+    const contactSection = document.getElementById('contact-form');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="bg-white min-h-screen font-sans text-fashion-black">
+    <div className="bg-white min-h-screen font-sans text-fashion-black relative pb-20">
       
-      {/* 1. Hero Cover */}
-      <div className="relative h-[40vh] md:h-[50vh] bg-gray-900">
+      {/* 1. Hero Cover (Parallax Effect) */}
+      <div className="relative h-[40vh] md:h-[50vh] bg-gray-900 overflow-hidden">
         <img 
           src={designer.coverImage} 
           alt="Cover" 
-          className="w-full h-full object-cover opacity-60" 
+          className="w-full h-full object-cover opacity-60 fixed-cover" 
         />
         <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-black/30" />
       </div>
 
-      {/* 2. Profile Header (Overlapping) */}
+      {/* 2. Profile Header (Floating Card) */}
       <div className="container mx-auto px-6 md:px-12 -mt-24 relative z-10 mb-16">
         <FadeIn>
           <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
@@ -113,22 +120,22 @@ export const DesignerProfilePage: React.FC = () => {
       {/* 3. Stats Grid */}
       <section className="container mx-auto px-6 md:px-12 mb-20">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-6 bg-gray-50 rounded-2xl text-center border border-gray-100">
+          <div className="p-6 bg-gray-50 rounded-2xl text-center border border-gray-100 hover:border-purple-200 transition-colors">
             <Layers className="mx-auto mb-3 text-purple-600" size={24} />
             <p className="text-2xl font-bold text-gray-900">{designer.stats.collections}</p>
             <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Collections</p>
           </div>
-          <div className="p-6 bg-gray-50 rounded-2xl text-center border border-gray-100">
+          <div className="p-6 bg-gray-50 rounded-2xl text-center border border-gray-100 hover:border-purple-200 transition-colors">
             <Calendar className="mx-auto mb-3 text-purple-600" size={24} />
             <p className="text-2xl font-bold text-gray-900">{designer.stats.shows}</p>
             <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Runway Shows</p>
           </div>
-          <div className="p-6 bg-gray-50 rounded-2xl text-center border border-gray-100">
+          <div className="p-6 bg-gray-50 rounded-2xl text-center border border-gray-100 hover:border-purple-200 transition-colors">
             <Scissors className="mx-auto mb-3 text-purple-600" size={24} />
             <p className="text-2xl font-bold text-gray-900">{designer.stats.years}</p>
             <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Years Active</p>
           </div>
-          <div className="p-6 bg-gray-50 rounded-2xl text-center border border-gray-100">
+          <div className="p-6 bg-gray-50 rounded-2xl text-center border border-gray-100 hover:border-purple-200 transition-colors">
             <Star className="mx-auto mb-3 text-purple-600" size={24} />
             <p className="text-2xl font-bold text-gray-900">4.9</p>
             <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Rating</p>
@@ -160,8 +167,8 @@ export const DesignerProfilePage: React.FC = () => {
                     {col.items} Looks
                   </div>
                 </div>
-                <h3 className="font-serif font-bold text-xl mb-1">{col.title}</h3>
-                <p className="text-sm text-gray-500 flex items-center gap-1 group-hover:text-purple-600 transition-colors">
+                <h3 className="font-serif font-bold text-xl mb-1 group-hover:text-purple-600 transition-colors">{col.title}</h3>
+                <p className="text-sm text-gray-500 flex items-center gap-1">
                   View Lookbook <ArrowRight size={14} />
                 </p>
               </div>
@@ -170,7 +177,7 @@ export const DesignerProfilePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. Runway Feature */}
+      {/* 5. Runway Feature (Cinematic) */}
       <section className="py-24 bg-black text-white mb-24">
         <div className="container mx-auto px-6 md:px-12">
           <div className="flex flex-col md:flex-row gap-12 items-center">
@@ -191,7 +198,7 @@ export const DesignerProfilePage: React.FC = () => {
                       <Play className="fill-white text-white ml-1" size={32} />
                     </div>
                   </div>
-                  <div className="absolute bottom-4 right-4 bg-black/80 px-3 py-1 rounded text-xs font-bold">
+                  <div className="absolute bottom-4 right-4 bg-black/80 px-3 py-1 rounded text-xs font-bold text-white">
                     {designer.runway.duration}
                   </div>
                 </div>
@@ -201,7 +208,7 @@ export const DesignerProfilePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 6. Lookbook Grid */}
+      {/* 6. Lookbook Grid (Masonry style feel) */}
       <section className="container mx-auto px-6 md:px-12 mb-24">
         <div className="text-center mb-12">
           <SectionTag>Highlights</SectionTag>
@@ -218,8 +225,8 @@ export const DesignerProfilePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 7. Contact / Booking */}
-      <section className="bg-gray-50 py-24">
+      {/* 7. Contact / Booking Form */}
+      <section id="contact-form" className="bg-gray-50 py-24">
         <div className="container mx-auto px-6 md:px-12">
           <div className="max-w-2xl mx-auto bg-white rounded-3xl p-8 md:p-12 shadow-lg border border-gray-100">
             <div className="text-center mb-10">
@@ -238,6 +245,21 @@ export const DesignerProfilePage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Sticky Persistent Booking CTA */}
+      <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none px-4 animate-in slide-in-from-bottom-6 duration-700">
+        <div className="pointer-events-auto shadow-2xl rounded-full">
+          <Button 
+            variant="primary" 
+            size="lg" 
+            onClick={scrollToContact}
+            className="rounded-full px-8 py-4 text-sm md:text-base tracking-widest uppercase font-bold border-2 border-white/10 transform transition-transform hover:scale-105 hover:shadow-purple-500/20 gap-2"
+          >
+            <MessageSquare size={18} className="hidden md:block" />
+            Book a Consultation
+          </Button>
+        </div>
+      </div>
 
     </div>
   );

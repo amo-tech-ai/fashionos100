@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Search, Plus, Sparkles, Download, PieChart, 
-  DollarSign, Users, ArrowRight, X 
+  DollarSign, Users, ArrowRight, X, TrendingUp 
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
@@ -11,6 +11,7 @@ import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { Input } from '../../components/forms/Input';
 import { Textarea } from '../../components/forms/Textarea';
+import { StatCard } from '../../components/dashboard/Shared';
 
 // Mock Data for MVP
 const MOCK_SPONSORS: EventSponsor[] = [
@@ -140,28 +141,28 @@ export const DashboardSponsors: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-           <div className="flex justify-between items-start mb-2">
-              <div className="p-2 bg-green-50 text-green-600 rounded-lg"><DollarSign size={18} /></div>
-              <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">+12%</span>
-           </div>
-           <p className="text-2xl font-bold text-gray-900">$85,000</p>
-           <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Total Raised</p>
-        </div>
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-           <div className="flex justify-between items-start mb-2">
-              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Users size={18} /></div>
-           </div>
-           <p className="text-2xl font-bold text-gray-900">14</p>
-           <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Active Partners</p>
-        </div>
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-           <div className="flex justify-between items-start mb-2">
-              <div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><PieChart size={18} /></div>
-           </div>
-           <p className="text-2xl font-bold text-gray-900">75%</p>
-           <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Goal Reached</p>
-        </div>
+        <StatCard 
+          label="Total Raised" 
+          value="$85,000" 
+          icon={DollarSign} 
+          trend="+12%" 
+          trendUp 
+          color="text-green-600 bg-green-50" 
+        />
+        <StatCard 
+          label="Active Partners" 
+          value="14" 
+          icon={Users} 
+          color="text-blue-600 bg-blue-50" 
+        />
+        <StatCard 
+          label="Avg Deal Value" 
+          value="$6,071" 
+          icon={TrendingUp} 
+          color="text-pink-600 bg-pink-50" 
+          trend="+5%" 
+          trendUp 
+        />
         <div 
           className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:border-purple-300 transition-colors group" 
           onClick={() => setShowAiModal(true)}
