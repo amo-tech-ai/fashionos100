@@ -18,18 +18,22 @@ import { StatCard } from '../../components/dashboard/Shared';
 const MOCK_SPONSORS: EventSponsor[] = [
   {
     id: '1', event_id: 'e1', sponsor_id: 's1', level: 'Gold', status: 'Signed', cash_value: 25000, created_at: '2025-01-01',
+    active_events_count: 2,
     sponsor: { id: 's1', name: 'Luxe Beauty', industry: 'Cosmetics', logo_url: 'https://images.unsplash.com/photo-1618331835717-801e976710b2?w=100' }
   },
   {
     id: '2', event_id: 'e1', sponsor_id: 's2', level: 'Silver', status: 'Negotiating', cash_value: 10000, created_at: '2025-01-05',
+    active_events_count: 1,
     sponsor: { id: 's2', name: 'Hydra Water', industry: 'Beverage' }
   },
   {
     id: '3', event_id: 'e1', sponsor_id: 's3', level: 'Title', status: 'Paid', cash_value: 50000, created_at: '2025-01-10',
+    active_events_count: 3,
     sponsor: { id: 's3', name: 'TechFlow', industry: 'Technology', logo_url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=100' }
   },
   {
     id: '4', event_id: 'e1', sponsor_id: 's4', level: 'In-Kind', status: 'Lead', cash_value: 0, in_kind_value: 5000, created_at: '2025-02-01',
+    active_events_count: 0,
     sponsor: { id: 's4', name: 'Urban Florals', industry: 'Decor' }
   }
 ];

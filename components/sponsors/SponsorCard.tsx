@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MoreHorizontal, DollarSign, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { MoreHorizontal, DollarSign, CheckCircle2, Clock, AlertCircle, CalendarDays } from 'lucide-react';
 import { EventSponsor } from '../../types/sponsorship';
 
 interface SponsorCardProps {
@@ -17,6 +17,8 @@ export const SponsorCard: React.FC<SponsorCardProps> = ({ sponsor, onClick }) =>
     'Paid': 'bg-green-50 text-green-600',
   };
 
+  const totalValue = sponsor.cash_value + (sponsor.in_kind_value || 0);
+
   return (
     <div 
       onClick={onClick}
@@ -32,7 +34,7 @@ export const SponsorCard: React.FC<SponsorCardProps> = ({ sponsor, onClick }) =>
             )}
           </div>
           <div>
-            <h4 className="font-serif font-bold text-gray-900">{sponsor.sponsor?.name}</h4>
+            <h4 className="font-serif font-bold text-gray-900 line-clamp-1">{sponsor.sponsor?.name}</h4>
             <span className="text-xs text-gray-500">{sponsor.sponsor?.industry}</span>
           </div>
         </div>
@@ -41,29 +43,35 @@ export const SponsorCard: React.FC<SponsorCardProps> = ({ sponsor, onClick }) =>
         </button>
       </div>
 
-      <div className="space-y-3">
-        <div className="flex justify-between items-center text-sm">
-          <span className="text-gray-500">Level</span>
-          <span className="font-bold text-fashion-black">{sponsor.level}</span>
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="bg-gray-50 p-2 rounded-lg">
+          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">Total Value</p>
+          <p className="text-sm font-bold text-green-600 flex items-center gap-0.5">
+            <DollarSign size={12} strokeWidth={3} />{totalValue.toLocaleString()}
+          </p>
         </div>
-        
-        <div className="flex justify-between items-center text-sm">
-          <span className="text-gray-500">Value</span>
-          <span className="font-bold text-green-600 flex items-center gap-1">
-            <DollarSign size={12} />{sponsor.cash_value.toLocaleString()}
-          </span>
+        <div className="bg-gray-50 p-2 rounded-lg">
+          <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">Tier</p>
+          <p className="text-sm font-bold text-gray-900">{sponsor.level}</p>
         </div>
+      </div>
 
-        <div className="pt-3 border-t border-gray-50 flex justify-between items-center">
-          <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${statusColors[sponsor.status]}`}>
-            {sponsor.status}
-          </span>
-          {sponsor.status === 'Signed' && !sponsor.contract_url && (
-             <span className="flex items-center gap-1 text-[10px] text-amber-500 font-bold">
-               <AlertCircle size={10} /> Contract Pending
-             </span>
-          )}
+      {sponsor.active_events_count !== undefined && sponsor.active_events_count > 0 && (
+        <div className="mb-3 flex items-center gap-2 text-xs text-gray-500">
+          <CalendarDays size={14} />
+          <span>{sponsor.active_events_count} Active Events</span>
         </div>
+      )}
+
+      <div className="pt-3 border-t border-gray-50 flex justify-between items-center">
+        <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${statusColors[sponsor.status]}`}>
+          {sponsor.status}
+        </span>
+        {sponsor.status === 'Signed' && !sponsor.contract_url && (
+            <span className="flex items-center gap-1 text-[10px] text-amber-500 font-bold">
+              <AlertCircle size={10} /> Contract Pending
+            </span>
+        )}
       </div>
     </div>
   );

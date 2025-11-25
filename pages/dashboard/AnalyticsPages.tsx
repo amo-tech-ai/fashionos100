@@ -4,7 +4,8 @@ import {
   BarChart3, TrendingUp, Globe, Share2, Eye, MousePointerClick, 
   CheckCircle, Calendar, Plus, Package, Layout, Monitor, Zap, 
   Trash2, ChevronDown, ArrowRight, Heart, ArrowUpRight, Download,
-  MoreHorizontal, PieChart
+  MoreHorizontal, PieChart, Upload, FileText, Image as ImageIcon, 
+  Video, Lock, HelpCircle, Mail, Clock, MapPin, User
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { PageHeader, StatCard } from '../../components/dashboard/Shared';
@@ -15,17 +16,59 @@ import { Textarea } from '../../components/forms/Textarea';
 import { CalendarPicker } from '../../components/CalendarPicker';
 
 // --- MOCK DATA FOR SPONSOR PORTAL ---
-const PORTAL_DELIVERABLES = [
-  { id: 1, task: "Upload High-Res Logo (Vector)", due: "Oct 15", status: "Completed" },
-  { id: 2, task: "Approve Booth Mockup", due: "Oct 20", status: "Pending" },
-  { id: 3, task: "Submit Video Ad (15s)", due: "Nov 01", status: "Pending" },
+const SPONSOR_KPI_DATA = [
+  { label: 'Total Impressions', value: '2.4M', trend: '+38% vs target', icon: Eye, color: 'text-purple-600 bg-purple-50' },
+  { label: 'Engagement Rate', value: '7.8%', trend: '+1.2% vs average', icon: Heart, color: 'text-pink-600 bg-pink-50' },
+  { label: 'Social Reach', value: '1.8M', trend: '+42% vs target', icon: Share2, color: 'text-blue-600 bg-blue-50' },
+  { label: 'ROI', value: '385%', trend: 'Above average', icon: TrendingUp, color: 'text-green-600 bg-green-50' },
 ];
 
-const MOCK_ACTIVATION_ITEMS = [
-  { id: 1, type: "Booth Setup", category: "Furniture", item: "Lounge Seating (White)", date: "Oct 24, 2025" },
-  { id: 2, type: "Branding", category: "Print", item: "Backdrop Wall (8x10)", date: "Oct 24, 2025" },
-  { id: 3, type: "Tech", category: "AV", item: "65-inch 4K Display", date: "Oct 25, 2025" },
+const REQUIRED_UPLOADS = [
+  { id: 1, title: "Brand Logo (High-Res)", date: "Uploaded: Nov 10, 2025", status: "completed", type: "image" },
+  { id: 2, title: "Social Media Assets", date: "Uploaded: Nov 15, 2025", status: "completed", type: "image" },
+  { id: 3, title: "VIP Guest List", date: "Due: Dec 20, 2025", status: "pending", type: "doc" },
 ];
+
+const AVAILABLE_DOWNLOADS = [
+  { id: 1, title: "Event Day Photos", date: "Available: Jan 24, 2026", status: "available", type: "image" },
+  { id: 2, title: "Activation Video", date: "Expected: Jan 28, 2026", status: "in-progress", type: "video" },
+  { id: 3, title: "ROI Analytics Report", date: "Available: Jan 30, 2026", status: "available", type: "doc" },
+];
+
+const SPONSOR_ACTIVATIONS = [
+  { id: 1, name: "VIP Lounge", location: "Grand Palais - VIP Area", date: "Jan 15-23, 2026", attendees: "500 attendees", status: "confirmed" },
+  { id: 2, name: "Runway Branding", location: "Main Runway", date: "Jan 15-23, 2026", attendees: "1200 attendees", status: "confirmed" },
+  { id: 3, name: "After Party", location: "Musée Rodin", date: "Jan 23, 2026", attendees: "400 attendees", status: "pending" },
+];
+
+const MOCK_PLANNER_ITEMS = [
+  { id: 1, type: "Booth Setup", category: "Furniture", item: "Lounge Seating (White)", date: new Date(2025, 9, 24) },
+  { id: 2, type: "Branding", category: "Print", item: "Backdrop Wall (8x10)", date: new Date(2025, 9, 24) },
+  { id: 3, type: "Tech", category: "AV", item: "65-inch 4K Display", date: new Date(2025, 9, 25) },
+];
+
+// --- HELPER COMPONENTS ---
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const styles: Record<string, string> = {
+    completed: "bg-green-100 text-green-700",
+    available: "bg-green-100 text-green-700",
+    confirmed: "bg-green-100 text-green-700",
+    pending: "bg-blue-50 text-blue-600",
+    "in-progress": "bg-amber-100 text-amber-700",
+  };
+  return (
+    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${styles[status.toLowerCase()] || "bg-gray-100 text-gray-600"}`}>
+      {status}
+    </span>
+  );
+};
+
+const FileIcon = ({ type }: { type: string }) => {
+  if (type === 'image') return <ImageIcon size={18} className="text-purple-500" />;
+  if (type === 'video') return <Video size={18} className="text-pink-500" />;
+  return <FileText size={18} className="text-blue-500" />;
+};
 
 // --- CHART COMPONENTS (Custom Built) ---
 
@@ -257,9 +300,8 @@ export const DashboardROI: React.FC = () => {
             <button className="text-gray-400 hover:text-gray-600"><MoreHorizontal size={20} /></button>
           </div>
           <SimpleBarChart />
-          <div className="flex justify-center items-center gap-2 mt-4">
-             <div className="w-3 h-3 bg-purple-400 rounded-sm" />
-             <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">ROI %</span>
+          <div className="mt-4 text-center text-xs text-purple-600 font-bold uppercase tracking-wider flex items-center justify-center gap-2">
+            <div className="w-2 h-2 bg-purple-500 rounded-sm" /> ROI %
           </div>
         </div>
 
@@ -270,50 +312,53 @@ export const DashboardROI: React.FC = () => {
             <button className="text-gray-400 hover:text-gray-600"><MoreHorizontal size={20} /></button>
           </div>
           <SimpleLineChart />
-          <div className="flex justify-center items-center gap-2 mt-4">
-             <div className="w-3 h-3 bg-pink-500 rounded-full" />
-             <span className="text-xs font-bold text-pink-500 uppercase tracking-wider">Revenue ($M)</span>
+          <div className="mt-4 text-center text-xs text-pink-500 font-bold uppercase tracking-wider flex items-center justify-center gap-2">
+            <div className="w-2 h-2 bg-pink-500 rounded-full" /> Revenue ($M)
           </div>
         </div>
       </div>
 
-      {/* 4. Lower Section — Three Wide Cards */}
+      {/* 4. Lower Section - Three Wide Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
         {/* A. Engagement by Channel */}
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col">
-          <h3 className="font-serif font-bold text-xl text-gray-900 mb-6">Engagement by Channel</h3>
-          <div className="flex-grow">
-            <EngagementPieChart />
-          </div>
+        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+          <h3 className="font-serif font-bold text-lg text-gray-900 mb-4">Engagement by Channel</h3>
+          <EngagementPieChart />
         </div>
 
         {/* B. Top Performing Sponsors */}
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col">
-          <h3 className="font-serif font-bold text-xl text-gray-900 mb-6">Top Performing Sponsors</h3>
-          <div className="space-y-6 flex-grow">
+        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+          <h3 className="font-serif font-bold text-lg text-gray-900 mb-6">Top Performing Sponsors</h3>
+          <div className="space-y-6">
             {[
-              { name: 'Chanel', imp: '2.4M', eng: '185K', reach: '1.8M' },
-              { name: 'Gucci', imp: '3.1M', eng: '220K', reach: '2.2M' },
-              { name: 'Dior', imp: '1.8M', eng: '142K', reach: '1.4M' }
-            ].map((sponsor, i) => (
+              { name: 'Chanel', event: 'Paris Fashion Week SS25', roi: '385%', imp: '2.4M', eng: '185K', reach: '1.8M' },
+              { name: 'Gucci', event: 'New York Designer Series', roi: '420%', imp: '3.1M', eng: '220K', reach: '2.2M' },
+              { name: 'Dior', event: 'Milan Digital Showcase', roi: '340%', imp: '1.8M', eng: '142K', reach: '1.4M' },
+            ].map((s, i) => (
               <div key={i} className="border-b border-gray-50 last:border-0 pb-4 last:pb-0">
                 <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-bold text-lg">{sponsor.name}</h4>
-                  <span className="bg-green-100 text-green-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full">Positive</span>
+                  <div>
+                    <h4 className="font-bold text-gray-900">{s.name}</h4>
+                    <p className="text-xs text-gray-500">{s.event}</p>
+                  </div>
+                  <span className="bg-green-50 text-green-600 px-2 py-1 rounded-md text-xs font-bold">{s.roi} ROI</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className="grid grid-cols-4 gap-2 text-xs">
                   <div>
-                    <span className="block text-gray-400 mb-0.5">Impressions</span>
-                    <span className="font-bold">{sponsor.imp}</span>
+                    <p className="text-gray-400">Impressions</p>
+                    <p className="font-bold">{s.imp}</p>
                   </div>
                   <div>
-                    <span className="block text-gray-400 mb-0.5">Engagement</span>
-                    <span className="font-bold">{sponsor.eng}</span>
+                    <p className="text-gray-400">Engagement</p>
+                    <p className="font-bold">{s.eng}</p>
                   </div>
                   <div>
-                    <span className="block text-gray-400 mb-0.5">Reach</span>
-                    <span className="font-bold">{sponsor.reach}</span>
+                    <p className="text-gray-400">Reach</p>
+                    <p className="font-bold">{s.reach}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Sentiment</p>
+                    <span className="text-green-500 font-bold bg-green-50 px-1.5 rounded">positive</span>
                   </div>
                 </div>
               </div>
@@ -322,170 +367,119 @@ export const DashboardROI: React.FC = () => {
         </div>
 
         {/* C. Sponsor Impressions Breakdown */}
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col">
-          <h3 className="font-serif font-bold text-xl text-gray-900 mb-6">Sponsor Impressions Breakdown</h3>
-          <div className="flex-grow">
-            <HorizontalBarChart />
-          </div>
+        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+          <h3 className="font-serif font-bold text-lg text-gray-900 mb-4">Sponsor Impressions Breakdown</h3>
+          <HorizontalBarChart />
         </div>
-
       </div>
     </div>
   );
 };
 
-// --- HELPER: ACTIVATION PLANNER COMPONENT (Internal Tool) ---
+// --- ACTIVATION PLANNER COMPONENT ---
 const ActivationPlanner = () => {
-  const [plannedItems, setPlannedItems] = useState(MOCK_ACTIVATION_ITEMS);
+  const [items, setItems] = useState(MOCK_PLANNER_ITEMS);
+  const [newItem, setNewItem] = useState({ type: '', category: '', item: '', date: new Date() });
   const [showCalendar, setShowCalendar] = useState(false);
-  const [newItem, setNewItem] = useState({
-    type: 'Booth Setup',
-    category: 'Furniture',
-    item: '',
-    date: null as Date | null
-  });
 
   const handleAddItem = () => {
-    if (!newItem.item || !newItem.date) return;
-    const item = {
-      id: Math.random(),
-      type: newItem.type,
-      category: newItem.category,
-      item: newItem.item,
-      date: newItem.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    };
-    setPlannedItems([...plannedItems, item]);
-    setNewItem({ ...newItem, item: '', date: null });
-  };
-
-  const removeItem = (id: number) => {
-    setPlannedItems(plannedItems.filter(i => i.id !== id));
+    if (!newItem.type || !newItem.item) return;
+    setItems([...items, { ...newItem, id: items.length + 1 }]);
+    setNewItem({ type: '', category: '', item: '', date: new Date() });
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* 1. Planning Form */}
-      <div className="lg:col-span-1">
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm sticky top-24">
-          <div className="flex items-center gap-2 mb-6 text-purple-600">
-            <Layout size={20} />
-            <h3 className="font-serif font-bold text-xl text-gray-900">Plan Details</h3>
-          </div>
+      {/* Left: Form */}
+      <div className="lg:col-span-1 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm h-fit">
+        <h3 className="font-serif font-bold text-xl mb-6">Plan Activation</h3>
+        <div className="space-y-4">
+          <Select 
+            label="Activation Type"
+            options={["Booth Setup", "Branding", "Tech", "Staffing", "Catering"]}
+            value={newItem.type}
+            onChange={(e) => setNewItem({...newItem, type: e.target.value})}
+            className="bg-gray-50"
+          />
+          <Input 
+            label="Category" 
+            placeholder="e.g. Furniture, AV, Print" 
+            value={newItem.category}
+            onChange={(e) => setNewItem({...newItem, category: e.target.value})}
+            className="bg-gray-50"
+          />
+          <Input 
+            label="Item Details" 
+            placeholder="e.g. White Lounge Sofa" 
+            value={newItem.item}
+            onChange={(e) => setNewItem({...newItem, item: e.target.value})}
+            className="bg-gray-50"
+          />
           
-          <div className="space-y-5">
-            <Select 
-              label="Activation Context"
-              options={["Booth Setup", "VIP Lounge", "Runway Branding", "Digital Screen"]}
-              value={newItem.type}
-              onChange={(e) => setNewItem({...newItem, type: e.target.value})}
-              className="bg-gray-50"
-            />
-            
-            <Select 
-              label="Resource Category"
-              options={["Furniture", "Branding / Print", "Audio / Visual", "Staffing", "Giveaways"]}
-              value={newItem.category}
-              onChange={(e) => setNewItem({...newItem, category: e.target.value})}
-              className="bg-gray-50"
-            />
-
-            <div className="relative">
-              <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1 mb-1.5 block">Date Required</label>
-              <button 
-                onClick={() => setShowCalendar(!showCalendar)}
-                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-left flex justify-between items-center hover:border-purple-300 transition-colors"
-              >
-                <span className={newItem.date ? "text-gray-900" : "text-gray-400"}>
-                  {newItem.date ? newItem.date.toLocaleDateString() : "Select Date"}
-                </span>
-                <Calendar size={16} className="text-gray-400" />
-              </button>
-              {showCalendar && (
-                <div className="absolute top-full left-0 mt-2 z-50">
-                  <CalendarPicker 
-                    initialStart={newItem.date}
-                    initialEnd={null}
-                    onClose={() => setShowCalendar(false)}
-                    onApply={(start) => {
-                      setNewItem({...newItem, date: start});
-                      setShowCalendar(false);
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-
-            <Textarea 
-              label="Item Details / Specs"
-              placeholder="e.g. White leather sofa, approx 6ft wide."
-              value={newItem.item}
-              onChange={(e) => setNewItem({...newItem, item: e.target.value})}
-              className="bg-gray-50 h-24"
-            />
-
-            <Button 
-              fullWidth 
-              variant="primary" 
-              onClick={handleAddItem}
-              disabled={!newItem.item || !newItem.date}
-              className="mt-2"
+          <div className="relative">
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1 mb-1.5 block">Required Date</label>
+            <button 
+              onClick={() => setShowCalendar(!showCalendar)}
+              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium flex items-center justify-between text-gray-700"
             >
-              <Plus size={16} className="mr-2" /> Add to Plan
-            </Button>
+              <div className="flex items-center gap-2">
+                <Calendar size={16} className="text-purple-500" />
+                {newItem.date.toLocaleDateString()}
+              </div>
+              <ChevronDown size={16} className="text-gray-400" />
+            </button>
+            {showCalendar && (
+              <div className="absolute top-full left-0 z-20 mt-2">
+                <CalendarPicker 
+                  initialStart={newItem.date} 
+                  initialEnd={null}
+                  onClose={() => setShowCalendar(false)}
+                  onApply={(start) => {
+                    if (start) setNewItem({...newItem, date: start});
+                    setShowCalendar(false);
+                  }}
+                />
+              </div>
+            )}
           </div>
+
+          <Button fullWidth variant="primary" onClick={handleAddItem} className="mt-2">
+            <Plus size={16} className="mr-2" /> Add to Plan
+          </Button>
         </div>
       </div>
 
-      {/* 2. Planned Items List */}
-      <div className="lg:col-span-2">
-        <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm min-h-[600px]">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="font-serif font-bold text-xl">Activation Schedule</h3>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Share2 size={14} /> Share with Team
-            </Button>
-          </div>
+      {/* Right: Schedule List */}
+      <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="font-serif font-bold text-xl">Activation Schedule</h3>
+          <Button variant="white" size="sm" className="text-xs">Download PDF</Button>
+        </div>
 
-          {plannedItems.length > 0 ? (
-            <div className="space-y-4">
-              {plannedItems.map((item) => (
-                <div key={item.id} className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 hover:border-purple-200 hover:shadow-sm transition-all bg-white">
-                  <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors shrink-0">
-                    {item.category === 'Furniture' && <Package size={20} />}
-                    {item.category === 'AV' && <Monitor size={20} />}
-                    {item.category === 'Print' && <Layout size={20} />}
-                    {item.category === 'Staffing' && <Zap size={20} />}
-                    {!['Furniture', 'AV', 'Print', 'Staffing'].includes(item.category) && <Zap size={20} />}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start mb-1">
-                      <h4 className="font-bold text-gray-900 truncate">{item.item}</h4>
-                      <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-full">{item.date}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
-                      <span className="font-semibold text-purple-600">{item.type}</span>
-                      <span className="w-1 h-1 rounded-full bg-gray-300" />
-                      <span>{item.category}</span>
-                    </div>
-                  </div>
-
-                  <button 
-                    onClick={() => removeItem(item.id)}
-                    className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+        <div className="space-y-4">
+          {items.map((item) => (
+            <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-purple-200 transition-all group">
+              <div className="flex items-start gap-4">
+                <div className="flex flex-col items-center bg-white p-2 rounded-xl border border-gray-200 min-w-[60px]">
+                  <span className="text-xs font-bold text-purple-600 uppercase">{item.date.toLocaleDateString('en-US', { month: 'short' })}</span>
+                  <span className="text-xl font-bold text-gray-900">{item.date.getDate()}</span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-64 text-center border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/50">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-400">
-                <Layout size={24} />
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-bold text-gray-900">{item.type}</h4>
+                    <span className="text-[10px] bg-white border border-gray-200 px-2 py-0.5 rounded-full text-gray-500 uppercase tracking-wide">{item.category}</span>
+                  </div>
+                  <p className="text-sm text-gray-600">{item.item}</p>
+                </div>
               </div>
-              <p className="text-gray-900 font-medium mb-1">No items planned yet</p>
-              <p className="text-sm text-gray-500">Use the form to add resources to your activation.</p>
+              <button className="p-2 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                <Trash2 size={18} />
+              </button>
+            </div>
+          ))}
+          {items.length === 0 && (
+            <div className="text-center py-12 text-gray-400 border-2 border-dashed border-gray-200 rounded-2xl">
+              No items planned yet. Use the form to add details.
             </div>
           )}
         </div>
@@ -494,125 +488,199 @@ const ActivationPlanner = () => {
   );
 };
 
-// --- 2. SPONSOR PORTAL (External View Simulation) ---
+// --- 2. SPONSOR PORTAL ---
 export const SponsorPortal: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'planner'>('dashboard');
 
   return (
-    <div className="animate-in fade-in duration-500 pb-20 max-w-6xl mx-auto">
+    <div className="animate-in fade-in duration-500 pb-20 font-sans">
       
-      {/* Header Card */}
-      <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-8 md:p-12 rounded-3xl mb-8 relative overflow-hidden shadow-2xl">
-        <div className="relative z-10 flex justify-between items-end">
-          <div>
-            <div className="inline-block bg-yellow-500/20 text-yellow-300 border border-yellow-500/50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider mb-4">
-              Gold Partner
+      {/* 1. Hero Header Card */}
+      <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-[2rem] p-8 md:p-12 text-white shadow-2xl mb-8 relative overflow-hidden">
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+            <div className="flex items-center gap-6">
+              <div className="w-20 h-20 bg-white rounded-2xl shadow-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-blue-500 rotate-45 rounded-lg" />
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-5xl font-serif font-bold mb-2">Sponsor Portal</h1>
+                <p className="text-purple-100 text-lg">Welcome back, <span className="font-bold text-white">Chanel</span></p>
+              </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-serif font-bold mb-2">Luxe Beauty</h1>
-            <p className="text-gray-400">Partner Dashboard • Summer Fashion Week 2025</p>
+            <div className="flex flex-col items-end text-right bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
+              <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest mb-1">
+                <Calendar size={14} /> Paris Fashion Week SS25
+              </div>
+              <div className="text-xs text-purple-100 mb-2">Platinum Package • $500K</div>
+              <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden">
+                <div className="h-full bg-white w-3/4" />
+              </div>
+            </div>
           </div>
-          <div className="hidden md:block text-right">
-            <p className="text-3xl font-bold">85%</p>
-            <p className="text-xs uppercase tracking-wider text-gray-400">Onboarding Complete</p>
+
+          {/* KPI Mini Cards inside Header */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {SPONSOR_KPI_DATA.map((kpi, i) => (
+              <div key={i} className="bg-white text-gray-900 p-4 rounded-2xl shadow-lg flex items-center gap-4">
+                <div className={`p-3 rounded-xl ${kpi.color}`}>
+                  <kpi.icon size={20} />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wider">{kpi.label}</p>
+                  <p className="text-xl font-bold">{kpi.value}</p>
+                  <p className="text-[10px] text-green-600 font-medium">{kpi.trend}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        {/* Decorative Circle */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+        
+        {/* Decorative Background */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex gap-4 mb-8 border-b border-gray-200 pb-1 overflow-x-auto">
+      <div className="flex gap-4 mb-8 border-b border-gray-200 pb-1">
         <button 
           onClick={() => setActiveTab('dashboard')}
-          className={`pb-3 px-2 text-sm font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'dashboard' ? 'text-black border-black' : 'text-gray-400 border-transparent hover:text-gray-600'}`}
+          className={`pb-3 px-2 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'dashboard' ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
         >
           Overview
         </button>
         <button 
           onClick={() => setActiveTab('planner')}
-          className={`pb-3 px-2 text-sm font-bold uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 ${activeTab === 'planner' ? 'text-purple-600 border-purple-600' : 'text-gray-400 border-transparent hover:text-gray-600'}`}
+          className={`pb-3 px-2 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'planner' ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
         >
-          Activation Planner <span className="bg-purple-100 text-purple-600 text-[9px] px-1.5 py-0.5 rounded-full">New</span>
+          Activation Planner
         </button>
       </div>
 
-      {/* Tab Content */}
-      <div className="min-h-[500px]">
+      {/* 2. Main Content Body */}
+      <FadeIn key={activeTab}>
         {activeTab === 'dashboard' ? (
-          <FadeIn>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Deliverables Checklist */}
-              <div className="lg:col-span-2 space-y-8">
-                <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-                  <h3 className="text-xl font-serif font-bold mb-6">Pending Deliverables</h3>
-                  <div className="space-y-4">
-                    {PORTAL_DELIVERABLES.map((item, i) => (
-                      <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center ${item.status === 'Completed' ? 'bg-green-500 text-white' : 'border-2 border-gray-300'}`}>
-                            {item.status === 'Completed' && <CheckCircle size={14} />}
-                          </div>
-                          <div>
-                            <p className={`font-bold text-sm ${item.status === 'Completed' ? 'text-gray-400 line-through' : 'text-gray-900'}`}>{item.task}</p>
-                            <p className="text-xs text-gray-500">Due: {item.due}</p>
-                          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* Left Column: Deliverables (2/3 width) */}
+            <div className="lg:col-span-2 space-y-8">
+              
+              <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
+                <div className="flex justify-between items-center mb-2">
+                  <h2 className="text-2xl font-serif font-bold">Your Deliverables</h2>
+                  <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">3 Pending</span>
+                </div>
+                <p className="text-gray-500 mb-8">Upload required assets and download event materials.</p>
+
+                {/* A. Required Uploads */}
+                <div className="space-y-6">
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">Required Uploads</h3>
+                  {REQUIRED_UPLOADS.map((item) => (
+                    <div key={item.id} className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-2xl border border-gray-100 hover:border-purple-100 hover:shadow-md transition-all bg-white group">
+                      <div className="flex items-center gap-4 w-full sm:w-auto">
+                        <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center group-hover:bg-purple-50 transition-colors">
+                          {item.status === 'completed' ? <CheckCircle className="text-green-500" size={24} /> : <Upload className="text-purple-500" size={24} />}
                         </div>
-                        <button className={`text-xs font-bold px-4 py-2 rounded-lg transition-colors ${item.status === 'Completed' ? 'text-green-600 bg-green-50' : 'bg-black text-white hover:bg-gray-800'}`}>
-                          {item.status === 'Completed' ? 'Done' : 'Upload'}
-                        </button>
+                        <div>
+                          <h4 className="font-bold text-gray-900">{item.title}</h4>
+                          <p className="text-xs text-gray-500">{item.date}</p>
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex items-center gap-4 w-full sm:w-auto mt-4 sm:mt-0 justify-between sm:justify-end">
+                        <StatusBadge status={item.status} />
+                        <Button variant={item.status === 'completed' ? 'outline' : 'primary'} size="sm" className={item.status === 'pending' ? "bg-[#ec4899] hover:bg-[#db2777] border-none text-white" : ""}>
+                          {item.status === 'completed' ? 'View' : 'Upload'}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
-                {/* Live Stats */}
-                <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-                  <h3 className="text-xl font-serif font-bold mb-6">Campaign Performance</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="p-4 bg-purple-50 rounded-xl text-center">
-                      <p className="text-2xl font-bold text-purple-700">125k</p>
-                      <p className="text-[10px] font-bold uppercase text-purple-400">Impressions</p>
+                {/* B. Available Downloads */}
+                <div className="space-y-6 mt-10 pt-10 border-t border-gray-50">
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4">Available Downloads</h3>
+                  {AVAILABLE_DOWNLOADS.map((item) => (
+                    <div key={item.id} className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-2xl border border-gray-100 hover:border-purple-100 hover:shadow-md transition-all bg-white group">
+                      <div className="flex items-center gap-4 w-full sm:w-auto">
+                        <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+                          <FileIcon type={item.type} />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-900">{item.title}</h4>
+                          <p className="text-xs text-gray-500">{item.date}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 w-full sm:w-auto mt-4 sm:mt-0 justify-between sm:justify-end">
+                        <StatusBadge status={item.status} />
+                        <Button 
+                          variant="primary" 
+                          size="sm" 
+                          className="bg-[#ec4899] hover:bg-[#db2777] border-none text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={item.status === 'in-progress'}
+                        >
+                          Download
+                        </Button>
+                      </div>
                     </div>
-                    <div className="p-4 bg-pink-50 rounded-xl text-center">
-                      <p className="text-2xl font-bold text-pink-700">3.4k</p>
-                      <p className="text-[10px] font-bold uppercase text-pink-400">Clicks</p>
-                    </div>
-                    <div className="p-4 bg-orange-50 rounded-xl text-center">
-                      <p className="text-2xl font-bold text-orange-700">450</p>
-                      <p className="text-[10px] font-bold uppercase text-orange-400">Leads</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Sidebar Info */}
-              <div className="space-y-6">
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                  <h4 className="font-bold mb-4">Your Account Team</h4>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                    <div>
-                      <p className="text-sm font-bold">Elena Rossi</p>
-                      <p className="text-xs text-gray-500">Account Manager</p>
-                    </div>
-                  </div>
-                  <button className="w-full py-2 border border-gray-200 rounded-xl text-xs font-bold hover:bg-gray-50">Contact Support</button>
-                </div>
-
-                <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100">
-                  <h4 className="font-bold text-blue-900 mb-2">Upcoming Deadlines</h4>
-                  <p className="text-xs text-blue-700 mb-4">Your video ad spot is due in 3 days. Please ensure it meets the 4K spec.</p>
-                  <a href="#" className="text-xs font-bold text-blue-600 underline">View Specs</a>
-                </div>
-              </div>
             </div>
-          </FadeIn>
+
+            {/* Right Column: Activations & Actions (1/3 width) */}
+            <div className="space-y-8">
+              
+              {/* Your Activations */}
+              <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+                <h3 className="font-serif font-bold text-xl mb-6">Your Activations</h3>
+                <div className="space-y-4">
+                  {SPONSOR_ACTIVATIONS.map((act) => (
+                    <div key={act.id} className="p-4 border border-gray-100 rounded-2xl hover:shadow-md transition-all cursor-pointer group">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-bold text-gray-900 group-hover:text-purple-600 transition-colors">{act.name}</h4>
+                        <StatusBadge status={act.status} />
+                      </div>
+                      <div className="text-xs text-gray-500 space-y-1">
+                        <p className="flex items-center gap-2"><MapPin size={12} /> {act.location}</p>
+                        <p className="flex items-center gap-2"><Calendar size={12} /> {act.date}</p>
+                        <p className="flex items-center gap-2"><User size={12} /> {act.attendees}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+                <h3 className="font-serif font-bold text-xl mb-6">Quick Actions</h3>
+                <div className="space-y-3">
+                  <Button fullWidth className="bg-[#ec4899] hover:bg-[#db2777] border-none text-white justify-center gap-2">
+                    <Upload size={16} /> Upload Assets
+                  </Button>
+                  <Button fullWidth className="bg-[#c084fc] hover:bg-[#a855f7] border-none text-white justify-center gap-2">
+                    <Download size={16} /> Download Reports
+                  </Button>
+                  <Button fullWidth variant="outline" className="justify-center gap-2">
+                    <FileText size={16} /> View Contract
+                  </Button>
+                </div>
+              </div>
+
+              {/* Support Footer */}
+              <div className="bg-purple-50 p-6 rounded-[2rem] border border-purple-100 text-center">
+                <h4 className="font-serif font-bold text-lg text-purple-900 mb-2">Need Help?</h4>
+                <p className="text-xs text-purple-700/70 mb-4">Our sponsorship team is here to assist you with any questions.</p>
+                <Button variant="white" fullWidth className="text-purple-700 border-purple-200 hover:bg-white">
+                  Contact Support
+                </Button>
+              </div>
+
+            </div>
+          </div>
         ) : (
-          <FadeIn>
-            <ActivationPlanner />
-          </FadeIn>
+          <ActivationPlanner />
         )}
-      </div>
+      </FadeIn>
     </div>
   );
 };

@@ -24,6 +24,7 @@ export interface EventSponsor {
   contract_url?: string;
   created_at: string;
   sponsor?: SponsorProfile; // Joined data
+  active_events_count?: number; // UI helper
 }
 
 export interface Activation {
