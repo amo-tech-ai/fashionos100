@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { GoogleGenAI } from "@google/genai";
 import { Film, Sparkles, Loader2, Play } from 'lucide-react';
 import { Button } from '../Button';
 import { FadeIn } from '../FadeIn';
 import { FeaturedEvent } from '../../data/mockEvents';
+import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 
 interface VeoTrailerGeneratorProps {
   featuredEvent: FeaturedEvent;
@@ -31,39 +31,60 @@ export const VeoTrailerGenerator: React.FC<VeoTrailerGeneratorProps> = ({ featur
             reader.readAsDataURL(imageBlob);
         });
 
-        // 2. Initialize Veo Generation
+        // 2. Start Generation (Call Edge Function)
         setStatusStep('Consulting Veo 3.1 Director...');
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         
-        let operation = await ai.models.generateVideos({
-            model: 'veo-3.1-fast-generate-preview',
-            prompt: `Cinematic fashion event trailer for "${featuredEvent.title}". 
-                     Vibe: ${featuredEvent.desc}. 
-                     Style: High fashion runway, slow motion, 4k, highly detailed, atmospheric lighting.`,
-            image: {
-                imageBytes: base64Data,
-                mimeType: imageBlob.type || 'image/jpeg',
-            },
-            config: {
-                numberOfVideos: 1,
-                resolution: '720p',
-                aspectRatio: '16:9'
-            }
+        const startResp = await fetch(`${supabaseUrl}/functions/v1/generate-media`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseAnonKey}` },
+          body: JSON.stringify({
+            action: 'start',
+            prompt: `Cinematic fashion event trailer for "${featuredEvent.title}". Vibe: ${featuredEvent.desc}. Style: High fashion runway, slow motion, 4k, highly detailed, atmospheric lighting.`,
+            imageBase64: base64Data,
+            imageType: imageBlob.type
+          })
         });
+
+        if (!startResp.ok) throw new Error('Failed to start video generation');
+        const { operationName } = await startResp.json();
 
         // 3. Poll for Completion
         setStatusStep('Generating video frames...');
-        while (!operation.done) {
+        let isDone = false;
+        let downloadUri = null;
+
+        while (!isDone) {
             await new Promise(resolve => setTimeout(resolve, 5000));
-            operation = await ai.operations.getVideosOperation({operation: operation});
-            setStatusStep('Rendering final cut...');
+            const pollResp = await fetch(`${supabaseUrl}/functions/v1/generate-media`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseAnonKey}` },
+              body: JSON.stringify({
+                action: 'poll',
+                operationName
+              })
+            });
+            
+            const pollData = await pollResp.json();
+            isDone = pollData.done;
+            downloadUri = pollData.uri;
+            
+            if (!isDone) setStatusStep('Rendering final cut...');
         }
 
-        // 4. Fetch Result
-        const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-        if (downloadLink) {
-            const videoResp = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
-            const videoBlob = await videoResp.blob();
+        // 4. Secure Download Proxy
+        if (downloadUri) {
+            setStatusStep('Downloading trailer...');
+            const downloadResp = await fetch(`${supabaseUrl}/functions/v1/generate-media`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseAnonKey}` },
+              body: JSON.stringify({
+                action: 'download',
+                downloadUri
+              })
+            });
+
+            if (!downloadResp.ok) throw new Error('Download failed');
+            const videoBlob = await downloadResp.blob();
             const localUrl = URL.createObjectURL(videoBlob);
             setVideoUrl(localUrl);
         }

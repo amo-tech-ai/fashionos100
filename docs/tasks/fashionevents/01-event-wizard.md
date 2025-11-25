@@ -7,7 +7,7 @@
 
 ---
 
-## 1. Problem Analysis
+## 1. Problem Analysis (✅ Completed)
 
 The previous implementation of `EventWizard.tsx` was **critically flawed** for production use:
 
@@ -17,7 +17,7 @@ The previous implementation of `EventWizard.tsx` was **critically flawed** for p
 
 ---
 
-## 2. Correct Architecture
+## 2. Correct Architecture (✅ Completed)
 
 To make this production-ready, we move the "Brain" to the server.
 
@@ -33,7 +33,7 @@ To make this production-ready, we move the "Brain" to the server.
 
 ---
 
-## 3. Backend Implementation (Supabase Edge Function)
+## 3. Backend Implementation (Supabase Edge Function) (👉 NEXT STEP)
 
 Create a new function: `supabase functions new generate-event-draft`
 

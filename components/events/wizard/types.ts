@@ -6,7 +6,8 @@ export enum Step {
   BASICS = 1,
   VENUE = 2,
   TICKETS = 3,
-  REVIEW = 4
+  SCHEDULE = 4,
+  REVIEW = 5
 }
 
 export interface TicketTier {
@@ -25,6 +26,7 @@ export interface WizardState {
   titleSuggestions?: string[];
   description: string;
   category: string;
+  targetAudience: string;
   location: string;
   // Google Maps Grounding Fields
   mapsPlaceId?: string;

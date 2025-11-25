@@ -64,6 +64,17 @@ export const WizardBasics: React.FC<WizardBasicsProps> = ({ data, updateData }) 
             ))}
           </div>
         </div>
+
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Target Audience</label>
+          <input 
+            type="text" 
+            value={data.targetAudience}
+            onChange={(e) => updateData({ targetAudience: e.target.value })}
+            className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-400 transition-all"
+            placeholder="e.g. Industry Professionals, Buyers, Media"
+          />
+        </div>
       </div>
     </div>
   );

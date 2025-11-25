@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 import { Button } from '../../Button';
@@ -47,6 +48,10 @@ export const WizardReview: React.FC<WizardReviewProps> = ({ data, onEdit, onPubl
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Category</span>
               <span className="font-medium">{data.category}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Target Audience</span>
+              <span className="font-medium">{data.targetAudience || "General"}</span>
             </div>
           </div>
 

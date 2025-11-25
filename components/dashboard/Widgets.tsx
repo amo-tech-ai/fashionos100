@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
 import { Loader2, Send, Sparkles, AlertCircle, Lightbulb } from 'lucide-react';
+import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 
 // Donut Chart
 export const DonutChart = () => (
@@ -38,7 +38,7 @@ interface AICopilotProps {
   title?: string;
   context?: string;
   placeholder?: string;
-  phase?: string; // Added phase prop for context-aware suggestions
+  phase?: string; 
 }
 
 const PHASE_SUGGESTIONS: Record<string, string[]> = {
@@ -73,30 +73,29 @@ export const AICopilotWidget: React.FC<AICopilotProps> = ({
     const promptText = textOverride || query;
     if (!promptText.trim()) return;
     
-    // If triggered by suggestion click, update input too
     if (textOverride) setQuery(textOverride);
 
     setLoading(true);
     setResponse(null);
     setError(null);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      
-      // Enrich context with phase info if available
-      const phaseContext = phase ? ` The current event phase is '${phase}'. Prioritize tasks and advice relevant to this stage.` : '';
-      const fullSystemInstruction = `${context}${phaseContext}`;
-
-      const result = await ai.models.generateContent({
-        model: "gemini-3-pro-preview",
-        contents: [{
-            role: 'user',
-            parts: [{ text: promptText }]
-        }],
-        config: {
-            systemInstruction: fullSystemInstruction,
-        }
+      // Call Secure Edge Function
+      const res = await fetch(`${supabaseUrl}/functions/v1/ai-copilot`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`
+        },
+        body: JSON.stringify({
+          prompt: promptText,
+          systemInstruction: phase ? `${context} The current event phase is '${phase}'.` : context
+        })
       });
-      setResponse(result.text);
+
+      if (!res.ok) throw new Error('AI service unavailable');
+      
+      const data = await res.json();
+      setResponse(data.text);
     } catch (e) {
       console.error("AI Widget Error:", e);
       setError("Unable to connect to AI. Please check your connection and try again.");

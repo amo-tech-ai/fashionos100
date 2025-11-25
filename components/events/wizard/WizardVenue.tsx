@@ -4,6 +4,7 @@ import { Calendar, MapPin, Loader2, CheckCircle2, ExternalLink, AlertCircle } fr
 import { CalendarPicker } from '../../CalendarPicker';
 import { WizardState } from './types';
 import { Button } from '../../Button';
+import { supabaseUrl, supabaseAnonKey } from '../../../lib/supabase';
 
 interface WizardVenueProps {
   data: WizardState;
@@ -22,15 +23,15 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
 
     try {
       // Call the Supabase Edge Function
-      // Ensure you have deployed the 'resolve-venue' function
-      const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
-      const supabaseKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
+      if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error("Missing Supabase configuration");
+      }
 
       const response = await fetch(`${supabaseUrl}/functions/v1/resolve-venue`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseKey}`
+          'Authorization': `Bearer ${supabaseAnonKey}`
         },
         body: JSON.stringify({ venueText: data.location })
       });
