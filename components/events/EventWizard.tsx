@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -45,13 +46,26 @@ export const EventWizard: React.FC = () => {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
       const prompt = `
-        You are an expert event planner. Extract event details from the user's input into a structured JSON format.
-        
+        You are the AI Event Creator for a fashion runway platform.
+
+        Your job:
+        1. Read the user’s initial event description from the first screen.
+        2. Extract key details: theme, location, date, audience size, designers, ticket structure, extras, goals.
+        3. Auto-generate:
+           - Event Title (3 variations)
+           - Event Description (short 1-sentence + longer 3-sentence)
+        4. Return the data in a clean structured format for the UI to prefill the next screen.
+
         User Input: "${aiPrompt}"
-        
-        If specific details are missing (like price or schedule), reasonably infer them based on the type of fashion event described.
-        For 'date', return an ISO date string (YYYY-MM-DD) in the future.
-        For 'category', choose one of: ${CATEGORIES.join(', ')}.
+
+        Rules:
+        - The event title must be catchy and fashion-forward.
+        - The description should clearly explain what the guest can expect.
+        - If the user did not give key details (date, ticket price, designers), infer reasonable defaults and NOTE them in the long description.
+        - Keep everything professional, elegant, and runway-ready.
+        - Always fill every field. Never return empty values.
+        - For 'date', return an ISO date string (YYYY-MM-DD) in the future.
+        - For 'category', choose one of: ${CATEGORIES.join(', ')}.
       `;
 
       const response = await ai.models.generateContent({
@@ -62,8 +76,12 @@ export const EventWizard: React.FC = () => {
           responseSchema: {
             type: Type.OBJECT,
             properties: {
-              title: { type: Type.STRING },
-              description: { type: Type.STRING },
+              eventTitleSuggestions: { 
+                type: Type.ARRAY, 
+                items: { type: Type.STRING } 
+              },
+              eventDescriptionShort: { type: Type.STRING },
+              eventDescriptionLong: { type: Type.STRING },
               category: { type: Type.STRING },
               location: { type: Type.STRING },
               date: { type: Type.STRING },
@@ -90,8 +108,9 @@ export const EventWizard: React.FC = () => {
       // Merge AI data into state
       setState(prev => ({
         ...prev,
-        title: data.title || prev.title,
-        description: data.description || prev.description,
+        title: data.eventTitleSuggestions?.[0] || data.title || prev.title,
+        titleSuggestions: data.eventTitleSuggestions || [],
+        description: data.eventDescriptionLong || data.description || prev.description,
         category: data.category || prev.category,
         location: data.location || prev.location,
         startDate: data.date ? new Date(data.date) : prev.startDate,

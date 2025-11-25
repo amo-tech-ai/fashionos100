@@ -1,3 +1,4 @@
+
 import { Event } from '../../../data/mockEvents';
 
 export enum Step {
@@ -21,6 +22,7 @@ export interface ScheduleItem {
 
 export interface WizardState {
   title: string;
+  titleSuggestions?: string[];
   description: string;
   category: string;
   location: string;

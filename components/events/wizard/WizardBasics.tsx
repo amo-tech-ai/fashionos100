@@ -1,4 +1,6 @@
+
 import React from 'react';
+import { Sparkles } from 'lucide-react';
 import { WizardState, CATEGORIES } from './types';
 
 interface WizardBasicsProps {
@@ -20,6 +22,22 @@ export const WizardBasics: React.FC<WizardBasicsProps> = ({ data, updateData }) 
             className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-400 transition-all font-serif text-lg"
             placeholder="e.g. Summer Collection Launch"
           />
+          {data.titleSuggestions && data.titleSuggestions.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center gap-1 text-xs font-bold text-purple-600 uppercase tracking-wider mr-1">
+                <Sparkles size={10} /> Ideas:
+              </div>
+              {data.titleSuggestions.map((suggestion, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => updateData({ title: suggestion })}
+                  className="px-3 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs rounded-full border border-purple-100 transition-colors"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         
         <div className="space-y-2">
