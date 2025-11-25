@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { 
-  Search, Plus, Sparkles, Download, PieChart, 
-  DollarSign, Users, ArrowRight, X, TrendingUp 
+  Search, Plus, Sparkles, Download, 
+  DollarSign, Users, ArrowRight, X, TrendingUp, Filter
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
@@ -75,6 +76,11 @@ export const DashboardSponsors: React.FC = () => {
     }
   };
 
+  // Calculated Stats
+  const totalRaised = MOCK_SPONSORS.reduce((acc, s) => acc + s.cash_value, 0);
+  const activePartners = MOCK_SPONSORS.filter(s => s.status !== 'Lead').length;
+  const avgDealValue = activePartners > 0 ? totalRaised / activePartners : 0;
+
   return (
     <div className="space-y-8 animate-in fade-in pb-20 relative">
       
@@ -96,17 +102,19 @@ export const DashboardSponsors: React.FC = () => {
                 placeholder="e.g. Luxe Beauty" 
                 value={aiParams.sponsorName}
                 onChange={(e) => setAiParams({...aiParams, sponsorName: e.target.value})}
+                className="bg-gray-50"
               />
               <Input 
                 label="Industry" 
                 placeholder="e.g. Cosmetics" 
                 value={aiParams.industry}
                 onChange={(e) => setAiParams({...aiParams, industry: e.target.value})}
+                className="bg-gray-50"
               />
               <Textarea 
                 label="Event Context" 
                 placeholder="e.g. Summer Runway Show in Miami, 500 VIP guests, sustainable theme." 
-                className="h-24"
+                className="h-24 bg-gray-50"
                 value={aiParams.eventDetails}
                 onChange={(e) => setAiParams({...aiParams, eventDetails: e.target.value})}
               />
@@ -143,7 +151,7 @@ export const DashboardSponsors: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard 
           label="Total Raised" 
-          value="$85,000" 
+          value={`$${totalRaised.toLocaleString()}`} 
           icon={DollarSign} 
           trend="+12%" 
           trendUp 
@@ -151,13 +159,13 @@ export const DashboardSponsors: React.FC = () => {
         />
         <StatCard 
           label="Active Partners" 
-          value="14" 
+          value={activePartners.toString()} 
           icon={Users} 
           color="text-blue-600 bg-blue-50" 
         />
         <StatCard 
           label="Avg Deal Value" 
-          value="$6,071" 
+          value={`$${Math.round(avgDealValue).toLocaleString()}`} 
           icon={TrendingUp} 
           color="text-pink-600 bg-pink-50" 
           trend="+5%" 
@@ -224,7 +232,7 @@ export const DashboardSponsors: React.FC = () => {
               </button>
             </div>
             
-            <div className="relative">
+            <div className="relative hidden md:block">
                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                <input type="text" placeholder="Search partners..." className="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-full text-xs font-medium w-64 focus:outline-none focus:ring-2 focus:ring-purple-100" />
             </div>
@@ -253,7 +261,6 @@ export const DashboardSponsors: React.FC = () => {
             </div>
           ) : (
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-               {/* Simplified List Table */}
                <table className="w-full text-left text-sm">
                   <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
                      <tr>
@@ -282,4 +289,4 @@ export const DashboardSponsors: React.FC = () => {
       </div>
     </div>
   );
-}
+};

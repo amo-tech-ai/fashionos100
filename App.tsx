@@ -37,7 +37,7 @@ import { DashboardPlaceholder } from './pages/dashboard/DashboardPlaceholder';
 import { DashboardSponsors } from './pages/dashboard/DashboardSponsors';
 
 // New Dashboard Pages
-import { DashboardLeads, DashboardSponsorsList, DashboardPackages } from './pages/dashboard/SponsorshipPages';
+import { DashboardLeads, DashboardPackages } from './pages/dashboard/SponsorshipPages';
 import { DashboardContracts, DashboardActivations, DashboardMedia } from './pages/dashboard/OperationsPages';
 import { DashboardROI, SponsorPortal } from './pages/dashboard/AnalyticsPages';
 
