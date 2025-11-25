@@ -38,6 +38,8 @@ import { DashboardSponsors } from './pages/dashboard/DashboardSponsors';
 
 // New Dashboard Pages
 import { DashboardLeads, DashboardPackages } from './pages/dashboard/SponsorshipPages';
+import { SponsorDetailPage } from './pages/dashboard/SponsorDetailPage';
+import { EventOpportunitiesPage } from './pages/dashboard/EventOpportunitiesPage';
 import { DashboardContracts, DashboardActivations, DashboardMedia } from './pages/dashboard/OperationsPages';
 import { ActivationDetailPage } from './pages/dashboard/ActivationDetailPage';
 import { DashboardROI, SponsorPortal } from './pages/dashboard/AnalyticsPages';
@@ -103,7 +105,9 @@ const App: React.FC = () => {
         {/* Sponsorship & Sales */}
         <Route path="leads" element={<DashboardLeads />} />
         <Route path="sponsors" element={<DashboardSponsors />} />
+        <Route path="sponsors/:id" element={<SponsorDetailPage />} />
         <Route path="packages" element={<DashboardPackages />} />
+        <Route path="opportunities" element={<EventOpportunitiesPage />} />
         
         {/* Operations */}
         <Route path="contracts" element={<DashboardContracts />} />

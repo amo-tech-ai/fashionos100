@@ -4,6 +4,7 @@ import {
   Search, Plus, Sparkles, Download, 
   DollarSign, Users, ArrowRight, X, TrendingUp, Filter
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { SponsorCard } from '../../components/sponsors/SponsorCard';
@@ -254,7 +255,9 @@ export const DashboardSponsors: React.FC = () => {
                   </div>
                   <div className="space-y-3">
                     {MOCK_SPONSORS.filter(s => s.status === status).map(sponsor => (
-                      <SponsorCard key={sponsor.id} sponsor={sponsor} />
+                      <Link key={sponsor.id} to={`/dashboard/sponsors/${sponsor.id}`} className="block">
+                        <SponsorCard sponsor={sponsor} />
+                      </Link>
                     ))}
                     <button className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-xs font-bold hover:border-purple-300 hover:text-purple-500 transition-all flex items-center justify-center gap-2">
                       <Plus size={14} /> Add Deal
@@ -282,7 +285,9 @@ export const DashboardSponsors: React.FC = () => {
                            <td className="px-6 py-4 text-gray-600">{s.level}</td>
                            <td className="px-6 py-4 font-medium">${s.cash_value.toLocaleString()}</td>
                            <td className="px-6 py-4"><span className="bg-gray-100 px-2 py-1 rounded text-xs font-bold">{s.status}</span></td>
-                           <td className="px-6 py-4 text-purple-600 font-bold text-xs cursor-pointer hover:underline">Manage</td>
+                           <td className="px-6 py-4 text-purple-600 font-bold text-xs cursor-pointer hover:underline">
+                             <Link to={`/dashboard/sponsors/${s.id}`}>Manage</Link>
+                           </td>
                         </tr>
                      ))}
                   </tbody>

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { 
   LayoutDashboard, Calendar, CalendarCheck, Ticket, Wallet, Share2, Users, 
   ShoppingBag, Settings, LogOut, Menu, Search, Bell, FileText, Image, MessageSquare, Heart,
-  Briefcase, Target, Package, Mic2, BarChart3, Globe
+  Briefcase, Target, Package, Mic2, BarChart3, Globe, TrendingUp
 } from 'lucide-react';
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
 
@@ -16,6 +16,7 @@ export const DashboardLayout: React.FC = () => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Target, label: 'Leads', path: '/dashboard/leads' }, // New
     { icon: Users, label: 'Sponsors', path: '/dashboard/sponsors' }, 
+    { icon: TrendingUp, label: 'Opportunities', path: '/dashboard/opportunities' }, // New Item
     { icon: Package, label: 'Packages', path: '/dashboard/packages' }, // New
     { icon: FileText, label: 'Contracts', path: '/dashboard/contracts' }, // New
     { icon: Mic2, label: 'Activations', path: '/dashboard/activations' }, // New
