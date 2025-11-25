@@ -70,7 +70,7 @@ export const VeoTrailerGenerator: React.FC<VeoTrailerGeneratorProps> = ({ featur
 
     } catch (e) {
         console.error("Veo generation failed", e);
-        alert("Failed to generate trailer. Please check API limits.");
+        alert(`Failed to generate trailer: ${e instanceof Error ? e.message : 'Unknown error'}`);
     } finally {
         setLoading(false);
         setStatusStep('');

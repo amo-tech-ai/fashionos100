@@ -17,7 +17,11 @@ import { WizardState, Step, MOCK_PREVIEW_IMAGE, CATEGORIES } from './wizard/type
 export const EventWizard: React.FC = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<Step>(Step.INTRO);
+  
+  // AI Input State
   const [aiPrompt, setAiPrompt] = useState('');
+  const [aiUrl, setAiUrl] = useState('');
+  const [aiFile, setAiFile] = useState<File | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   const [state, setState] = useState<WizardState>({
@@ -36,103 +40,167 @@ export const EventWizard: React.FC = () => {
     setState(prev => ({ ...prev, ...updates }));
   };
 
+  // Helper to convert file to base64 for Gemini
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove data:application/pdf;base64, prefix
+        resolve(result.split(',')[1]);
+      };
+      reader.onerror = error => reject(error);
+    });
+  };
+
   // --- AI Integration ---
 
   const handleAIGenerate = async () => {
-    if (!aiPrompt.trim()) return;
+    if (!aiPrompt.trim() && !aiUrl && !aiFile) return;
     setIsAiLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      // Initialize Gemini Client
+      const apiKey = (import.meta as any).env?.VITE_GEMINI_API_KEY || process.env.API_KEY;
       
-      const prompt = `
-        You are the AI Event Creator for a fashion runway platform.
+      if (!apiKey) {
+        throw new Error("API Key not found. Please set VITE_GEMINI_API_KEY in your .env file.");
+      }
 
-        Your job:
-        1. Read the user’s initial event description from the first screen.
-        2. Extract key details: theme, location, date, audience size, designers, ticket structure, extras, goals.
-        3. Auto-generate:
-           - Event Title (3 variations)
-           - Event Description (short 1-sentence + longer 3-sentence)
-        4. Return the data in a clean structured format for the UI to prefill the next screen.
+      const ai = new GoogleGenAI({ apiKey });
 
-        User Input: "${aiPrompt}"
-
-        Rules:
-        - The event title must be catchy and fashion-forward.
-        - The description should clearly explain what the guest can expect.
-        - If the user did not give key details (date, ticket price, designers), infer reasonable defaults and NOTE them in the long description.
-        - Keep everything professional, elegant, and runway-ready.
-        - Always fill every field. Never return empty values.
-        - For 'date', return an ISO date string (YYYY-MM-DD) in the future.
-        - For 'category', choose one of: ${CATEGORIES.join(', ')}.
-      `;
-
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              autoFilled: {
-                type: Type.OBJECT,
-                properties: {
-                  eventTitleSuggestions: { 
-                    type: Type.ARRAY, 
-                    items: { type: Type.STRING } 
-                  },
-                  eventDescriptionShort: { type: Type.STRING },
-                  eventDescriptionLong: { type: Type.STRING },
-                  category: { type: Type.STRING },
-                  location: { type: Type.STRING },
-                  date: { type: Type.STRING },
-                  ticket_price_estimate: { type: Type.NUMBER },
-                  ticket_name_estimate: { type: Type.STRING },
-                  ticket_quantity_estimate: { type: Type.NUMBER },
-                  schedule: {
-                    type: Type.ARRAY,
-                    items: {
-                      type: Type.OBJECT,
-                      properties: {
-                        time: { type: Type.STRING },
-                        activity: { type: Type.STRING }
-                      }
-                    }
-                  }
-                }
+      // Define Strict Output Schema using Type
+      const responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+          eventTitle: { type: Type.STRING },
+          eventTitleSuggestions: { 
+            type: Type.ARRAY, 
+            items: { type: Type.STRING } 
+          },
+          descriptionShort: { type: Type.STRING },
+          descriptionLong: { type: Type.STRING },
+          category: { type: Type.STRING },
+          location: { type: Type.STRING },
+          date: { type: Type.STRING, description: "YYYY-MM-DD format" },
+          ticketTiers: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                name: { type: Type.STRING },
+                price: { type: Type.NUMBER },
+                quantity: { type: Type.NUMBER }
+              }
+            }
+          },
+          scheduleItems: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                time: { type: Type.STRING },
+                activity: { type: Type.STRING }
               }
             }
           }
+        },
+        required: ["eventTitle", "category", "descriptionLong", "ticketTiers", "scheduleItems"]
+      };
+
+      // Build Multimodal Content
+      const parts: any[] = [];
+      
+      if (aiPrompt.trim()) {
+        parts.push({ text: aiPrompt });
+      }
+
+      if (aiUrl.trim()) {
+        parts.push({ text: `\n\nContext URL to analyze: ${aiUrl}` });
+      }
+
+      if (aiFile) {
+        const base64Data = await fileToBase64(aiFile);
+        parts.push({
+          inlineData: {
+            mimeType: aiFile.type,
+            data: base64Data
+          }
+        });
+      }
+
+      const result = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: { role: 'user', parts: parts },
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: responseSchema,
+          systemInstruction: `You are the AI Event Architect for FashionOS. 
+        Task: Convert user input into a complete, structured fashion event plan.
+        
+        Context:
+        - Year: 2025.
+        - Event Types: Runway, Party, Workshop, Exhibition, Pop-up, Conference.
+        
+        Reasoning Steps:
+        1. Analyze the input for explicit details (Date, Location, Theme).
+        2. If details are missing, INFER reasonable defaults based on the event type (e.g., Runways usually happen in the evening, Workshops in the morning).
+        3. Generate a professional description and catchy title suggestions.
+        4. Structure ticket tiers (e.g., VIP vs General) and a realistic schedule (Doors -> Main Event -> End).
+        
+        Output:
+        - Return ONLY valid JSON matching the schema.`
         }
       });
 
-      const result = JSON.parse(response.text || "{}");
-      const data = result.autoFilled || {};
+      const responseText = result.text;
+      
+      if (!responseText) throw new Error("No response from AI");
+      
+      const data = JSON.parse(responseText);
+      console.log("AI Result:", data);
 
       // Merge AI data into state
-      setState(prev => ({
-        ...prev,
-        title: data.eventTitleSuggestions?.[0] || prev.title,
-        titleSuggestions: data.eventTitleSuggestions || [],
-        description: data.eventDescriptionLong || prev.description,
-        category: data.category || prev.category,
-        location: data.location || prev.location,
-        startDate: data.date ? new Date(data.date) : prev.startDate,
-        tickets: data.ticket_price_estimate ? [{
-          name: data.ticket_name_estimate || 'General Admission',
-          price: data.ticket_price_estimate,
-          quantity: data.ticket_quantity_estimate || 100
-        }] : prev.tickets,
-        schedule: data.schedule && data.schedule.length > 0 ? data.schedule : prev.schedule,
-      }));
+      setState(prev => {
+        let newStartDate = new Date();
+        if (data.date) {
+           const parsedDate = new Date(data.date);
+           if (!isNaN(parsedDate.getTime())) {
+             newStartDate = parsedDate;
+           }
+        } else {
+           // Default to 3 months from now if AI didn't return a date
+           newStartDate.setMonth(newStartDate.getMonth() + 3);
+        }
+        
+        const newEndDate = new Date(newStartDate);
+        newEndDate.setHours(newEndDate.getHours() + 3);
+
+        return {
+          ...prev,
+          title: data.eventTitle || prev.title,
+          titleSuggestions: data.eventTitleSuggestions || [],
+          description: data.descriptionLong || data.descriptionShort || prev.description,
+          category: (CATEGORIES.includes(data.category) ? data.category : 'Runway'),
+          location: data.location || prev.location,
+          startDate: newStartDate,
+          endDate: newEndDate,
+          tickets: data.ticketTiers && data.ticketTiers.length > 0 
+            ? data.ticketTiers 
+            : prev.tickets,
+          schedule: data.scheduleItems && data.scheduleItems.length > 0 
+            ? data.scheduleItems 
+            : prev.schedule,
+        };
+      });
 
       setCurrentStep(Step.BASICS);
 
     } catch (error) {
       console.error("AI Generation failed", error);
-      // Graceful fallback - just move to manual entry
+      alert(`AI Generation failed. Please try again or fill manually.\n\n${error instanceof Error ? error.message : ''}`);
+      // Fallback to manual entry so user isn't stuck
       setCurrentStep(Step.BASICS);
     } finally {
       setIsAiLoading(false);
@@ -152,6 +220,7 @@ export const EventWizard: React.FC = () => {
 
   const handlePublish = () => {
     console.log("Publishing Event:", state);
+    // Ideally call supabase.from('events').insert(...)
     navigate('/dashboard/events');
   };
 
@@ -194,6 +263,10 @@ export const EventWizard: React.FC = () => {
             <WizardIntro 
               aiPrompt={aiPrompt}
               setAiPrompt={setAiPrompt}
+              aiUrl={aiUrl}
+              setAiUrl={setAiUrl}
+              aiFile={aiFile}
+              setAiFile={setAiFile}
               onGenerate={handleAIGenerate}
               onSkip={() => setCurrentStep(Step.BASICS)}
               isLoading={isAiLoading}
