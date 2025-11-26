@@ -155,6 +155,22 @@ serve(async (req) => {
         }
       };
 
+    } else if (action === 'generate-pitch') {
+      systemInstruction = "You are a Senior Sponsorship Sales Executive.";
+      prompt = `
+        Draft a high-converting outbound email to ${sponsorName} (${sponsorIndustry}).
+        Context: We are organizing ${eventDetails}.
+        Goal: Secure a meeting to discuss partnership.
+        
+        Output requirements:
+        - Subject Line: Catchy and relevant.
+        - Body: Personalized value proposition connecting ${sponsorIndustry} audience to our fashion event.
+        - Tone: Professional, exclusive, confident.
+        - Length: Under 150 words.
+        - Format: Plain text.
+      `;
+      responseMimeType = 'text/plain';
+
     } else if (action === 'ops-planning') {
          // Ops Agent Logic (Preserved)
          systemInstruction = "Act as an Event Operations Manager.";

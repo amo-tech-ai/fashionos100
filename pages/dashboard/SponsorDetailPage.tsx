@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { 
   ArrowLeft, Building2, Mail, Phone, Globe, MapPin, 
   FileText, Zap, Calendar, DollarSign, Plus, History, Loader2, Send, Lock,
-  TrendingUp, Eye, MousePointerClick, Target
+  TrendingUp, Eye, MousePointerClick, Target, Sparkles, Copy, Check
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
@@ -30,6 +30,11 @@ export const SponsorDetailPage: React.FC = () => {
 
   // Edit State
   const [showEditForm, setShowEditForm] = useState(false);
+
+  // Pitch Generation State
+  const [pitchDraft, setPitchDraft] = useState<string | null>(null);
+  const [generatingPitch, setGeneratingPitch] = useState(false);
+  const [copiedPitch, setCopiedPitch] = useState(false);
 
   useEffect(() => {
     if (id) fetchData();
@@ -112,6 +117,47 @@ export const SponsorDetailPage: React.FC = () => {
     }
   };
 
+  const handleGeneratePitch = async () => {
+    if (!sponsor) return;
+    setGeneratingPitch(true);
+    setPitchDraft(null);
+    
+    const eventContext = deals.length > 0 && deals[0].event 
+      ? deals[0].event.title 
+      : 'Upcoming Fashion Events';
+
+    try {
+      const response = await fetch(`${supabaseUrl}/functions/v1/sponsor-ai`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`
+        },
+        body: JSON.stringify({
+          action: 'generate-pitch',
+          sponsorName: sponsor.name,
+          sponsorIndustry: sponsor.industry || 'Luxury',
+          eventDetails: eventContext
+        })
+      });
+      const text = await response.text();
+      setPitchDraft(text);
+    } catch (e) {
+      console.error(e);
+      alert("Failed to generate pitch. Ensure AI service is active.");
+    } finally {
+      setGeneratingPitch(false);
+    }
+  };
+
+  const handleCopyPitch = () => {
+    if (pitchDraft) {
+      navigator.clipboard.writeText(pitchDraft);
+      setCopiedPitch(true);
+      setTimeout(() => setCopiedPitch(false), 2000);
+    }
+  };
+
   if (loading) {
     return (
         <div className="min-h-screen flex items-center justify-center">
@@ -170,7 +216,7 @@ export const SponsorDetailPage: React.FC = () => {
           </div>
           
           <div className="flex-1">
-            <div className="flex justify-between items-start">
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4">
               <div>
                 <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">{sponsor.name}</h1>
                 <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -186,6 +232,16 @@ export const SponsorDetailPage: React.FC = () => {
                 </div>
               </div>
               <div className="flex gap-3">
+                <Button 
+                  variant="white" 
+                  size="sm" 
+                  onClick={handleGeneratePitch}
+                  disabled={generatingPitch}
+                  className="text-purple-600 border-purple-100 hover:bg-purple-50"
+                >
+                  {generatingPitch ? <Loader2 size={14} className="animate-spin mr-2" /> : <Sparkles size={14} className="mr-2" />}
+                  {generatingPitch ? 'Drafting...' : 'Draft Pitch'}
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => setShowEditForm(true)}>Edit Profile</Button>
                 <Link to="/dashboard/sponsors/new-deal"><Button variant="primary" size="sm">New Deal</Button></Link>
               </div>
@@ -218,6 +274,35 @@ export const SponsorDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Pitch Generated Area */}
+      {pitchDraft && (
+        <FadeIn>
+          <div className="bg-purple-50 border border-purple-100 rounded-2xl p-6 mb-8 shadow-sm relative group">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="font-serif font-bold text-purple-900 flex items-center gap-2">
+                <Sparkles size={16} /> AI Sponsorship Pitch
+              </h3>
+              <div className="flex gap-2">
+                <button 
+                  onClick={handleCopyPitch} 
+                  className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-purple-600 hover:text-purple-800 bg-white px-3 py-1.5 rounded-full shadow-sm transition-all hover:shadow-md"
+                >
+                  {copiedPitch ? <Check size={14} /> : <Copy size={14} />}
+                  {copiedPitch ? 'Copied' : 'Copy Text'}
+                </button>
+                <button onClick={() => setPitchDraft(null)} className="text-purple-400 hover:text-purple-600 p-1">
+                  <span className="sr-only">Close</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-xl border border-purple-100 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+              {pitchDraft}
+            </div>
+          </div>
+        </FadeIn>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
