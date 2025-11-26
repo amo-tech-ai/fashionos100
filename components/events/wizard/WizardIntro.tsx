@@ -1,19 +1,20 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { 
   Sparkles, Link as LinkIcon, FileText, Upload, X, 
   ArrowRight, Calendar, MapPin, ChevronLeft, Check,
-  Instagram, DollarSign, LayoutTemplate
+  Instagram, DollarSign, LayoutTemplate, Plus, Globe
 } from 'lucide-react';
 import { Button } from '../../Button';
 import { LoadingSpinner } from '../../LoadingSpinner';
 import { Input } from '../../forms/Input';
+import { CalendarPicker } from '../../CalendarPicker';
 
 interface WizardIntroProps {
   aiPrompt: string;
   setAiPrompt: (val: string) => void;
-  aiUrl: string;
-  setAiUrl: (val: string) => void;
+  aiUrls: string[];
+  setAiUrls: (val: string[]) => void;
   aiFiles: File[];
   setAiFiles: (val: File[]) => void;
   aiMoods: string[];
@@ -23,6 +24,9 @@ interface WizardIntroProps {
   onGenerate: () => void;
   onSkip: () => void;
   isLoading: boolean;
+  // Backward compatibility prop types if needed, though unused now
+  aiUrl?: string; 
+  setAiUrl?: (val: string) => void;
 }
 
 const MOOD_OPTIONS = ["Luxurious", "Sustainable", "Edgy", "Minimalist", "High Energy", "Professional", "Exclusive"];
@@ -30,7 +34,7 @@ const AUDIENCE_OPTIONS = ["Gen Z", "VIPs", "Industry", "Press", "Public", "Buyer
 
 export const WizardIntro: React.FC<WizardIntroProps> = ({ 
   aiPrompt, setAiPrompt, 
-  aiUrl, setAiUrl, 
+  aiUrls, setAiUrls, 
   aiFiles, setAiFiles, 
   aiMoods, setAiMoods,
   aiAudiences, setAiAudiences,
@@ -39,9 +43,27 @@ export const WizardIntro: React.FC<WizardIntroProps> = ({
   // Internal state for the 3-step flow
   const [introStep, setIntroStep] = useState<0 | 1 | 2>(0);
   
-  // Local state for extra fields before merging into prompt
+  // Local state for extra fields
   const [dateInput, setDateInput] = useState('');
   const [locInput, setLocInput] = useState('');
+  const [currentUrlInput, setCurrentUrlInput] = useState('');
+  
+  // Calendar State
+  const [showCalendar, setShowCalendar] = useState(false);
+  const calendarRef = useRef<HTMLDivElement>(null);
+
+  // Close calendar when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+        setShowCalendar(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [calendarRef]);
   
   // Toggles for Screen 3
   const [askForSponsors, setAskForSponsors] = useState(false);
@@ -62,12 +84,65 @@ export const WizardIntro: React.FC<WizardIntroProps> = ({
     setAiFiles(newFiles);
   };
 
+  const handleAddUrl = () => {
+    if (!currentUrlInput.trim()) return;
+    
+    // Basic validation
+    try {
+      new URL(currentUrlInput);
+      if (!aiUrls.includes(currentUrlInput)) {
+        setAiUrls([...aiUrls, currentUrlInput]);
+      }
+      setCurrentUrlInput('');
+    } catch (e) {
+      alert("Please enter a valid URL (e.g., https://example.com)");
+    }
+  };
+
+  const removeUrl = (urlToRemove: string) => {
+    setAiUrls(aiUrls.filter(url => url !== urlToRemove));
+  };
+
+  const handleUrlKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddUrl();
+    }
+  };
+
   const toggleSelection = (list: string[], setList: (vals: string[]) => void, item: string) => {
     if (list.includes(item)) {
       setList(list.filter(i => i !== item));
     } else {
       setList([...list, item]);
     }
+  };
+
+  // Calendar Helper
+  const handleDateShortcut = (type: 'next_friday' | 'next_week' | 'next_month') => {
+    const d = new Date();
+    if (type === 'next_friday') {
+      // Calculate next friday
+      d.setDate(d.getDate() + (5 + 7 - d.getDay()) % 7 || 7);
+    } else if (type === 'next_week') {
+      d.setDate(d.getDate() + 7);
+    } else if (type === 'next_month') {
+      d.setMonth(d.getMonth() + 1);
+    }
+    
+    setDateInput(d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }));
+    setShowCalendar(false);
+  };
+
+  const handleDateApply = (start: Date | null, end: Date | null) => {
+    if (start) {
+      let dateStr = start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+      if (end && end.getTime() !== start.getTime()) {
+        dateStr += ` - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+      }
+      setDateInput(dateStr);
+    }
+    setShowCalendar(false);
   };
 
   // Combine all inputs into the final prompt trigger
@@ -116,18 +191,60 @@ export const WizardIntro: React.FC<WizardIntroProps> = ({
         </div>
 
         <div className="grid grid-cols-2 gap-4 mt-6">
-          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm focus-within:border-purple-300 transition-all">
-            <label className="flex items-center gap-2 text-xs font-bold uppercase text-gray-400 mb-2">
-              <Calendar size={12} /> Tentative Date
-            </label>
-            <input 
-              type="text" 
-              placeholder="e.g. Next Friday" 
-              className="w-full outline-none text-sm font-medium text-gray-700 placeholder:text-gray-300"
-              value={dateInput}
-              onChange={(e) => setDateInput(e.target.value)}
-            />
+          <div className="relative" ref={calendarRef}>
+            <div 
+              className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm cursor-pointer hover:border-purple-300 transition-all group"
+              onClick={() => setShowCalendar(!showCalendar)}
+            >
+              <label className="flex items-center gap-2 text-xs font-bold uppercase text-gray-400 mb-2 group-hover:text-purple-500 transition-colors">
+                <Calendar size={12} /> Tentative Date
+              </label>
+              <input 
+                type="text" 
+                placeholder="e.g. Next Friday" 
+                className="w-full outline-none text-sm font-medium text-gray-700 placeholder:text-gray-300 bg-transparent cursor-pointer"
+                value={dateInput}
+                onChange={(e) => setDateInput(e.target.value)}
+                autoComplete="off"
+              />
+            </div>
+
+            {/* Calendar Dropdown */}
+            {showCalendar && (
+              <div className="absolute top-full left-0 mt-2 z-50 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 animate-in fade-in zoom-in-95 origin-top-left w-[340px]">
+                {/* Quick Shortcuts */}
+                <div className="flex gap-2 p-2 mb-2 overflow-x-auto border-b border-gray-100 pb-3">
+                  {[
+                    { label: 'Next Friday', action: () => handleDateShortcut('next_friday') },
+                    { label: 'Next Week', action: () => handleDateShortcut('next_week') },
+                    { label: 'Next Month', action: () => handleDateShortcut('next_month') }
+                  ].map((shortcut, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => { e.stopPropagation(); shortcut.action(); }}
+                      className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider bg-gray-50 hover:bg-purple-50 hover:text-purple-600 rounded-lg border border-gray-100 transition-colors whitespace-nowrap"
+                    >
+                      {shortcut.label}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Reused Calendar Component */}
+                <div className="p-2 flex justify-center">
+                  <div className="scale-95 origin-top">
+                    <CalendarPicker 
+                      initialStart={null}
+                      initialEnd={null}
+                      onClose={() => setShowCalendar(false)}
+                      onApply={handleDateApply}
+                      minDate={new Date()} // Prevent past dates
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
+
           <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm focus-within:border-purple-300 transition-all">
             <label className="flex items-center gap-2 text-xs font-bold uppercase text-gray-400 mb-2">
               <MapPin size={12} /> Location City
@@ -221,20 +338,47 @@ export const WizardIntro: React.FC<WizardIntroProps> = ({
           </h3>
 
           <div className="space-y-3">
-            <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3 border border-gray-100 focus-within:border-blue-300 focus-within:bg-white transition-all">
-              <LinkIcon size={16} className="text-gray-400 shrink-0" />
-              <input 
-                type="url" 
-                placeholder="Paste a URL (e.g. Venue website, Pinterest)" 
-                className="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
-                value={aiUrl}
-                onChange={(e) => setAiUrl(e.target.value)}
-              />
+            {/* URL Input Section */}
+            <div>
+                <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3 border border-gray-100 focus-within:border-blue-300 focus-within:bg-white transition-all">
+                    <LinkIcon size={16} className="text-gray-400 shrink-0" />
+                    <input 
+                        type="url" 
+                        placeholder="Add URL (Instagram, Website, Press)..." 
+                        className="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
+                        value={currentUrlInput}
+                        onChange={(e) => setCurrentUrlInput(e.target.value)}
+                        onKeyDown={handleUrlKeyDown}
+                    />
+                    <button 
+                        onClick={handleAddUrl}
+                        className="p-1.5 hover:bg-blue-100 rounded-full text-blue-600 transition-colors disabled:opacity-50"
+                        disabled={!currentUrlInput.trim()}
+                    >
+                        <Plus size={16} />
+                    </button>
+                </div>
+                
+                {/* URL List */}
+                {aiUrls.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                        {aiUrls.map((url, idx) => (
+                            <div key={idx} className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-1.5 max-w-full">
+                                <Globe size={12} className="text-blue-500 shrink-0" />
+                                <span className="text-xs text-blue-700 font-medium truncate">{url.replace(/^https?:\/\/(www\.)?/, '')}</span>
+                                <button onClick={() => removeUrl(url)} className="text-blue-400 hover:text-blue-700 ml-1 shrink-0">
+                                    <X size={12}/>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
+            {/* File Upload */}
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center justify-center gap-2 border-2 border-dashed border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 rounded-xl px-4 py-6 cursor-pointer transition-all text-gray-400 hover:text-blue-600 group"
+              className="flex items-center justify-center gap-2 border-2 border-dashed border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 rounded-xl px-4 py-6 cursor-pointer transition-all text-gray-400 hover:text-blue-600 group mt-4"
             >
               <Upload size={20} className="group-hover:scale-110 transition-transform" />
               <span className="text-sm font-medium">Upload PDF, Docs, or Images</span>
@@ -252,10 +396,10 @@ export const WizardIntro: React.FC<WizardIntroProps> = ({
             {aiFiles.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-2">
                 {aiFiles.map((file, idx) => (
-                  <div key={idx} className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-1.5">
-                    <FileText size={12} className="text-blue-600" />
-                    <span className="text-xs text-blue-700 font-bold truncate max-w-[120px]">{file.name}</span>
-                    <button onClick={() => removeFile(idx)} className="text-blue-400 hover:text-blue-700"><X size={12}/></button>
+                  <div key={idx} className="flex items-center gap-2 bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5">
+                    <FileText size={12} className="text-gray-600" />
+                    <span className="text-xs text-gray-700 font-bold truncate max-w-[120px]">{file.name}</span>
+                    <button onClick={() => removeFile(idx)} className="text-gray-400 hover:text-red-500"><X size={12}/></button>
                   </div>
                 ))}
               </div>
@@ -297,7 +441,12 @@ export const WizardIntro: React.FC<WizardIntroProps> = ({
           <div className="flex flex-wrap gap-4 text-sm text-gray-600">
             {dateInput && <span className="flex items-center gap-1.5"><Calendar size={14} className="text-gray-400" /> {dateInput}</span>}
             {locInput && <span className="flex items-center gap-1.5"><MapPin size={14} className="text-gray-400" /> {locInput}</span>}
-            {(aiFiles.length > 0 || aiUrl) && <span className="flex items-center gap-1.5"><LinkIcon size={14} className="text-gray-400" /> {aiFiles.length} Files, {aiUrl ? '1 URL' : '0 URLs'}</span>}
+            {(aiFiles.length > 0 || aiUrls.length > 0) && (
+                <span className="flex items-center gap-1.5">
+                    <LinkIcon size={14} className="text-gray-400" /> 
+                    {aiFiles.length} Files, {aiUrls.length} URLs
+                </span>
+            )}
           </div>
           <div className="mt-4 pt-4 border-t border-gray-50 flex flex-wrap gap-2">
             {[...aiMoods, ...aiAudiences].map(tag => (

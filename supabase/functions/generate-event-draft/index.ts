@@ -15,7 +15,16 @@ serve(async (req) => {
     const apiKey = Deno.env.get('GEMINI_API_KEY')
     if (!apiKey) throw new Error('Missing GEMINI_API_KEY')
 
-    const { prompt, url, files } = await req.json() // files is Array<{ data: string, mimeType: string }>
+    const requestBody = await req.json();
+    const { prompt, url, urls, files } = requestBody;
+
+    // Backend Validation: Check if at least one input is provided
+    if (!prompt && !url && (!urls || urls.length === 0) && (!files || files.length === 0) && (!requestBody.fileBase64)) {
+        return new Response(JSON.stringify({ error: "No input provided. Please provide a prompt, URL, or file." }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400
+        });
+    }
 
     const ai = new GoogleGenAI({ apiKey })
 
@@ -57,7 +66,14 @@ serve(async (req) => {
 
     const parts = []
     if (prompt) parts.push({ text: prompt })
+    
+    // Handle Single URL (Legacy)
     if (url) parts.push({ text: `Context URL to analyze: ${url}` })
+
+    // Handle Multiple URLs (New)
+    if (urls && Array.isArray(urls) && urls.length > 0) {
+        parts.push({ text: `Context URLs to analyze and synthesize:\n${urls.map((u: string) => `- ${u}`).join('\n')}` })
+    }
 
     // Handle multiple files
     if (files && Array.isArray(files)) {
@@ -71,18 +87,19 @@ serve(async (req) => {
           });
         }
       });
-    } else if (req.body?.fileBase64 && req.body?.fileType) {
-        // Backward compatibility if needed (though we updated frontend)
+    } else if (requestBody.fileBase64 && requestBody.fileType) {
+        // Backward compatibility if needed
         parts.push({
             inlineData: {
-                data: req.body.fileBase64,
-                mimeType: req.body.fileType
+                data: requestBody.fileBase64,
+                mimeType: requestBody.fileType
             }
         })
     }
 
     if (parts.length === 0) {
-       throw new Error("No prompt, URL, or files provided.")
+        // Redundant check but safe
+        throw new Error("No valid content parts to generate from.")
     }
 
     const response = await ai.models.generateContent({
@@ -98,6 +115,7 @@ serve(async (req) => {
         - Analyze text, URLs, images (moodboards, flyers), and documents (contracts, schedules).
         - Extract event details like Date, Time, Venue, and Schedule from images/PDFs.
         - If multiple inputs are provided, synthesize them into one coherent plan.
+        - If multiple URLs are provided (e.g. Instagram, Press, Website), cross-reference them to identify the Brand Voice, Theme, and Audience.
 
         Context:
         - Year: 2025.

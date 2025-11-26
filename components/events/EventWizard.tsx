@@ -24,7 +24,7 @@ export const EventWizard: React.FC = () => {
   
   // AI Input State
   const [aiPrompt, setAiPrompt] = useState('');
-  const [aiUrl, setAiUrl] = useState('');
+  const [aiUrls, setAiUrls] = useState<string[]>([]); // Changed from single url to array
   const [aiFiles, setAiFiles] = useState<File[]>([]);
   const [aiMoods, setAiMoods] = useState<string[]>([]);
   const [aiAudiences, setAiAudiences] = useState<string[]>([]);
@@ -71,7 +71,7 @@ export const EventWizard: React.FC = () => {
       return;
     }
 
-    if (!aiPrompt.trim() && !aiUrl && aiFiles.length === 0 && aiMoods.length === 0 && aiAudiences.length === 0) return;
+    if (!aiPrompt.trim() && aiUrls.length === 0 && aiFiles.length === 0 && aiMoods.length === 0 && aiAudiences.length === 0) return;
     setIsAiLoading(true);
 
     try {
@@ -97,8 +97,8 @@ export const EventWizard: React.FC = () => {
         },
         body: JSON.stringify({
           prompt: enhancedPrompt,
-          url: aiUrl,
-          files: processedFiles // Send array of files
+          urls: aiUrls, // Send array of URLs
+          files: processedFiles
         })
       });
 
@@ -157,9 +157,52 @@ export const EventWizard: React.FC = () => {
     }
   };
 
-  // --- Navigation ---
+  // --- Navigation & Validation ---
+
+  const validateStep = (step: Step): boolean => {
+    switch (step) {
+      case Step.BASICS:
+        if (!state.title.trim()) {
+          alert("Please enter an Event Title.");
+          return false;
+        }
+        return true;
+      case Step.VENUE:
+        if (!state.startDate) {
+          alert("Please select a Start Date.");
+          return false;
+        }
+        if (!state.endDate) {
+          alert("Please select an End Date.");
+          return false;
+        }
+        if (state.endDate < state.startDate) {
+          alert("End Date must be after Start Date.");
+          return false;
+        }
+        if (!state.location.trim()) {
+          alert("Please enter a Location.");
+          return false;
+        }
+        return true;
+      case Step.TICKETS:
+        if (state.tickets.length === 0) {
+          alert("Please add at least one Ticket Tier.");
+          return false;
+        }
+        const invalidTicket = state.tickets.find(t => !t.name.trim());
+        if (invalidTicket) {
+          alert("All ticket tiers must have a name.");
+          return false;
+        }
+        return true;
+      default:
+        return true;
+    }
+  };
 
   const nextStep = () => {
+    if (!validateStep(currentStep)) return;
     if (currentStep < Step.REVIEW) setCurrentStep(s => s + 1);
   };
 
@@ -175,27 +218,10 @@ export const EventWizard: React.FC = () => {
     }
     if (isPublishing) return;
 
-    // Validation Checks
-    if (!state.title.trim()) {
-      alert("Please enter an event title.");
-      return;
-    }
-    if (!state.startDate) {
-      alert("Please select a start date and time.");
-      return;
-    }
-    if (!state.endDate) {
-      alert("Please select an end date and time.");
-      return;
-    }
-    if (state.endDate < state.startDate) {
-      alert("End date cannot be before start date.");
-      return;
-    }
-    if (!state.location.trim()) {
-      alert("Please enter a location.");
-      return;
-    }
+    // Final Validation Checks
+    if (!validateStep(Step.BASICS)) return;
+    if (!validateStep(Step.VENUE)) return;
+    if (!validateStep(Step.TICKETS)) return;
 
     setIsPublishing(true);
 
@@ -257,7 +283,9 @@ export const EventWizard: React.FC = () => {
         const schedulePayload = state.schedule.map(s => {
           let scheduleStart = new Date(state.startDate || new Date());
           const [hours, minutes] = s.time.split(':').map(Number);
-          scheduleStart.setHours(hours || 0, minutes || 0, 0, 0);
+          if (!isNaN(hours) && !isNaN(minutes)) {
+             scheduleStart.setHours(hours, minutes, 0, 0);
+          }
           
           return {
             event_id: event.id,
@@ -328,8 +356,8 @@ export const EventWizard: React.FC = () => {
             <WizardIntro 
               aiPrompt={aiPrompt}
               setAiPrompt={setAiPrompt}
-              aiUrl={aiUrl}
-              setAiUrl={setAiUrl}
+              aiUrls={aiUrls}
+              setAiUrls={setAiUrls}
               aiFiles={aiFiles}
               setAiFiles={setAiFiles}
               aiMoods={aiMoods}
