@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, MapPin, CheckCircle2, ExternalLink, AlertCircle, Sparkles, Clock, Search, X, Users, Mail, Phone, User } from 'lucide-react';
 import { CalendarPicker } from '../../CalendarPicker';
@@ -190,6 +189,7 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
           {/* AI Scheduler Panel */}
           {showScheduler && (
             <div className="mb-4 bg-purple-50 border border-purple-100 rounded-xl p-4 animate-in slide-in-from-top-2">
+              {/* ... existing scheduler code ... */}
               <h3 className="text-sm font-bold text-purple-800 mb-2 flex items-center gap-2">
                 <Clock size={16} /> Smart Schedule Optimizer
               </h3>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Sparkles, Wand2 } from 'lucide-react';
 import { Input } from '../../forms/Input';
@@ -11,11 +12,11 @@ interface WizardBasicsProps {
 }
 
 export const WizardBasics: React.FC<WizardBasicsProps> = ({ data, updateData }) => {
-  const [isPolishing, setIsPolishing] = useState(false);
+  const [isRefining, setIsRefining] = useState(false);
 
-  const handlePolish = async () => {
+  const handleRefine = async () => {
     if (!data.description) return;
-    setIsPolishing(true);
+    setIsRefining(true);
     try {
       const response = await fetch(`${supabaseUrl}/functions/v1/polish-brief`, {
         method: 'POST',
@@ -23,7 +24,10 @@ export const WizardBasics: React.FC<WizardBasicsProps> = ({ data, updateData }) 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${supabaseAnonKey}`
         },
-        body: JSON.stringify({ brief: data.description })
+        body: JSON.stringify({ 
+            brief: data.description,
+            type: 'marketing'
+        })
       });
 
       if (!response.ok) throw new Error('AI service unavailable');
@@ -33,9 +37,9 @@ export const WizardBasics: React.FC<WizardBasicsProps> = ({ data, updateData }) 
         updateData({ description: resData.text });
       }
     } catch (error) {
-      console.error("Polish failed", error);
+      console.error("Refine failed", error);
     } finally {
-      setIsPolishing(false);
+      setIsRefining(false);
     }
   };
 
@@ -72,12 +76,12 @@ export const WizardBasics: React.FC<WizardBasicsProps> = ({ data, updateData }) 
           <div className="flex justify-between items-end">
             <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Description</label>
             <button 
-              onClick={handlePolish}
-              disabled={isPolishing || !data.description}
+              onClick={handleRefine}
+              disabled={isRefining || !data.description}
               className="text-[10px] font-bold uppercase tracking-widest text-purple-600 flex items-center gap-1 hover:text-purple-800 transition-colors disabled:opacity-50"
             >
-              {isPolishing ? <LoadingSpinner size={12} /> : <Wand2 size={12} />}
-              {isPolishing ? 'Polishing...' : 'AI Polish'}
+              {isRefining ? <LoadingSpinner size={12} /> : <Sparkles size={12} />}
+              {isRefining ? 'Refining...' : 'Refine Description'}
             </button>
           </div>
           <textarea 

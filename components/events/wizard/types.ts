@@ -4,11 +4,12 @@ import { Event } from '../../../data/mockEvents';
 export enum Step {
   INTRO = 0,
   BASICS = 1,
-  VENUE = 2,
-  TICKETS = 3,
-  SCHEDULE = 4,
-  REVIEW = 5,
-  SUCCESS = 6
+  VISUALS = 2,
+  VENUE = 3,
+  TICKETS = 4,
+  SCHEDULE = 5,
+  REVIEW = 6,
+  SUCCESS = 7
 }
 
 export interface TicketTier {
@@ -20,6 +21,14 @@ export interface TicketTier {
 export interface ScheduleItem {
   time: string;
   activity: string;
+}
+
+export interface GeneratedImage {
+  id: string;
+  base64: string;
+  prompt?: string;
+  model: 'nano' | 'pro';
+  selected?: boolean;
 }
 
 export interface WizardState {
@@ -42,11 +51,19 @@ export interface WizardState {
   mapsUri?: string;
   mapsSources?: { title: string; uri: string }[];
   
+  // Visuals & Branding
+  brandUrls: string[];
+  brandMoods: string[];
+  visualPrompt?: string;
+  extractedBrandAnalysis?: string; 
+  generatedPreviews?: GeneratedImage[];
+  finalImage?: GeneratedImage | null;
+  
   startDate: Date | null;
   endDate: Date | null;
   tickets: TicketTier[];
   schedule: ScheduleItem[];
-  image: string;
+  image: string; // Final URL for the event card
 }
 
 export const CATEGORIES = ["Runway", "Party", "Workshop", "Exhibition", "Pop-up", "Conference"];
@@ -58,7 +75,6 @@ export const transformToEventCard = (state: WizardState): Event => {
   if (state.tickets.length > 0) {
     const prices = state.tickets.map(t => Number(t.price));
     const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
     
     if (minPrice === 0) {
       priceString = prices.length > 1 ? 'Free+' : 'Free';
@@ -71,12 +87,20 @@ export const transformToEventCard = (state: WizardState): Event => {
   const capacity = state.tickets.reduce((acc, curr) => acc + Number(curr.quantity), 0);
 
   // 3. Generate Dynamic Tags
-  // Combine Category + First 2 items from Target Audience
   const audienceTags = state.targetAudience
     ? state.targetAudience.split(',').map(s => s.trim()).filter(s => s.length > 0).slice(0, 2)
     : ['New'];
   
   const tags = [state.category, ...audienceTags].slice(0, 3);
+
+  // 4. Determine Image Source (AI or Default)
+  let displayImage = MOCK_PREVIEW_IMAGE;
+  
+  if (state.finalImage?.base64) {
+    displayImage = `data:image/png;base64,${state.finalImage.base64}`;
+  } else if (state.image && state.image.startsWith('http')) {
+    displayImage = state.image;
+  }
 
   return {
     id: 999, // Temp ID for preview
@@ -86,7 +110,7 @@ export const transformToEventCard = (state: WizardState): Event => {
     date: state.startDate ? state.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Date TBD",
     time: state.startDate ? state.startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "Time TBD",
     location: state.location || "Location TBD",
-    image: state.image || MOCK_PREVIEW_IMAGE,
+    image: displayImage,
     tags: tags,
     price: priceString,
     capacity: capacity > 0 ? `${capacity} Seats` : 'Open'

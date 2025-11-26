@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, CheckCircle2, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, X, ImageIcon } from 'lucide-react';
 import { Button } from '../Button';
 import { FadeIn } from '../FadeIn';
 import { supabase, supabaseUrl, supabaseAnonKey, isConfigured } from '../../lib/supabase';
@@ -11,6 +11,7 @@ import { LoadingSpinner } from '../LoadingSpinner';
 // Sub-components
 import { WizardIntro } from './wizard/WizardIntro';
 import { WizardBasics } from './wizard/WizardBasics';
+import { WizardVisuals } from './wizard/WizardVisuals';
 import { WizardVenue } from './wizard/WizardVenue';
 import { WizardTickets } from './wizard/WizardTickets';
 import { WizardSchedule } from './wizard/WizardSchedule';
@@ -46,7 +47,10 @@ export const EventWizard: React.FC = () => {
     endDate: null,
     tickets: [{ name: 'General Admission', price: 50, quantity: 100 }],
     schedule: [{ time: '19:00', activity: 'Doors Open' }],
-    image: MOCK_PREVIEW_IMAGE
+    image: MOCK_PREVIEW_IMAGE,
+    brandUrls: [],
+    brandMoods: [],
+    generatedPreviews: []
   });
 
   const updateData = (updates: Partial<WizardState>) => {
@@ -147,6 +151,9 @@ export const EventWizard: React.FC = () => {
           schedule: data.scheduleItems && data.scheduleItems.length > 0 
             ? data.scheduleItems 
             : prev.schedule,
+          // Pass these forward for Visuals step
+          brandUrls: aiUrls,
+          brandMoods: aiMoods,
         };
       });
 
@@ -232,8 +239,6 @@ export const EventWizard: React.FC = () => {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      // Ensure we have a valid UUID for organizer
       const organizerId = user?.id || '00000000-0000-0000-0000-000000000000'; 
 
       const slug = `${slugify(state.title)}-${Math.random().toString(36).substring(2, 7)}`;
@@ -249,13 +254,14 @@ export const EventWizard: React.FC = () => {
           slug: slug,
           description: state.description,
           short_description: aiSummary,
-          status: 'published', // Auto-publish for MVP
+          status: 'published', 
           is_public: true,
           start_time: state.startDate,
           end_time: state.endDate,
           capacity_limit: capacity,
           ai_summary: aiSummary,
-          // Could add venue fields here if schema supports it, or update venues table
+          // Use the AI generated image or fallback
+          featured_image_url: state.image 
         })
         .select()
         .single();
@@ -303,7 +309,6 @@ export const EventWizard: React.FC = () => {
         if (scheduleError) throw scheduleError;
       }
 
-      // Transition to Success Step
       setCurrentStep(Step.SUCCESS);
 
     } catch (error) {
@@ -313,6 +318,9 @@ export const EventWizard: React.FC = () => {
       setIsPublishing(false);
     }
   };
+
+  // Helper for the step progress
+  const totalSteps = 6; 
 
   return (
     <div className="min-h-screen bg-[#F8F9FB] pb-24">
@@ -331,13 +339,13 @@ export const EventWizard: React.FC = () => {
               
               <div className="flex-1 mx-8">
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
-                  <span>{currentStep === Step.INTRO ? 'AI Setup' : `Step ${currentStep} of 5`}</span>
+                  <span>{currentStep === Step.INTRO ? 'AI Setup' : `Step ${currentStep} of ${totalSteps}`}</span>
                   <span className="hidden sm:inline">{currentStep === Step.REVIEW ? 'Final Review' : 'Drafting'}</span>
                 </div>
                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-fashion-purple transition-all duration-500 ease-out" 
-                    style={{ width: `${(currentStep / 5) * 100}%` }}
+                    style={{ width: `${(currentStep / totalSteps) * 100}%` }}
                   />
                 </div>
               </div>
@@ -373,6 +381,14 @@ export const EventWizard: React.FC = () => {
           {currentStep === Step.BASICS && (
             <WizardBasics data={state} updateData={updateData} />
           )}
+          {currentStep === Step.VISUALS && (
+            <WizardVisuals 
+              data={state} 
+              updateData={updateData} 
+              onNext={nextStep}
+              onBack={prevStep}
+            />
+          )}
           {currentStep === Step.VENUE && (
             <WizardVenue data={state} updateData={updateData} />
           )}
@@ -398,8 +414,8 @@ export const EventWizard: React.FC = () => {
         </FadeIn>
       </div>
 
-      {/* Bottom Action Bar */}
-      {currentStep !== Step.INTRO && currentStep !== Step.SUCCESS && (
+      {/* Bottom Action Bar (Conditionally rendered in Visuals/Intro steps to avoid double bars) */}
+      {currentStep !== Step.INTRO && currentStep !== Step.SUCCESS && currentStep !== Step.VISUALS && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-40 lg:pl-64">
           <div className="container mx-auto px-6 max-w-4xl flex justify-between items-center">
             <Button variant="ghost" onClick={prevStep}>Back</Button>
@@ -412,7 +428,11 @@ export const EventWizard: React.FC = () => {
               </Button>
             ) : (
               <Button variant="primary" className="px-8 gap-2" onClick={nextStep}>
-                Next Step <ArrowRight size={16} />
+                {currentStep === Step.BASICS ? (
+                    <>Visuals & Media <ImageIcon size={16} /></>
+                ) : (
+                    <>Next Step <ArrowRight size={16} /></>
+                )}
               </Button>
             )}
           </div>

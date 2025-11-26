@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { GoogleGenAI, Type } from "https://esm.sh/@google/genai@0.1.1";
 import { corsHeaders } from "../_shared/cors.ts";

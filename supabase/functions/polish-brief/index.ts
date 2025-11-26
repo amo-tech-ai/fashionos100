@@ -15,18 +15,24 @@ serve(async (req) => {
     const apiKey = Deno.env.get('GEMINI_API_KEY')
     if (!apiKey) throw new Error('Missing GEMINI_API_KEY')
 
-    const { brief } = await req.json()
+    const { brief, type } = await req.json()
 
     if (!brief) throw new Error('No brief provided')
 
     const ai = new GoogleGenAI({ apiKey })
+    
+    let prompt = `Rewrite this creative brief to be more professional, structured, and clear for a fashion production team. Keep the original intent but organize it with headings like 'Concept', 'Mood', 'Lighting'. Input: "${brief}"`;
+
+    if (type === 'marketing') {
+        prompt = `Rewrite this event description to be engaging, clear, and have high marketing appeal for potential attendees. Use exciting language, highlight key value propositions, and ensure clarity. Keep the tone professional yet inviting. Return only the rewritten description text. Input: "${brief}"`;
+    }
     
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: [
         { 
           role: 'user', 
-          parts: [{ text: `Rewrite this creative brief to be more professional, structured, and clear for a fashion production team. Keep the original intent but organize it with headings like 'Concept', 'Mood', 'Lighting'. Input: "${brief}"` }] 
+          parts: [{ text: prompt }] 
         }
       ]
     })
