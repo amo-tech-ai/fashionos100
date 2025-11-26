@@ -8,7 +8,7 @@ import {
 import { Link } from 'react-router-dom';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
-import { supabase } from '../../lib/supabase';
+import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { EventSponsor, SponsorActivation, SponsorDeliverable } from '../../types/sponsorship';
 
 // --- HELPER COMPONENTS ---
@@ -58,6 +58,7 @@ const StarIcon = ({size}: {size:number}) => <Sparkles size={size} />;
 export const DashboardContracts: React.FC = () => {
   const [contracts, setContracts] = useState<EventSponsor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchContracts = async () => {
@@ -71,6 +72,47 @@ export const DashboardContracts: React.FC = () => {
     };
     fetchContracts();
   }, []);
+
+  const handleGenerateDraft = async (contract: EventSponsor) => {
+    setGeneratingId(contract.id);
+    try {
+      const response = await fetch(`${supabaseUrl}/functions/v1/generate-contract`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`
+        },
+        body: JSON.stringify({
+          sponsorName: contract.sponsor?.name,
+          value: contract.cash_value,
+          date: new Date().toLocaleDateString(),
+          eventName: contract.event?.title
+        })
+      });
+
+      if (!response.ok) {
+         console.warn("Generate contract function failed or not deployed");
+         // Fallback simulation for UI completeness if backend isn't ready
+         await new Promise(resolve => setTimeout(resolve, 1500));
+         alert("Contract generation simulated (Backend function not reachable)");
+         return;
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Contract-${contract.sponsor?.name || 'Draft'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (e) {
+      console.error("Generation failed", e);
+      alert("Failed to generate contract draft.");
+    } finally {
+      setGeneratingId(null);
+    }
+  };
 
   if (loading) return <div className="p-12 text-center"><Loader2 className="animate-spin mx-auto" /></div>;
 
@@ -111,7 +153,19 @@ export const DashboardContracts: React.FC = () => {
                             <Button size="sm" variant="outline" className="gap-2"><Download size={14}/> Contract</Button>
                         </a>
                     ) : (
-                        <span className="text-xs text-amber-500 font-bold flex items-center gap-1"><AlertCircle size={12}/> No Contract PDF</span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-amber-500 font-bold flex items-center gap-1"><AlertCircle size={12}/> No PDF</span>
+                            <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="text-purple-600 hover:bg-purple-50 h-8 text-xs" 
+                                onClick={() => handleGenerateDraft(contract)}
+                                disabled={generatingId === contract.id}
+                            >
+                                {generatingId === contract.id ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />} 
+                                {generatingId === contract.id ? 'Generating...' : 'Generate Draft'}
+                            </Button>
+                        </div>
                     )}
                     <Button size="sm" className="bg-[#ec4899] hover:bg-[#db2777] text-white border-none rounded-lg px-6">
                       View Details

@@ -24,7 +24,7 @@ serve(async (req) => {
       systemInstruction = `You are a Creative Director for a high-end fashion event agency.
       Your goal is to generate innovative, luxury-focused, and shareable brand activation ideas.
       Focus on experiential luxury, audience engagement, and social media impact.
-      Tailor ideas specifically to the sponsor's industry (${sponsorIndustry}).`;
+      Tailor ideas specifically to the sponsor's industry (${sponsorIndustry || 'General'}).`;
 
       prompt = `
         Sponsor: ${sponsorName} (${sponsorIndustry})
@@ -120,10 +120,45 @@ serve(async (req) => {
       `;
       responseMimeType = 'text/plain';
 
+    } else if (action === 'generate-social-plan') {
+      systemInstruction = `You are a Social Media Manager for a luxury fashion event.
+      Your goal is to create a content calendar for a sponsor to maximize their ROI.
+      Create a mix of "Teaser", "Live Event", and "Recap" content.
+      Tailor tone to the sponsor industry: ${sponsorIndustry}.`;
+
+      prompt = `
+        Sponsor: ${sponsorName}
+        Event: ${eventDetails}
+        
+        Task: Generate a 5-post social media schedule.
+        Include 1 pre-event hype post, 3 during-event posts, and 1 post-event recap.
+        Suggested platforms: Instagram (Story/Reel), TikTok, LinkedIn.
+      `;
+
+      responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+          posts: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                day: { type: Type.STRING, description: "e.g., '2 Days Before' or 'Event Day'" },
+                platform: { type: Type.STRING },
+                content_type: { type: Type.STRING, description: "e.g. Reel, Carousel, Story" },
+                caption: { type: Type.STRING },
+                visual_idea: { type: Type.STRING }
+              },
+              required: ["day", "platform", "content_type", "caption", "visual_idea"]
+            }
+          }
+        }
+      };
+
     } else if (action === 'ops-planning') {
          // Ops Agent Logic (Preserved)
          systemInstruction = "Act as an Event Operations Manager.";
-         const { floorplanBase64 } = await req.json(); // Assuming input logic handles this if needed
+         const { floorplanBase64 } = await req.json(); 
          prompt = `Analyze the logistical requirements for the venue.`;
          if (floorplanBase64) prompt += ` See attached floorplan.`;
 

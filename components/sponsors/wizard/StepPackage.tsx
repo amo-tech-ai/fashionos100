@@ -33,9 +33,9 @@ export const StepPackage: React.FC<Props> = ({ data, update }) => {
         },
         body: JSON.stringify({
           action: 'recommend-packages',
-          sponsorName: data.sponsorId,
-          sponsorIndustry: data.sponsorIndustry,
-          eventDetails: data.eventId
+          sponsorName: data.sponsorName || 'Sponsor',
+          sponsorIndustry: data.sponsorIndustry || 'General',
+          eventDetails: data.eventName || 'Event'
         })
       });
       const res = await response.json();

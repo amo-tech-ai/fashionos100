@@ -83,3 +83,11 @@ export interface SponsorRoiMetric {
   unit: string;
   created_at: string;
 }
+
+export interface SocialPostPlan {
+  day: string;
+  platform: 'Instagram' | 'TikTok' | 'LinkedIn' | 'Twitter';
+  content_type: string;
+  caption: string;
+  visual_idea: string;
+}

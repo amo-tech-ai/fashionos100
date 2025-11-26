@@ -42,9 +42,9 @@ export const StepActivations: React.FC<Props> = ({ data, update }) => {
             },
             body: JSON.stringify({
                 action: 'activation-ideas',
-                sponsorName: data.sponsorId,
-                sponsorIndustry: data.sponsorIndustry, // Use context
-                eventDetails: data.eventId
+                sponsorName: data.sponsorName || 'Sponsor',
+                sponsorIndustry: data.sponsorIndustry || 'General',
+                eventDetails: data.eventName || 'Event'
             })
         });
         const res = await response.json();

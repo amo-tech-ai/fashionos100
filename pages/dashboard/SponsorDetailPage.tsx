@@ -3,12 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   ArrowLeft, Building2, Mail, Phone, Globe, MapPin, 
-  FileText, Zap, Calendar, DollarSign, Plus, History, Loader2, Send, Lock
+  FileText, Zap, Calendar, DollarSign, Plus, History, Loader2, Send, Lock,
+  TrendingUp, Eye, MousePointerClick, Target
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
-import { SponsorProfile, EventSponsor, SponsorActivation } from '../../types/sponsorship';
+import { SponsorProfile, EventSponsor, SponsorActivation, SponsorRoiMetric } from '../../types/sponsorship';
 import { Input } from '../../components/forms/Input';
 import { SponsorForm } from '../../components/sponsors/SponsorForm';
 
@@ -19,6 +20,7 @@ export const SponsorDetailPage: React.FC = () => {
   const [sponsor, setSponsor] = useState<SponsorProfile | null>(null);
   const [deals, setDeals] = useState<EventSponsor[]>([]); 
   const [activations, setActivations] = useState<SponsorActivation[]>([]);
+  const [metrics, setMetrics] = useState<SponsorRoiMetric[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Invite State
@@ -64,6 +66,14 @@ export const SponsorDetailPage: React.FC = () => {
             
             if (actsError) throw actsError;
             setActivations(acts || []);
+
+            const { data: metricsData, error: metricsError } = await supabase
+                .from('sponsor_roi_metrics')
+                .select('*')
+                .in('event_sponsor_id', dealIds);
+            
+            if (metricsError) throw metricsError;
+            setMetrics(metricsData || []);
         }
 
     } catch (error) {
@@ -122,6 +132,21 @@ export const SponsorDetailPage: React.FC = () => {
   const totalSpent = deals.reduce((acc, deal) => acc + (deal.cash_value || 0), 0);
   const activeDealsCount = deals.filter(d => d.status === 'Signed' || d.status === 'Paid').length;
   const lastDeal = deals[0]; 
+
+  // Calculate ROI Aggregates
+  const totalImpressions = metrics
+    .filter(m => m.metric_name.toLowerCase().includes('impression'))
+    .reduce((acc, curr) => acc + Number(curr.metric_value), 0);
+
+  const totalLeads = metrics
+    .filter(m => m.metric_name.toLowerCase().includes('lead'))
+    .reduce((acc, curr) => acc + Number(curr.metric_value), 0);
+
+  const engagementMetrics = metrics.filter(m => m.metric_name.toLowerCase().includes('engagement'));
+  // Keep avgEngagement as number for type safety in comparison
+  const avgEngagement = engagementMetrics.length > 0 
+    ? (engagementMetrics.reduce((acc, curr) => acc + Number(curr.metric_value), 0) / engagementMetrics.length)
+    : 0;
 
   return (
     <div className="animate-in fade-in duration-500 pb-20 font-sans">
@@ -213,6 +238,31 @@ export const SponsorDetailPage: React.FC = () => {
           <FadeIn key={activeTab} className="bg-white rounded-3xl border border-gray-100 shadow-sm min-h-[400px] p-6">
             {activeTab === 'overview' && (
               <div className="space-y-8">
+                {/* ROI KPI Section */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border border-purple-100">
+                  <div className="text-center sm:text-left">
+                    <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                      <Eye size={16} className="text-purple-600" />
+                      <span className="text-xs font-bold text-purple-700 uppercase tracking-wider">Total Impressions</span>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{totalImpressions > 0 ? `${(totalImpressions / 1000).toFixed(1)}k` : '--'}</p>
+                  </div>
+                  <div className="text-center sm:text-left">
+                    <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                      <MousePointerClick size={16} className="text-pink-600" />
+                      <span className="text-xs font-bold text-pink-700 uppercase tracking-wider">Avg Engagement</span>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{avgEngagement > 0 ? `${avgEngagement.toFixed(1)}%` : '--'}</p>
+                  </div>
+                  <div className="text-center sm:text-left">
+                    <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                      <Target size={16} className="text-green-600" />
+                      <span className="text-xs font-bold text-green-700 uppercase tracking-wider">Leads Generated</span>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{totalLeads > 0 ? totalLeads : '--'}</p>
+                  </div>
+                </div>
+
                 <div>
                   <h3 className="font-serif font-bold text-xl mb-4">History</h3>
                   {deals.length > 0 ? (

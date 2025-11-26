@@ -8,9 +8,10 @@ import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { SponsorProfile, EventSponsor, SponsorActivation, SponsorDeliverable } from '../../types/sponsorship';
+import { SocialPlanWidget } from '../../components/sponsors/SocialPlanWidget';
 
 export const SponsorPortal: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'activations'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'activations' | 'marketing'>('dashboard');
   const [loading, setLoading] = useState(true);
   const [sponsorProfile, setSponsorProfile] = useState<SponsorProfile | null>(null);
   const [deals, setDeals] = useState<EventSponsor[]>([]);
@@ -74,10 +75,12 @@ export const SponsorPortal: React.FC = () => {
     if (!sponsorProfile) return;
     
     setUploadingId(deliverableId);
-    setAnalyzing(true);
+    setAnalyzing(false); // Reset analyzing state
+    
     try {
         const filePath = `sponsor-assets/${sponsorProfile.id}/${deliverableId}/${file.name}`;
         
+        // 1. Upload
         const { error: uploadError } = await supabase.storage
             .from('documents') 
             .upload(filePath, file);
@@ -88,21 +91,28 @@ export const SponsorPortal: React.FC = () => {
             .from('documents')
             .getPublicUrl(filePath);
 
-        // AI Analysis
+        // 2. AI Analysis
+        setAnalyzing(true); // Start analyzing UI
+        
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = async () => {
             const base64 = (reader.result as string).split(',')[1];
             
-            await fetch(`${supabaseUrl}/functions/v1/sponsor-ai`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseAnonKey}` },
-                body: JSON.stringify({
-                    action: 'analyze-media',
-                    mediaBase64: base64
-                })
-            });
+            try {
+                await fetch(`${supabaseUrl}/functions/v1/sponsor-ai`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseAnonKey}` },
+                    body: JSON.stringify({
+                        action: 'analyze-media',
+                        mediaBase64: base64
+                    })
+                });
+            } catch (aiError) {
+                console.warn("AI Analysis failed, but upload successful", aiError);
+            }
             
+            // 3. Update DB
             await supabase
             .from('sponsor_deliverables')
             .update({ status: 'uploaded', asset_url: publicUrl })
@@ -199,19 +209,16 @@ export const SponsorPortal: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 mb-8 border-b border-gray-200 pb-1">
-        <button 
-          onClick={() => setActiveTab('dashboard')}
-          className={`pb-3 px-2 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'dashboard' ? 'border-black text-black' : 'border-transparent text-gray-400'}`}
-        >
-          Overview
-        </button>
-        <button 
-          onClick={() => setActiveTab('activations')}
-          className={`pb-3 px-2 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'activations' ? 'border-black text-black' : 'border-transparent text-gray-400'}`}
-        >
-          Activations
-        </button>
+      <div className="flex gap-4 mb-8 border-b border-gray-200 pb-1 overflow-x-auto">
+        {['dashboard', 'activations', 'marketing'].map((tab) => (
+          <button 
+            key={tab}
+            onClick={() => setActiveTab(tab as any)}
+            className={`pb-3 px-2 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === tab ? 'border-black text-black' : 'border-transparent text-gray-400'}`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
       {activeTab === 'dashboard' && (
@@ -250,8 +257,14 @@ export const SponsorPortal: React.FC = () => {
                                                     variant="primary" 
                                                     className="cursor-pointer"
                                                     as="span"
+                                                    disabled={!!uploadingId}
                                                 >
-                                                    {uploadingId === item.id ? (analyzing ? 'AI Analyzing...' : 'Uploading...') : 'Upload'}
+                                                    {uploadingId === item.id ? (
+                                                        <span className="flex items-center gap-2">
+                                                            <Loader2 size={12} className="animate-spin" /> 
+                                                            {analyzing ? 'AI Analyzing...' : 'Uploading...'}
+                                                        </span>
+                                                    ) : 'Upload'}
                                                 </Button>
                                             </label>
                                         </div>
@@ -303,6 +316,24 @@ export const SponsorPortal: React.FC = () => {
               ))}
               {activations.length === 0 && <div className="col-span-full text-center py-12 text-gray-400">No activations found.</div>}
           </div>
+      )}
+
+      {activeTab === 'marketing' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <SocialPlanWidget 
+            sponsorName={sponsorProfile.name} 
+            sponsorIndustry={sponsorProfile.industry || 'General'}
+            eventName={activeDeal?.event?.title || 'Fashion Event'}
+          />
+          <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col justify-center items-center text-center">
+             <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-6 text-blue-500">
+                <Share2 size={32} />
+             </div>
+             <h3 className="text-2xl font-serif font-bold mb-2">Asset Library</h3>
+             <p className="text-gray-500 mb-6">Access all your approved brand assets and event photos here.</p>
+             <Button variant="outline">Open Library</Button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Calendar, MapPin, CheckCircle2, ExternalLink, AlertCircle, Sparkles, Clock } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Calendar, MapPin, CheckCircle2, ExternalLink, AlertCircle, Sparkles, Clock, Search, X } from 'lucide-react';
 import { CalendarPicker } from '../../CalendarPicker';
 import { WizardState } from './types';
 import { Button } from '../../Button';
@@ -10,6 +10,12 @@ import { Input } from '../../forms/Input';
 interface WizardVenueProps {
   data: WizardState;
   updateData: (updates: Partial<WizardState>) => void;
+}
+
+interface VenueCandidate {
+  name: string;
+  address: string;
+  type?: string;
 }
 
 interface OptimizationResult {
@@ -25,8 +31,13 @@ interface OptimizationResult {
 
 export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) => {
   const [showCalendar, setShowCalendar] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verifyError, setVerifyError] = useState<string | null>(null);
+  
+  // Search State
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [candidates, setCandidates] = useState<VenueCandidate[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   
   // Scheduler State
   const [showScheduler, setShowScheduler] = useState(false);
@@ -35,10 +46,25 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
   const [talentSchedules, setTalentSchedules] = useState('');
   const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
 
-  const handleVerifyLocation = async () => {
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [wrapperRef]);
+
+  const handleVenueSearch = async () => {
     if (!data.location.trim()) return;
-    setIsVerifying(true);
-    setVerifyError(null);
+    setIsSearching(true);
+    setSearchError(null);
+    setCandidates([]);
+    setShowSuggestions(true);
 
     try {
       if (!supabaseUrl || !supabaseAnonKey) {
@@ -56,21 +82,33 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
 
       const result = await response.json();
 
-      if (result.success && result.data) {
-        updateData({
-          location: result.data.location,
-          mapsUri: result.data.googleMapsUri,
-          mapsSources: result.data.sources
-        });
+      if (result.success && result.candidates && result.candidates.length > 0) {
+        setCandidates(result.candidates);
+        // Also store potential sources if needed
+        if (result.groundingChunks) {
+           // We could store these for attribution
+        }
       } else {
-        setVerifyError("Could not verify location. Please try a more specific address.");
+        setSearchError("No venues found. Try a different search term.");
+        setShowSuggestions(false);
       }
     } catch (error) {
-      console.error("Verification failed", error);
-      setVerifyError("Verification service unavailable (Backend not connected).");
+      console.error("Search failed", error);
+      setSearchError("Search service unavailable.");
+      setShowSuggestions(false);
     } finally {
-      setIsVerifying(false);
+      setIsSearching(false);
     }
+  };
+
+  const selectVenue = (candidate: VenueCandidate) => {
+    updateData({
+      location: `${candidate.name}, ${candidate.address}`,
+      // We can try to construct a google maps link or rely on name
+      mapsUri: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(candidate.name + ' ' + candidate.address)}`
+    });
+    setShowSuggestions(false);
+    setSearchError(null);
   };
 
   const handleOptimizeSchedule = async () => {
@@ -132,6 +170,7 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
       <h2 className="text-2xl font-serif font-bold mb-6">Time & Location</h2>
       <div className="space-y-6">
         
+        {/* Date Picker Section */}
         <div className="space-y-2 relative">
           <div className="flex justify-between items-end">
             <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Date & Time</label>
@@ -242,90 +281,95 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
           )}
         </div>
 
-        <div className="space-y-2">
+        {/* Venue Search Section */}
+        <div className="space-y-2" ref={wrapperRef}>
           <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Venue / Location</label>
           
-          <div className="flex flex-col gap-3">
+          <div className="relative">
             <div className="flex items-center gap-2 p-3 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-purple-100 focus-within:border-purple-400 transition-all">
               <MapPin className={data.mapsUri ? "text-green-500" : "text-gray-400"} size={20} />
               <input 
                 type="text" 
                 value={data.location}
                 onChange={(e) => {
-                  // Reset verification if user types
                   updateData({ 
                     location: e.target.value, 
                     mapsUri: undefined, 
                     mapsSources: undefined 
                   });
-                  setVerifyError(null);
+                  setSearchError(null);
                 }}
-                onKeyDown={(e) => e.key === 'Enter' && handleVerifyLocation()}
+                onKeyDown={(e) => e.key === 'Enter' && handleVenueSearch()}
                 className="flex-1 outline-none bg-transparent"
-                placeholder="e.g. 123 Fashion Ave, NYC"
+                placeholder="Search venue (e.g. 'Rooftop in Brooklyn')"
               />
+              
+              {/* Action Button: Clear if Verified, Search otherwise */}
               {data.mapsUri ? (
-                <CheckCircle2 size={20} className="text-green-500 animate-in zoom-in" />
+                <button 
+                  onClick={() => updateData({ location: '', mapsUri: undefined })}
+                  className="p-1 hover:bg-gray-100 rounded-full text-gray-400"
+                >
+                  <X size={16} />
+                </button>
               ) : (
                 <Button 
                   size="sm" 
                   variant="ghost" 
-                  className="text-purple-600 hover:bg-purple-50 h-8 px-3"
-                  onClick={handleVerifyLocation}
-                  disabled={isVerifying || !data.location}
+                  className="text-purple-600 hover:bg-purple-50 h-8 px-3 gap-2"
+                  onClick={handleVenueSearch}
+                  disabled={isSearching || !data.location}
                 >
-                  {isVerifying ? <LoadingSpinner size={14} /> : 'Verify'}
+                  {isSearching ? <LoadingSpinner size={14} /> : <Search size={14} />}
+                  Search
                 </Button>
               )}
             </div>
 
-            {/* Verification Status & Attribution */}
-            {data.mapsUri && (
-              <div className="bg-green-50 border border-green-100 rounded-xl p-3 animate-in slide-in-from-top-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-xs font-bold text-green-700 flex items-center gap-1 mb-1">
-                      <CheckCircle2 size={12} /> Verified Location
-                    </p>
-                    <a 
-                      href={data.mapsUri} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-xs text-green-600 underline hover:text-green-800 flex items-center gap-1"
+            {/* Suggestions Dropdown */}
+            {showSuggestions && candidates.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto animate-in fade-in zoom-in-95">
+                <div className="p-2">
+                  <p className="text-[10px] font-bold uppercase text-gray-400 px-2 py-1">Suggestions</p>
+                  {candidates.map((venue, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => selectVenue(venue)}
+                      className="w-full text-left px-3 py-2.5 hover:bg-purple-50 rounded-lg transition-colors group"
                     >
-                      Open in Google Maps <ExternalLink size={10} />
-                    </a>
-                  </div>
+                      <p className="font-bold text-sm text-gray-800 group-hover:text-purple-700">{venue.name}</p>
+                      <p className="text-xs text-gray-500 truncate">{venue.address}</p>
+                      {venue.type && <span className="inline-block mt-1 text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded border border-gray-200">{venue.type}</span>}
+                    </button>
+                  ))}
                 </div>
-                
-                {/* Mandatory Attribution */}
-                {data.mapsSources && data.mapsSources.length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-green-200/50">
-                    <p className="text-[10px] text-gray-500 mb-1">Data from Google Maps:</p>
-                    <ul className="space-y-0.5">
-                      {data.mapsSources.map((source, i) => (
-                        <li key={i} className="text-[10px]">
-                          <a 
-                            href={source.uri} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-gray-500 hover:text-gray-700 underline"
-                          >
-                            {source.title}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+              </div>
+            )}
+
+            {/* Verified State */}
+            {data.mapsUri && (
+              <div className="mt-3 bg-green-50 border border-green-100 rounded-xl p-3 animate-in slide-in-from-top-2">
+                <div className="flex justify-between items-center">
+                  <p className="text-xs font-bold text-green-700 flex items-center gap-1">
+                    <CheckCircle2 size={14} /> Verified Location
+                  </p>
+                  <a 
+                    href={data.mapsUri} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-green-600 underline hover:text-green-800 flex items-center gap-1"
+                  >
+                    View Map <ExternalLink size={10} />
+                  </a>
+                </div>
               </div>
             )}
 
             {/* Error State */}
-            {verifyError && (
-              <div className="flex items-center gap-2 text-xs text-red-500 bg-red-50 p-2 rounded-lg animate-in fade-in">
+            {searchError && (
+              <div className="mt-2 flex items-center gap-2 text-xs text-red-500 bg-red-50 p-2 rounded-lg animate-in fade-in">
                 <AlertCircle size={14} />
-                {verifyError}
+                {searchError}
               </div>
             )}
           </div>
@@ -334,4 +378,4 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
       </div>
     </div>
   );
-}
+};
