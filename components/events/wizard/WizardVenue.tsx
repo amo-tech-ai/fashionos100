@@ -1,5 +1,6 @@
+
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar, MapPin, CheckCircle2, ExternalLink, AlertCircle, Sparkles, Clock, Search, X } from 'lucide-react';
+import { Calendar, MapPin, CheckCircle2, ExternalLink, AlertCircle, Sparkles, Clock, Search, X, Users, Mail, Phone, User } from 'lucide-react';
 import { CalendarPicker } from '../../CalendarPicker';
 import { WizardState } from './types';
 import { Button } from '../../Button';
@@ -16,6 +17,10 @@ interface VenueCandidate {
   name: string;
   address: string;
   type?: string;
+  estimated_capacity?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  contact_name?: string;
 }
 
 interface OptimizationResult {
@@ -84,10 +89,6 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
 
       if (result.success && result.candidates && result.candidates.length > 0) {
         setCandidates(result.candidates);
-        // Also store potential sources if needed
-        if (result.groundingChunks) {
-           // We could store these for attribution
-        }
       } else {
         setSearchError("No venues found. Try a different search term.");
         setShowSuggestions(false);
@@ -103,8 +104,12 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
 
   const selectVenue = (candidate: VenueCandidate) => {
     updateData({
-      location: `${candidate.name}, ${candidate.address}`,
-      // We can try to construct a google maps link or rely on name
+      location: candidate.name,
+      venueAddress: candidate.address,
+      venueCapacity: candidate.estimated_capacity,
+      venueContactName: candidate.contact_name,
+      venueContactEmail: candidate.contact_email,
+      venueContactPhone: candidate.contact_phone,
       mapsUri: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(candidate.name + ' ' + candidate.address)}`
     });
     setShowSuggestions(false);
@@ -131,7 +136,7 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
           },
           venueConstraints,
           talentSchedules,
-          deadline: "2025-12-31" // Default or add input for deadline
+          deadline: "2025-12-31"
         })
       });
 
@@ -148,10 +153,9 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
   };
 
   const applySlot = (slot: { date: string, start_time: string, end_time: string }) => {
-    // Parse date string YYYY-MM-DD
     const dateParts = slot.date.split('-');
     const year = parseInt(dateParts[0]);
-    const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
+    const month = parseInt(dateParts[1]) - 1; 
     const day = parseInt(dateParts[2]);
 
     const startDate = new Date(year, month, day);
@@ -292,11 +296,7 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
                 type="text" 
                 value={data.location}
                 onChange={(e) => {
-                  updateData({ 
-                    location: e.target.value, 
-                    mapsUri: undefined, 
-                    mapsSources: undefined 
-                  });
+                  updateData({ location: e.target.value });
                   setSearchError(null);
                 }}
                 onKeyDown={(e) => e.key === 'Enter' && handleVenueSearch()}
@@ -307,7 +307,7 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
               {/* Action Button: Clear if Verified, Search otherwise */}
               {data.mapsUri ? (
                 <button 
-                  onClick={() => updateData({ location: '', mapsUri: undefined })}
+                  onClick={() => updateData({ location: '', mapsUri: undefined, venueAddress: '', venueCapacity: '', venueContactName: '', venueContactEmail: '', venueContactPhone: '' })}
                   className="p-1 hover:bg-gray-100 rounded-full text-gray-400"
                 >
                   <X size={16} />
@@ -330,7 +330,7 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
             {showSuggestions && candidates.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto animate-in fade-in zoom-in-95">
                 <div className="p-2">
-                  <p className="text-[10px] font-bold uppercase text-gray-400 px-2 py-1">Suggestions</p>
+                  <p className="text-[10px] font-bold uppercase text-gray-400 px-2 py-1">Suggestions (AI Enhanced)</p>
                   {candidates.map((venue, idx) => (
                     <button
                       key={idx}
@@ -339,7 +339,10 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
                     >
                       <p className="font-bold text-sm text-gray-800 group-hover:text-purple-700">{venue.name}</p>
                       <p className="text-xs text-gray-500 truncate">{venue.address}</p>
-                      {venue.type && <span className="inline-block mt-1 text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded border border-gray-200">{venue.type}</span>}
+                      <div className="flex gap-2 mt-1">
+                        {venue.estimated_capacity && <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">{venue.estimated_capacity} cap</span>}
+                        {venue.type && <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded border border-gray-200">{venue.type}</span>}
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -373,6 +376,45 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
               </div>
             )}
           </div>
+        </div>
+
+        {/* Expanded Venue Details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-50">
+            <Input 
+              label="Full Address"
+              value={data.venueAddress || ''}
+              onChange={(e) => updateData({ venueAddress: e.target.value })}
+              placeholder="123 Fashion Ave, NY"
+              className="md:col-span-2"
+            />
+            <Input 
+              label="Capacity"
+              value={data.venueCapacity || ''}
+              onChange={(e) => updateData({ venueCapacity: e.target.value })}
+              placeholder="e.g. 500 standing"
+              icon={<Users size={14} />}
+            />
+            <Input 
+              label="Contact Name"
+              value={data.venueContactName || ''}
+              onChange={(e) => updateData({ venueContactName: e.target.value })}
+              placeholder="Manager Name"
+              icon={<User size={14} />}
+            />
+            <Input 
+              label="Contact Email"
+              value={data.venueContactEmail || ''}
+              onChange={(e) => updateData({ venueContactEmail: e.target.value })}
+              placeholder="events@venue.com"
+              icon={<Mail size={14} />}
+            />
+            <Input 
+              label="Contact Phone"
+              value={data.venueContactPhone || ''}
+              onChange={(e) => updateData({ venueContactPhone: e.target.value })}
+              placeholder="+1 234 567 890"
+              icon={<Phone size={14} />}
+            />
         </div>
 
       </div>

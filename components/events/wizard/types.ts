@@ -29,6 +29,14 @@ export interface WizardState {
   category: string;
   targetAudience: string;
   location: string;
+  
+  // Extended Venue Details
+  venueAddress?: string;
+  venueCapacity?: string;
+  venueContactName?: string;
+  venueContactEmail?: string;
+  venueContactPhone?: string;
+
   // Google Maps Grounding Fields
   mapsPlaceId?: string;
   mapsUri?: string;

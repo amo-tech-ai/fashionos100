@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { GoogleGenAI, Type } from "https://esm.sh/@google/genai@0.1.1";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -14,7 +15,7 @@ serve(async (req) => {
 
     const client = new GoogleGenAI({ apiKey });
     
-    // Define schema for multiple candidates
+    // Define schema for multiple candidates with extended details
     const schema = {
       type: Type.OBJECT,
       properties: {
@@ -25,7 +26,11 @@ serve(async (req) => {
             properties: {
               name: { type: Type.STRING, description: "Name of the venue" },
               address: { type: Type.STRING, description: "Full address" },
-              type: { type: Type.STRING, description: "Type of venue (e.g. Hotel, Warehouse, Gallery)" }
+              type: { type: Type.STRING, description: "Type of venue (e.g. Hotel, Warehouse, Gallery)" },
+              estimated_capacity: { type: Type.STRING, description: "Estimated capacity (e.g. '500 people'). Guess if unknown based on type." },
+              contact_email: { type: Type.STRING, description: "Public contact email or generic placeholder." },
+              contact_phone: { type: Type.STRING, description: "Public contact phone or generic placeholder." },
+              contact_name: { type: Type.STRING, description: "Name of a contact person or 'Events Team'." }
             },
             required: ["name", "address"]
           }
@@ -40,7 +45,9 @@ serve(async (req) => {
         {
           role: 'user',
           parts: [
-            { text: `Search for real-world venues matching "${venueText}". Return a list of up to 5 distinct, real venues with their names and addresses. Use Google Maps grounding to verify existence.` }
+            { text: `Search for real-world venues matching "${venueText}". Return a list of up to 5 distinct, real venues with their names, addresses, and types. 
+            Also, use your knowledge to infer or estimate the capacity, and provide public contact details (email/phone) if available or suggest generic ones like 'events@venue.com'. 
+            Use Google Maps grounding to verify existence.` }
           ]
         }
       ],
@@ -53,7 +60,7 @@ serve(async (req) => {
     });
 
     // Parse the structured JSON response
-    const text = response.text();
+    const text = response.text;
     let candidates = [];
     try {
       const json = JSON.parse(text || "{}");
@@ -62,15 +69,8 @@ serve(async (req) => {
       console.error("JSON parse error", e);
     }
 
-    // Extract Grounding Metadata to enrich (optional, mostly for URIs if available)
-    const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    
-    // Attempt to match candidates with grounding URIs if possible, 
-    // or just return the structured candidates and let frontend use them.
-    // The structured output from Gemini usually incorporates the grounded info directly into the text fields.
-
     return new Response(
-      JSON.stringify({ success: true, candidates, groundingChunks }),
+      JSON.stringify({ success: true, candidates }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

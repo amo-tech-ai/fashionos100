@@ -24,7 +24,7 @@ export const EventWizard: React.FC = () => {
   
   // AI Input State
   const [aiPrompt, setAiPrompt] = useState('');
-  const [aiUrls, setAiUrls] = useState<string[]>([]); // Changed from single url to array
+  const [aiUrls, setAiUrls] = useState<string[]>([]); 
   const [aiFiles, setAiFiles] = useState<File[]>([]);
   const [aiMoods, setAiMoods] = useState<string[]>([]);
   const [aiAudiences, setAiAudiences] = useState<string[]>([]);
@@ -37,6 +37,11 @@ export const EventWizard: React.FC = () => {
     category: 'Runway',
     targetAudience: '',
     location: '',
+    venueAddress: '',
+    venueCapacity: '',
+    venueContactName: '',
+    venueContactEmail: '',
+    venueContactPhone: '',
     startDate: null,
     endDate: null,
     tickets: [{ name: 'General Admission', price: 50, quantity: 100 }],
@@ -97,7 +102,7 @@ export const EventWizard: React.FC = () => {
         },
         body: JSON.stringify({
           prompt: enhancedPrompt,
-          urls: aiUrls, // Send array of URLs
+          urls: aiUrls, 
           files: processedFiles
         })
       });
@@ -228,12 +233,7 @@ export const EventWizard: React.FC = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) {
-        console.warn("User not logged in, proceeding with mock user ID for demo.");
-      }
-
-      // Ensure we have a valid UUID for organizer if user is null (demo mode)
-      // In production, RLS would likely block this if not authenticated
+      // Ensure we have a valid UUID for organizer
       const organizerId = user?.id || '00000000-0000-0000-0000-000000000000'; 
 
       const slug = `${slugify(state.title)}-${Math.random().toString(36).substring(2, 7)}`;
@@ -255,6 +255,7 @@ export const EventWizard: React.FC = () => {
           end_time: state.endDate,
           capacity_limit: capacity,
           ai_summary: aiSummary,
+          // Could add venue fields here if schema supports it, or update venues table
         })
         .select()
         .single();
