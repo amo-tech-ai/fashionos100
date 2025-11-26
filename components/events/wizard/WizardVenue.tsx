@@ -15,6 +15,7 @@ interface WizardVenueProps {
 interface VenueCandidate {
   name: string;
   address: string;
+  place_id?: string;
   type?: string;
   estimated_capacity?: string;
   contact_email?: string;
@@ -109,7 +110,10 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
       venueContactName: candidate.contact_name,
       venueContactEmail: candidate.contact_email,
       venueContactPhone: candidate.contact_phone,
-      mapsUri: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(candidate.name + ' ' + candidate.address)}`
+      mapsPlaceId: candidate.place_id,
+      mapsUri: candidate.place_id 
+        ? `https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${candidate.place_id}`
+        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(candidate.name + ' ' + candidate.address)}`
     });
     setShowSuggestions(false);
     setSearchError(null);
@@ -189,7 +193,6 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
           {/* AI Scheduler Panel */}
           {showScheduler && (
             <div className="mb-4 bg-purple-50 border border-purple-100 rounded-xl p-4 animate-in slide-in-from-top-2">
-              {/* ... existing scheduler code ... */}
               <h3 className="text-sm font-bold text-purple-800 mb-2 flex items-center gap-2">
                 <Clock size={16} /> Smart Schedule Optimizer
               </h3>
@@ -307,7 +310,7 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
               {/* Action Button: Clear if Verified, Search otherwise */}
               {data.mapsUri ? (
                 <button 
-                  onClick={() => updateData({ location: '', mapsUri: undefined, venueAddress: '', venueCapacity: '', venueContactName: '', venueContactEmail: '', venueContactPhone: '' })}
+                  onClick={() => updateData({ location: '', mapsUri: undefined, venueAddress: '', venueCapacity: '', venueContactName: '', venueContactEmail: '', venueContactPhone: '', mapsPlaceId: undefined })}
                   className="p-1 hover:bg-gray-100 rounded-full text-gray-400"
                 >
                   <X size={16} />
@@ -354,7 +357,7 @@ export const WizardVenue: React.FC<WizardVenueProps> = ({ data, updateData }) =>
               <div className="mt-3 bg-green-50 border border-green-100 rounded-xl p-3 animate-in slide-in-from-top-2">
                 <div className="flex justify-between items-center">
                   <p className="text-xs font-bold text-green-700 flex items-center gap-1">
-                    <CheckCircle2 size={14} /> Verified Location
+                    <CheckCircle2 size={14} /> Verified Location {data.mapsPlaceId && '(Place ID Stored)'}
                   </p>
                   <a 
                     href={data.mapsUri} 

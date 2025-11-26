@@ -25,6 +25,7 @@ serve(async (req) => {
             properties: {
               name: { type: Type.STRING, description: "Name of the venue" },
               address: { type: Type.STRING, description: "Full address" },
+              place_id: { type: Type.STRING, description: "Google Maps Place ID" },
               type: { type: Type.STRING, description: "Type of venue (e.g. Hotel, Warehouse, Gallery)" },
               estimated_capacity: { type: Type.STRING, description: "Estimated capacity (e.g. '500 people'). Guess if unknown based on type." },
               contact_email: { type: Type.STRING, description: "Public contact email or generic placeholder." },
@@ -44,7 +45,7 @@ serve(async (req) => {
         {
           role: 'user',
           parts: [
-            { text: `Search for real-world venues matching "${venueText}". Return a list of up to 5 distinct, real venues with their names, addresses, and types. 
+            { text: `Search for real-world venues matching "${venueText}". Return a list of up to 5 distinct, real venues with their names, addresses, and Google Place IDs.
             Also, use your knowledge to infer or estimate the capacity, and provide public contact details (email/phone) if available or suggest generic ones like 'events@venue.com'. 
             Use Google Maps grounding to verify existence.` }
           ]
