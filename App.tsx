@@ -56,6 +56,9 @@ const App: React.FC = () => {
       {/* --- Auth --- */}
       <Route path="/login" element={<LoginPage />} />
 
+      {/* --- Shortcuts / Redirects --- */}
+      <Route path="/new" element={<Navigate to="/dashboard/events/new" replace />} />
+
       {/* --- Public Zone --- */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />

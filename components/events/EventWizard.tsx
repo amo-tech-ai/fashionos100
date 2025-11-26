@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, CheckCircle2, X } from 'lucide-react';
 import { Button } from '../Button';
 import { FadeIn } from '../FadeIn';
-import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
+import { supabase, supabaseUrl, supabaseAnonKey, isConfigured } from '../../lib/supabase';
 import { slugify } from '../../lib/utils';
 import { LoadingSpinner } from '../LoadingSpinner';
 
@@ -25,7 +25,6 @@ export const EventWizard: React.FC = () => {
   // AI Input State
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiUrl, setAiUrl] = useState('');
-  // Changed from aiFile to aiFiles (array)
   const [aiFiles, setAiFiles] = useState<File[]>([]);
   const [aiMoods, setAiMoods] = useState<string[]>([]);
   const [aiAudiences, setAiAudiences] = useState<string[]>([]);
@@ -67,6 +66,11 @@ export const EventWizard: React.FC = () => {
   // --- AI Integration ---
 
   const handleAIGenerate = async () => {
+    if (!isConfigured) {
+      alert("App not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env");
+      return;
+    }
+
     if (!aiPrompt.trim() && !aiUrl && aiFiles.length === 0 && aiMoods.length === 0 && aiAudiences.length === 0) return;
     setIsAiLoading(true);
 
@@ -80,12 +84,16 @@ export const EventWizard: React.FC = () => {
         ${aiAudiences.length > 0 ? `\nTarget Audience: ${aiAudiences.join(', ')}.` : ''}
       `.trim();
 
+      // Get Session Token for Auth
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || supabaseAnonKey;
+
       // Call the backend Edge Function
       const response = await fetch(`${supabaseUrl}/functions/v1/generate-event-draft`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           prompt: enhancedPrompt,
@@ -95,8 +103,8 @@ export const EventWizard: React.FC = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate event draft');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `AI Request failed: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -161,6 +169,10 @@ export const EventWizard: React.FC = () => {
   };
 
   const handlePublish = async () => {
+    if (!isConfigured) {
+      alert("Cannot publish: Supabase is not configured.");
+      return;
+    }
     if (isPublishing) return;
 
     // Validation Checks
@@ -194,6 +206,8 @@ export const EventWizard: React.FC = () => {
         console.warn("User not logged in, proceeding with mock user ID for demo.");
       }
 
+      // Ensure we have a valid UUID for organizer if user is null (demo mode)
+      // In production, RLS would likely block this if not authenticated
       const organizerId = user?.id || '00000000-0000-0000-0000-000000000000'; 
 
       const slug = `${slugify(state.title)}-${Math.random().toString(36).substring(2, 7)}`;

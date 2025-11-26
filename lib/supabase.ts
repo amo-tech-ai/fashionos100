@@ -17,13 +17,35 @@ const getEnv = (key: string) => {
   return '';
 };
 
-export const supabaseUrl = getEnv('VITE_SUPABASE_URL') || 'https://nvdlhrodvevgwdsneplk.supabase.co';
+export const supabaseUrl = getEnv('VITE_SUPABASE_URL');
 export const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
 
-if (!supabaseUrl) {
-  console.error('Supabase URL is missing. Please set VITE_SUPABASE_URL.');
+// Check if keys are real and not placeholders
+export const isConfigured = 
+  supabaseUrl && 
+  supabaseAnonKey && 
+  !supabaseUrl.includes('placeholder') && 
+  !supabaseAnonKey.includes('placeholder');
+
+if (!isConfigured) {
+  console.warn('⚠️ Supabase credentials missing or invalid. Check your .env file. Features requiring DB/Auth will fail gracefully.');
 }
 
-// Initialize with a placeholder key if missing to prevent immediate crash.
-// API calls will fail with 401 if the key is invalid, but the app will load.
-export const supabase = createClient(supabaseUrl, supabaseAnonKey || 'placeholder-anon-key');
+// Initialize client with options to avoid console spam if keys are missing
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder',
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+    // Disable realtime if not configured to prevent WebSocket error loops
+    realtime: isConfigured ? {
+      params: {
+        eventsPerSecond: 10,
+      },
+    } : undefined,
+  }
+);
