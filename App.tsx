@@ -37,8 +37,9 @@ import { DashboardGallery } from './pages/dashboard/DashboardGallery';
 import { DashboardPlaceholder } from './pages/dashboard/DashboardPlaceholder';
 import { DashboardSponsors } from './pages/dashboard/DashboardSponsors';
 
-// New Dashboard Pages
-import { DashboardLeads, DashboardPackages } from './pages/dashboard/SponsorshipPages';
+// New Dashboard Pages (Granular Imports)
+import { DashboardLeads } from './pages/dashboard/DashboardLeads';
+import { DashboardPackages } from './pages/dashboard/DashboardPackages';
 import { SponsorDetailPage } from './pages/dashboard/SponsorDetailPage';
 import { SponsorDealWizard } from './pages/dashboard/SponsorDealWizard';
 import { EventOpportunitiesPage } from './pages/dashboard/EventOpportunitiesPage';

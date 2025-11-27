@@ -1,52 +1,40 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FashionOS | Premium Studio & Agency Platform</title>
-    <meta name="description" content="FashionOS is the operating system for the fashion industry. Manage bookings, events, and talent in one unified platform. Book photoshoots, find models, and plan runway shows." />
-    <meta name="keywords" content="fashion, photography, studio, agency, event planning, directory, models, stylists, runway, production" />
-    <meta name="author" content="FashionOS" />
-
+    <meta name="description" content="FashionOS is the operating system for the fashion industry." />
+    
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://fashionos.app/" />
-    <meta property="og:title" content="FashionOS | Premium Studio & Agency Platform" />
-    <meta property="og:description" content="The Operating System for Fashion. Elevate your creative business with our unified dashboard for bookings, events, and talent discovery." />
+    <meta property="og:title" content="FashionOS" />
+    <meta property="og:description" content="The Operating System for Fashion." />
     <meta property="og:image" content="https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=1200" />
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://fashionos.app/" />
-    <meta property="twitter:title" content="FashionOS | Premium Studio & Agency Platform" />
-    <meta property="twitter:description" content="The Operating System for Fashion. Elevate your creative business with our unified dashboard for bookings, events, and talent discovery." />
-    <meta property="twitter:image" content="https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=80&w=1200" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-    
-    <script type="importmap">
+  <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@18.2.0",
-    "react/": "https://esm.sh/react@18.2.0/",
-    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
-    "react-dom": "https://esm.sh/react-dom@18.2.0",
-    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?deps=react@18.2.0,react-dom@18.2.0",
-    "lucide-react": "https://esm.sh/lucide-react@0.344.0?deps=react@18.2.0,react-dom@18.2.0",
-    "@google/genai": "https://esm.run/@google/genai",
-    "@google/generative-ai": "https://esm.run/@google/generative-ai",
-    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.86.0"
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.6",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.86.0",
+    "vite": "https://aistudiocdn.com/vite@^7.2.4",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
+    "path": "https://aistudiocdn.com/path@^0.12.7"
   }
 }
 </script>
 </head>
-  <body class="bg-fashion-cream text-fashion-black antialiased selection:bg-fashion-purple selection:text-white">
+  <body class="bg-fashion-cream text-fashion-black antialiased">
     <div id="root"></div>
+    <!-- Vite will auto-inject the correct hashed JS bundle here during build -->
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
