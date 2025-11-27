@@ -39,8 +39,6 @@ export const supabase = createClient(clientUrl, clientKey, {
     detectSessionInUrl: isConfigured,
   },
   realtime: {
-    // Completely disable realtime if not configured to prevent WebSocket connection errors
-    enabled: isConfigured,
     params: {
       eventsPerSecond: 10,
     },

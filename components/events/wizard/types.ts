@@ -2,14 +2,15 @@
 import { Event } from '../../../data/mockEvents';
 
 export enum Step {
-  INTRO = 0,
-  BASICS = 1,
-  VISUALS = 2,
-  VENUE = 3,
-  TICKETS = 4,
-  SCHEDULE = 5,
-  REVIEW = 6,
-  SUCCESS = 7
+  INTRO = 0,          // Screen 1-3 (Inputs)
+  DRAFT_PREVIEW = 1,  // Screen 4 (AI Output)
+  BASICS = 2,         // Manual Editing starts here
+  VISUALS = 3,
+  VENUE = 4,
+  TICKETS = 5,
+  SCHEDULE = 6,
+  REVIEW = 7,
+  SUCCESS = 8
 }
 
 export interface TicketTier {

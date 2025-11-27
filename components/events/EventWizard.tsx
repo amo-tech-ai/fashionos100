@@ -10,6 +10,7 @@ import { LoadingSpinner } from '../LoadingSpinner';
 
 // Sub-components
 import { WizardIntro } from './wizard/WizardIntro';
+import { WizardDraftPreview } from './wizard/WizardDraftPreview'; // New Component
 import { WizardBasics } from './wizard/WizardBasics';
 import { WizardVisuals } from './wizard/WizardVisuals';
 import { WizardVenue } from './wizard/WizardVenue';
@@ -159,7 +160,8 @@ export const EventWizard: React.FC = () => {
         };
       });
 
-      setCurrentStep(Step.BASICS);
+      // Redirect to the Draft Preview screen (Screen 4) instead of BASICS
+      setCurrentStep(Step.DRAFT_PREVIEW);
 
     } catch (error) {
       console.error("AI Generation failed", error);
@@ -323,7 +325,7 @@ export const EventWizard: React.FC = () => {
   };
 
   // Helper for the step progress
-  const totalSteps = 6; 
+  const totalSteps = 7; // Adjusted for Draft Preview step
 
   return (
     <div className="min-h-screen bg-[#F8F9FB] pb-24">
@@ -335,22 +337,21 @@ export const EventWizard: React.FC = () => {
         </div>
       )}
 
-      {/* Top Progress Bar */}
-      {currentStep !== Step.SUCCESS && (
+      {/* Top Progress Bar (Hide on Intro and Draft Preview for cleaner look) */}
+      {currentStep !== Step.SUCCESS && currentStep !== Step.INTRO && currentStep !== Step.DRAFT_PREVIEW && (
         <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
           <div className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between max-w-4xl mx-auto">
               <button 
                 onClick={prevStep} 
                 className="p-2 hover:bg-gray-50 rounded-full text-gray-500 transition-colors disabled:opacity-50"
-                disabled={currentStep === Step.INTRO}
               >
                 <ArrowLeft size={20} />
               </button>
               
               <div className="flex-1 mx-8">
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">
-                  <span>{currentStep === Step.INTRO ? 'AI Setup' : `Step ${currentStep} of ${totalSteps}`}</span>
+                  <span>Step {currentStep} of {totalSteps}</span>
                   <span className="hidden sm:inline">{currentStep === Step.REVIEW ? 'Final Review' : 'Drafting'}</span>
                 </div>
                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -389,6 +390,14 @@ export const EventWizard: React.FC = () => {
               isLoading={isAiLoading}
             />
           )}
+          {currentStep === Step.DRAFT_PREVIEW && (
+            <WizardDraftPreview 
+              data={state}
+              onContinue={() => setCurrentStep(Step.BASICS)}
+              onRegenerate={handleAIGenerate}
+              onEdit={() => setCurrentStep(Step.BASICS)}
+            />
+          )}
           {currentStep === Step.BASICS && (
             <WizardBasics data={state} updateData={updateData} />
           )}
@@ -425,8 +434,8 @@ export const EventWizard: React.FC = () => {
         </FadeIn>
       </div>
 
-      {/* Bottom Action Bar (Conditionally rendered in Visuals/Intro steps to avoid double bars) */}
-      {currentStep !== Step.INTRO && currentStep !== Step.SUCCESS && currentStep !== Step.VISUALS && (
+      {/* Bottom Action Bar (Conditionally rendered) */}
+      {currentStep > Step.DRAFT_PREVIEW && currentStep !== Step.SUCCESS && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-40 lg:pl-64">
           <div className="container mx-auto px-6 max-w-4xl flex justify-between items-center">
             <Button variant="ghost" onClick={prevStep}>Back</Button>
