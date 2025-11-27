@@ -5,12 +5,7 @@ import { useBooking } from '../../../context/BookingContext';
 import { FadeIn } from '../../../components/FadeIn';
 import { Button } from '../../../components/Button';
 import { ArrowRight, Minus, Plus } from 'lucide-react';
-
-const MODELS = [
-  { id: 'hand', name: 'Hand Model', price: 250, image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400' },
-  { id: 'full', name: 'Full Body', price: 450, image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400' },
-  { id: 'pair', name: 'Couple/Pair', price: 800, image: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400' },
-];
+import { WIZARD_DATA } from '../../../data/wizardData';
 
 export const StepModels: React.FC = () => {
   const { state, updateState } = useBooking();
@@ -37,7 +32,7 @@ export const StepModels: React.FC = () => {
         <p className="text-gray-500 text-lg mb-10">Select models for your shoot. Prices include usage rights.</p>
 
         <div className="grid gap-6 mb-10">
-          {MODELS.map((model) => {
+          {WIZARD_DATA.models.map((model) => {
             const count = getCount(model.id);
             return (
               <div key={model.id} className={`flex items-center p-4 rounded-2xl border-2 transition-all ${count > 0 ? 'border-black bg-gray-50' : 'border-gray-100 bg-white'}`}>
@@ -70,8 +65,8 @@ export const StepModels: React.FC = () => {
         </div>
 
         <div className="flex justify-end">
-          <Button variant="primary" size="lg" onClick={() => navigate('/start-project/checkout')}>
-            Next: Review <ArrowRight size={18} className="ml-2" />
+          <Button variant="primary" size="lg" onClick={() => navigate('/start-project/shot-list')}>
+            Next: Shot Count <ArrowRight size={18} className="ml-2" />
           </Button>
         </div>
       </div>

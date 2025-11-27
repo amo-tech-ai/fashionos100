@@ -70,8 +70,8 @@ export const StepReferences: React.FC = () => {
         </div>
 
         <div className="flex justify-end">
-          <Button variant="primary" size="lg" onClick={() => navigate('/start-project/retouching')}>
-            Next: Retouching <ArrowRight size={18} className="ml-2" />
+          <Button variant="primary" size="lg" onClick={() => navigate('/start-project/shot-builder')}>
+            Next: Shot List <ArrowRight size={18} className="ml-2" />
           </Button>
         </div>
       </div>

@@ -21,6 +21,9 @@ const INITIAL_STATE: BookingState = {
   references: [],
   shotList: [],
   retouching: 'basic',
+  fulfillmentType: 'virtual',
+  date: null,
+  time: '',
   models: []
 };
 
@@ -29,7 +32,12 @@ const BookingContext = createContext<BookingContextType | undefined>(undefined);
 export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, setState] = useState<BookingState>(() => {
     const saved = localStorage.getItem('fashionos_booking_v3');
-    return saved ? JSON.parse(saved) : INITIAL_STATE;
+    // Basic migration check: if saved state doesn't have new fields, merge with initial
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return { ...INITIAL_STATE, ...parsed };
+    }
+    return INITIAL_STATE;
   });
 
   useEffect(() => {

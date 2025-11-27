@@ -28,6 +28,11 @@ export interface BookingState {
   // Step 10
   retouching: RetouchingType;
   
+  // Step 11 (Scheduling)
+  fulfillmentType: 'virtual' | 'location';
+  date: Date | null;
+  time: string;
+  
   // Legacy/Compat
   models: { type: string; count: number }[];
 }

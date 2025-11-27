@@ -28,7 +28,7 @@ export const StepRetouching: React.FC = () => {
 
   const handleSelect = (retouching: RetouchingType) => {
     updateState({ retouching });
-    navigate('/start-project/review');
+    navigate('/start-project/schedule'); // Updated to point to Schedule
   };
 
   return (

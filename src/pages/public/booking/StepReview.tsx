@@ -51,6 +51,17 @@ export const StepReview: React.FC = () => {
                 </div>
                 <Edit2 size={16} className="text-gray-300 group-hover:text-purple-600" />
               </div>
+
+              <div className="flex justify-between items-center group cursor-pointer" onClick={() => navigate('/start-project/schedule')}>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Schedule</p>
+                  <p className="text-lg font-serif font-bold capitalize">
+                     {state.date ? state.date.toLocaleDateString() : 'TBD'} @ {state.time || 'TBD'}
+                  </p>
+                  <p className="text-xs text-gray-500 capitalize">Type: {state.fulfillmentType}</p>
+                </div>
+                <Edit2 size={16} className="text-gray-300 group-hover:text-purple-600" />
+              </div>
             </div>
           </div>
 

@@ -34,10 +34,12 @@ import { StepSize } from './pages/public/booking/StepSize';
 import { StepScenes } from './pages/public/booking/StepScenes';
 import { StepShotType } from './pages/public/booking/StepShotType';
 import { StepSubCategory } from './pages/public/booking/StepSubCategory';
+import { StepModels } from './pages/public/booking/StepModels';
 import { StepShotList } from './pages/public/booking/StepShotList';
 import { StepReferences } from './pages/public/booking/StepReferences';
 import { StepShotListBuilder } from './pages/public/booking/StepShotListBuilder';
 import { StepRetouching } from './pages/public/booking/StepRetouching';
+import { StepSchedule } from './pages/public/booking/StepSchedule'; 
 import { StepReview } from './pages/public/booking/StepReview';
 import { StepCheckout } from './pages/public/booking/StepCheckout';
 import { BookingProvider } from './context/BookingContext';
@@ -62,6 +64,7 @@ import { ActivationDetailPage } from './pages/dashboard/ActivationDetailPage';
 import { DashboardROI } from './pages/dashboard/AnalyticsPages';
 import { SponsorPortal } from './pages/dashboard/SponsorPortal';
 import { EventWizard } from './components/events/EventWizard';
+import { DeliveryPortal } from './pages/dashboard/DeliveryPortal'; // Imported
 
 const App: React.FC = () => {
   return (
@@ -85,10 +88,12 @@ const App: React.FC = () => {
         <Route path="scenes" element={<StepScenes />} />
         <Route path="shot-type" element={<StepShotType />} />
         <Route path="sub-category" element={<StepSubCategory />} />
+        <Route path="models" element={<StepModels />} />
         <Route path="shot-list" element={<StepShotList />} />
         <Route path="references" element={<StepReferences />} />
         <Route path="shot-builder" element={<StepShotListBuilder />} />
         <Route path="retouching" element={<StepRetouching />} />
+        <Route path="schedule" element={<StepSchedule />} /> 
         <Route path="review" element={<StepReview />} />
         <Route path="checkout" element={<StepCheckout />} />
       </Route>
@@ -133,6 +138,7 @@ const App: React.FC = () => {
         <Route index element={<DashboardOverview />} />
         <Route path="bookings" element={<DashboardBookings />} />
         <Route path="studio" element={<DashboardStudio />} /> 
+        <Route path="delivery" element={<DeliveryPortal />} /> 
         <Route path="calendar" element={<DashboardCalendar />} />
         
         {/* Events Module */}

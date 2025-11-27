@@ -15,7 +15,7 @@ export const StepSubCategory: React.FC = () => {
 
   const handleSelect = (sub: string) => {
     updateState({ subCategory: sub });
-    navigate('/start-project/shot-list');
+    navigate('/start-project/models');
   };
 
   return (
@@ -49,7 +49,7 @@ export const StepSubCategory: React.FC = () => {
             <div className="text-center py-12 text-gray-400 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
                 No sub-categories needed for this selection.
                 <div className="mt-4">
-                    <Button onClick={() => navigate('/start-project/shot-list')}>Continue <ArrowRight size={16} className="ml-2"/></Button>
+                    <Button onClick={() => navigate('/start-project/models')}>Continue <ArrowRight size={16} className="ml-2"/></Button>
                 </div>
             </div>
         )}
