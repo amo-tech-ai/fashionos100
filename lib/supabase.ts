@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 const getEnv = (key: string) => {
+  // Cast to any to avoid TypeScript errors if types aren't perfectly set up
   const meta = import.meta as any;
   if (typeof meta !== 'undefined' && meta.env && meta.env[key]) {
     return meta.env[key];
@@ -27,8 +28,8 @@ if (!isConfigured) {
 
 // Create client. If not configured, we use a dummy URL to prevent "URL required" errors,
 // but disable all network-dependent features (Auth persistence, Realtime) to prevent connection spam.
-const clientUrl = isConfigured ? supabaseUrl : 'https://supabase.example.com';
-const clientKey = isConfigured ? supabaseAnonKey : 'anon-key';
+const clientUrl = isConfigured ? supabaseUrl : 'https://placeholder.supabase.co';
+const clientKey = isConfigured ? supabaseAnonKey : 'placeholder-key';
 
 export const supabase = createClient(clientUrl, clientKey, {
   auth: {
