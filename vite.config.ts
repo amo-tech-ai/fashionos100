@@ -4,16 +4,18 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: false
   },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    }
-  },
-  // Ensure public assets are handled correctly
-  publicDir: 'public',
+  server: {
+    port: 3000,
+    open: true
+  }
 });
