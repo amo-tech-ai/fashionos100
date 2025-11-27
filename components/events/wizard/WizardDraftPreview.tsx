@@ -114,13 +114,13 @@ export const WizardDraftPreview: React.FC<WizardDraftPreviewProps> = ({
                   <div key={i} className="flex justify-between text-sm items-center">
                     <span className="text-gray-700 font-medium">{t.name}</span>
                     <span className="text-gray-900 font-bold bg-white px-2 py-0.5 rounded shadow-sm border border-gray-100">
-                      ${t.price}
+                      ${t.price.toLocaleString()}
                     </span>
                   </div>
                 )) : <span className="text-gray-400 text-xs italic">No tickets configured</span>}
                 <div className="pt-3 mt-3 border-t border-gray-200 flex justify-between text-xs text-gray-500">
                   <span>Total Cap: {totalTickets}</span>
-                  <span>Starts at ${minPrice}</span>
+                  <span>Starts at ${minPrice.toLocaleString()}</span>
                 </div>
               </div>
             </div>

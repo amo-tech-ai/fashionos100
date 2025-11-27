@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, X, Check } from 'lucide-react';
 
 interface FilterDropdownProps {
@@ -16,6 +16,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
   onChange 
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Lock body scroll when mobile sheet is open
   useEffect(() => {
@@ -30,9 +31,20 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   
   return (
-    <div className="relative">
+    <div className="relative shrink-0" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap ${value !== options[0] ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
@@ -42,27 +54,28 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
       
       {isOpen && (
         <>
-          {/* Overlay / Backdrop */}
+          {/* Overlay / Backdrop for Mobile */}
           <div 
-            className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none md:z-40" 
+            className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm md:hidden" 
             onClick={() => setIsOpen(false)} 
           />
           
           {/* Desktop Dropdown Menu */}
-          <div className="hidden md:flex absolute top-full mt-2 left-0 bg-white border border-gray-100 rounded-xl shadow-xl p-2 min-w-[180px] z-50 flex-col gap-1 animate-in fade-in zoom-in-95 origin-top-left">
+          <div className="hidden md:flex absolute top-full mt-2 left-0 bg-white border border-gray-100 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] p-1.5 min-w-[200px] z-50 flex-col gap-0.5 animate-in fade-in zoom-in-95 origin-top-left">
             {options.map(opt => (
               <button 
                 key={opt}
                 onClick={() => { onChange(opt); setIsOpen(false); }}
-                className={`text-left px-3 py-2 text-xs font-bold rounded-lg transition-colors ${value === opt ? 'text-purple-600 bg-purple-50' : 'text-gray-600 hover:bg-gray-50'}`}
+                className={`text-left px-3 py-2.5 text-xs font-bold rounded-lg transition-colors flex justify-between items-center ${value === opt ? 'text-purple-700 bg-purple-50' : 'text-gray-600 hover:bg-gray-50'}`}
               >
                 {opt}
+                {value === opt && <Check size={14} className="text-purple-600" />}
               </button>
             ))}
           </div>
 
           {/* Mobile Bottom Sheet */}
-          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-[2rem] p-6 z-[70] animate-in slide-in-from-bottom duration-300 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-gray-100 pb-8">
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-[2rem] p-6 z-[70] animate-in slide-in-from-bottom duration-300 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-gray-100 pb-safe">
             <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6" />
             
             <div className="flex justify-between items-center mb-6">

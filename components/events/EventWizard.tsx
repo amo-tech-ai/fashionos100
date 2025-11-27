@@ -46,7 +46,10 @@ export const EventWizard: React.FC = () => {
     venueContactPhone: '',
     startDate: null,
     endDate: null,
-    tickets: [{ name: 'General Admission', price: 50, quantity: 100 }],
+    tickets: [
+      { name: 'Standard Entry', price: 45, quantity: 150 },
+      { name: 'VIP Access', price: 125, quantity: 50 }
+    ],
     schedule: [{ time: '19:00', activity: 'Doors Open' }],
     image: MOCK_PREVIEW_IMAGE,
     brandUrls: [],

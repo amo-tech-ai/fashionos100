@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Search, Camera, CheckCircle2, Video, ShoppingBag, Users, Play, Sparkles, Star } from 'lucide-react';
 import { Button } from '../../components/Button';
@@ -17,8 +17,8 @@ const BenefitItem = ({ text }: { text: string }) => (
 );
 
 const ServiceCard = ({ icon: Icon, title, desc }: { icon: any, title: string, desc: string }) => (
-  <div className="group bg-white p-8 border border-gray-100 rounded-sm hover:border-black transition-colors duration-300 cursor-pointer h-full flex flex-col">
-    <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center mb-6 group-hover:bg-black group-hover:text-white transition-colors">
+  <div className="group bg-white p-8 border border-gray-100 rounded-2xl hover:border-black hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col">
+    <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-6 group-hover:bg-black group-hover:text-white transition-colors">
       <Icon size={20} />
     </div>
     <h3 className="font-serif font-bold text-xl mb-3">{title}</h3>
@@ -30,14 +30,14 @@ const ServiceCard = ({ icon: Icon, title, desc }: { icon: any, title: string, de
 );
 
 const TalentCard = ({ image, name, role, tag }: { image: string, name: string, role: string, tag: string }) => (
-  <div className="min-w-[280px] md:min-w-[320px] bg-white p-3 border border-gray-100 rounded-sm hover:shadow-lg transition-shadow cursor-pointer">
-    <div className="aspect-[3/4] w-full overflow-hidden mb-4 relative">
+  <div className="min-w-[280px] md:min-w-[320px] bg-white p-3 border border-gray-100 rounded-2xl hover:shadow-xl transition-all duration-300 cursor-pointer">
+    <div className="aspect-[3/4] w-full overflow-hidden mb-4 relative rounded-xl">
       <img src={image} alt={name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" />
-      <span className="absolute top-2 left-2 bg-white/90 backdrop-blur text-[10px] font-bold px-2 py-1 uppercase tracking-wide">{tag}</span>
+      <span className="absolute top-2 left-2 bg-white/90 backdrop-blur text-[10px] font-bold px-2 py-1 uppercase tracking-wide rounded-sm">{tag}</span>
     </div>
-    <h4 className="font-serif font-bold text-lg">{name}</h4>
-    <p className="text-xs text-gray-500 uppercase tracking-widest mb-2">{role}</p>
-    <div className="flex items-center gap-1 text-amber-400">
+    <h4 className="font-serif font-bold text-lg px-1">{name}</h4>
+    <p className="text-xs text-gray-500 uppercase tracking-widest mb-2 px-1">{role}</p>
+    <div className="flex items-center gap-1 text-amber-400 px-1">
       <Star size={12} fill="currentColor" />
       <Star size={12} fill="currentColor" />
       <Star size={12} fill="currentColor" />
@@ -49,7 +49,7 @@ const TalentCard = ({ image, name, role, tag }: { image: string, name: string, r
 );
 
 const MarketplaceCard = ({ title, price, features, image }: { title: string, price: string, features: string[], image: string }) => (
-  <div className="relative aspect-[4/5] group overflow-hidden rounded-sm cursor-pointer">
+  <div className="relative w-full aspect-[4/5] md:h-[500px] group overflow-hidden rounded-2xl cursor-pointer shadow-lg h-full">
     <img src={image} alt={title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-8 flex flex-col justify-end text-white">
       <h3 className="font-serif font-bold text-2xl mb-1">{title}</h3>
@@ -67,6 +67,14 @@ const MarketplaceCard = ({ title, price, features, image }: { title: string, pri
 // --- Main Page Component ---
 
 export const HomePage: React.FC = () => {
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const carouselItems: CarouselItem[] = [
     {
       id: 1,
@@ -95,13 +103,13 @@ export const HomePage: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white overflow-x-hidden">
+    <div className="bg-white overflow-x-hidden w-full">
       
       {/* 1. HERO SECTION */}
-      <section className="pt-32 pb-16 md:pt-40 md:pb-24 container mx-auto px-6 md:px-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <section className="relative pt-28 pb-20 md:pt-40 md:pb-32 container mx-auto px-6 md:px-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
           {/* Text Content */}
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5 flex flex-col justify-center z-10 text-center lg:text-left order-1">
             <FadeIn>
               <SectionTag color="text-fashion-purpleDark">FashionOS Studio</SectionTag>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold leading-[1.1] mb-6 text-fashion-black">
@@ -109,14 +117,14 @@ export const HomePage: React.FC = () => {
                 fashion imagery. <br/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">Every time.</span>
               </h1>
-              <p className="text-lg text-gray-500 leading-relaxed mb-8 max-w-md">
+              <p className="text-lg text-gray-500 leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0">
                 Runway, campaigns, ecommerce, and editorial — we help fashion brands look as premium as they feel.
               </p>
-              <div className="flex flex-wrap gap-4 mb-10">
+              <div className="flex flex-wrap gap-4 mb-10 justify-center lg:justify-start">
                 <Link to="/dashboard"><Button variant="primary" size="lg">Book a Discovery Call</Button></Link>
                 <Link to="/directory"><Button variant="outline" size="lg">Explore Directory</Button></Link>
               </div>
-              <div className="space-y-2 border-t border-gray-100 pt-6">
+              <div className="space-y-2 border-t border-gray-100 pt-6 text-left inline-block mx-auto lg:mx-0">
                 <BenefitItem text="Runway & backstage coverage" />
                 <BenefitItem text="Ecommerce & lookbooks" />
                 <BenefitItem text="Campaigns, video & social content" />
@@ -124,17 +132,23 @@ export const HomePage: React.FC = () => {
             </FadeIn>
           </div>
           
-          {/* Image Grid */}
-          <div className="lg:col-span-7">
+          {/* Image Grid with Parallax */}
+          <div className="lg:col-span-7 order-2 relative">
             <FadeIn direction="left" delay={200}>
-              <div className="grid grid-cols-2 gap-4 md:gap-6">
-                <div className="space-y-4 md:space-y-6 translate-y-8">
-                  <img src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=800&auto=format&fit=crop" alt="Runway" className="w-full aspect-[3/4] object-cover rounded-sm shadow-lg" loading="lazy" />
-                  <img src="https://images.unsplash.com/photo-1550614000-4b9519e0013f?q=80&w=800&auto=format&fit=crop" alt="Detail" className="w-full aspect-square object-cover rounded-sm shadow-lg" loading="lazy" />
+              <div className="grid grid-cols-2 gap-4 md:gap-6 pb-12">
+                <div 
+                  className="space-y-4 md:space-y-6 mt-12 lg:mt-24 will-change-transform"
+                  style={{ transform: `translateY(${scrollY * 0.05}px)` }}
+                >
+                  <img src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=800&auto=format&fit=crop" alt="Runway" className="w-full aspect-[3/4] object-cover rounded-2xl shadow-lg" loading="lazy" />
+                  <img src="https://images.unsplash.com/photo-1550614000-4b9519e0013f?q=80&w=800&auto=format&fit=crop" alt="Detail" className="w-full aspect-square object-cover rounded-2xl shadow-lg" loading="lazy" />
                 </div>
-                <div className="space-y-4 md:space-y-6">
-                  <img src="https://images.unsplash.com/photo-1529139574466-a302d2052505?q=80&w=800&auto=format&fit=crop" alt="Editorial" className="w-full aspect-square object-cover rounded-sm shadow-lg" loading="lazy" />
-                  <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop" alt="Model" className="w-full aspect-[3/4] object-cover rounded-sm shadow-lg" loading="lazy" />
+                <div 
+                  className="space-y-4 md:space-y-6 will-change-transform"
+                  style={{ transform: `translateY(-${scrollY * 0.03}px)` }}
+                >
+                  <img src="https://images.unsplash.com/photo-1529139574466-a302d2052505?q=80&w=800&auto=format&fit=crop" alt="Editorial" className="w-full aspect-square object-cover rounded-2xl shadow-lg" loading="lazy" />
+                  <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop" alt="Model" className="w-full aspect-[3/4] object-cover rounded-2xl shadow-lg" loading="lazy" />
                 </div>
               </div>
             </FadeIn>
@@ -142,8 +156,8 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 1.5 CAROUSEL SECTION (New) */}
-      <section className="py-12 bg-white">
+      {/* 1.5 CAROUSEL SECTION */}
+      <section className="py-12 bg-white border-t border-gray-50">
         <div className="container mx-auto px-6 md:px-12">
           <FadeIn>
             <div className="mb-8 flex justify-between items-end">
@@ -156,7 +170,7 @@ export const HomePage: React.FC = () => {
                 Swipe to explore
               </div>
             </div>
-            <ImageCarousel items={carouselItems} aspectRatio="landscape" className="rounded-2xl shadow-2xl" />
+            <ImageCarousel items={carouselItems} aspectRatio="landscape" className="w-full" />
           </FadeIn>
         </div>
       </section>
@@ -175,7 +189,7 @@ export const HomePage: React.FC = () => {
           </div>
           
           <FadeIn delay={100}>
-            <div className="relative w-full h-[400px] md:h-[600px] rounded-sm overflow-hidden mb-12 group">
+            <div className="relative w-full h-[300px] md:h-[500px] rounded-2xl overflow-hidden mb-12 group shadow-xl">
                <img src="https://images.unsplash.com/photo-1534595032350-92298174321c?q=80&w=2000&auto=format&fit=crop" alt="Studio Set" className="w-full h-full object-cover" loading="lazy" />
                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
             </div>
@@ -188,13 +202,15 @@ export const HomePage: React.FC = () => {
               { title: "Brand Consistency", desc: "We maintain your visual identity across lookbooks, social, and ecommerce." }
             ].map((item, i) => (
               <FadeIn key={i} delay={i * 100} direction="up">
-                <h3 className="font-bold text-lg mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+                <div className="bg-white p-6 rounded-xl border border-gray-100 h-full shadow-sm">
+                  <h3 className="font-bold text-lg mb-2">{item.title}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+                </div>
               </FadeIn>
             ))}
           </div>
           <div className="text-center mt-12">
-             <Link to="/services"><Button variant="outline">View Studio Services</Button></Link>
+             <Link to="/services"><Button variant="outline" className="bg-white">View Studio Services</Button></Link>
           </div>
         </div>
       </section>
@@ -204,7 +220,9 @@ export const HomePage: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center gap-16">
            <div className="w-full md:w-1/2">
               <FadeIn direction="right">
-                 <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1000&auto=format&fit=crop" alt="Photographer" className="w-full aspect-[4/5] object-cover rounded-sm grayscale hover:grayscale-0 transition-all duration-700" loading="lazy" />
+                 <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl">
+                    <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1000&auto=format&fit=crop" alt="Photographer" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" loading="lazy" />
+                 </div>
               </FadeIn>
            </div>
            <div className="w-full md:w-1/2">
@@ -268,8 +286,8 @@ export const HomePage: React.FC = () => {
                <div className="order-1 lg:order-2 relative">
                   <FadeIn direction="left">
                      <div className="grid grid-cols-2 gap-4">
-                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=600&auto=format&fit=crop" className="rounded-sm transform translate-y-8" alt="Shoes" loading="lazy" />
-                        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop" className="rounded-sm" alt="Watch" loading="lazy" />
+                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=600&auto=format&fit=crop" className="rounded-2xl transform translate-y-8 shadow-2xl w-full" alt="Shoes" loading="lazy" />
+                        <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop" className="rounded-2xl shadow-2xl w-full" alt="Watch" loading="lazy" />
                      </div>
                   </FadeIn>
                </div>
@@ -405,7 +423,7 @@ export const HomePage: React.FC = () => {
       {/* 10. CUSTOM BRIEF */}
       <section className="py-24 bg-gradient-to-br from-gray-50 to-gray-200">
          <div className="container mx-auto px-6 md:px-12">
-            <div className="bg-white rounded-sm shadow-xl overflow-hidden flex flex-col md:flex-row">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
                <div className="w-full md:w-1/2 p-12 md:p-20 flex flex-col justify-center">
                   <SectionTag>Bespoke Production</SectionTag>
                   <h2 className="text-4xl font-serif font-bold mb-6">Need something a <br/> little more creative?</h2>
@@ -420,7 +438,7 @@ export const HomePage: React.FC = () => {
                         </li>
                      ))}
                   </ul>
-                  <div><Button variant="primary" size="lg">Start a Custom Brief</Button></div>
+                  <div><Link to="/start-project"><Button variant="primary" size="lg">Start a Custom Brief</Button></Link></div>
                </div>
                <div className="w-full md:w-1/2 relative min-h-[400px]">
                   <img src="https://images.unsplash.com/photo-1470072582277-d990675202fa?q=80&w=800&auto=format&fit=crop" alt="Creative" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />

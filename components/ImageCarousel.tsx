@@ -57,7 +57,7 @@ export const ImageCarousel: React.FC<ImageCarouselProps> = ({
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
       const { clientWidth } = scrollRef.current;
-      const scrollAmount = direction === 'left' ? -clientWidth : clientWidth;
+      const scrollAmount = direction === 'left' ? -clientWidth / 2 : clientWidth / 2;
       scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
@@ -74,31 +74,31 @@ export const ImageCarousel: React.FC<ImageCarouselProps> = ({
       {/* Scroll Container */}
       <div 
         ref={scrollRef}
-        className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar scroll-smooth rounded-xl"
+        className="flex gap-4 overflow-x-auto snap-x snap-mandatory hide-scrollbar scroll-smooth rounded-xl py-4"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {items.map((item, index) => (
           <div 
             key={item.id} 
-            className={`min-w-full snap-center relative overflow-hidden ${aspectRatioClass}`}
+            className={`min-w-[85%] md:min-w-[45%] snap-center relative overflow-hidden rounded-lg ${aspectRatioClass}`}
           >
             <img 
               src={item.image} 
               alt={item.title || `Slide ${index + 1}`} 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
               loading="lazy"
             />
             {/* Overlay Text */}
             {(item.title || item.subtitle) && (
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-end p-8 md:p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-end p-6 md:p-8">
+                <div className="transform translate-y-0 transition-transform duration-500">
                   {item.subtitle && (
                     <span className="text-fashion-purple text-xs font-bold uppercase tracking-widest mb-2 block">
                       {item.subtitle}
                     </span>
                   )}
                   {item.title && (
-                    <h3 className="text-white font-serif text-3xl md:text-4xl font-bold">
+                    <h3 className="text-white font-serif text-2xl md:text-3xl font-bold">
                       {item.title}
                     </h3>
                   )}
@@ -113,7 +113,7 @@ export const ImageCarousel: React.FC<ImageCarouselProps> = ({
       <button 
         onClick={() => scroll('left')}
         disabled={!canScrollLeft}
-        className={`absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white hover:text-black transition-all disabled:opacity-0 disabled:cursor-not-allowed z-10 hidden md:flex`}
+        className={`absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-black hover:bg-white transition-all disabled:opacity-0 disabled:cursor-not-allowed z-10 shadow-lg hidden md:flex`}
         aria-label="Previous slide"
       >
         <ChevronLeft size={24} />
@@ -122,27 +122,11 @@ export const ImageCarousel: React.FC<ImageCarouselProps> = ({
       <button 
         onClick={() => scroll('right')}
         disabled={!canScrollRight}
-        className={`absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white hover:text-black transition-all disabled:opacity-0 disabled:cursor-not-allowed z-10 hidden md:flex`}
+        className={`absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-black hover:bg-white transition-all disabled:opacity-0 disabled:cursor-not-allowed z-10 shadow-lg hidden md:flex`}
         aria-label="Next slide"
       >
         <ChevronRight size={24} />
       </button>
-
-      {/* Pagination Dots */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-        {items.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => scrollTo(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === activeIndex 
-                ? 'w-8 bg-white' 
-                : 'bg-white/50 hover:bg-white/80'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
     </div>
   );
 };

@@ -23,6 +23,10 @@ export default {
           orange: '#fbbf24',
           blue: '#22d3ee'
         }
+      },
+      container: {
+        center: true,
+        padding: '1rem',
       }
     },
   },

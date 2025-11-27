@@ -68,7 +68,7 @@ export const WizardReview: React.FC<WizardReviewProps> = ({ data, onEdit, onPubl
               {data.tickets.map((t, i) => (
                 <div key={i} className="flex justify-between text-sm mb-2 last:mb-0">
                   <span className="font-medium">{t.name}</span>
-                  <span className="text-gray-600">{t.quantity} x <span className="font-bold text-gray-900">${t.price}</span></span>
+                  <span className="text-gray-600">{t.quantity} x <span className="font-bold text-gray-900">${t.price.toLocaleString()}</span></span>
                 </div>
               ))}
               <div className="border-t border-gray-200 mt-3 pt-3 flex justify-between text-sm font-bold text-green-600">

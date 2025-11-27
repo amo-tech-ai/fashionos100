@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Calendar, Ticket, TrendingUp, MoreHorizontal, MapPin, Clock, 
   Users, DollarSign, ChevronRight, Filter, Search, Bell, 
@@ -102,6 +102,8 @@ const RevenueChart = () => (
 );
 
 export const DashboardEvents = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-8 pb-20 animate-in fade-in duration-500">
       
@@ -200,7 +202,11 @@ export const DashboardEvents = () => {
 
       {/* 4. FEATURED EVENT & CALENDAR */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-         <FadeIn delay={400} className="lg:col-span-2 relative rounded-3xl overflow-hidden min-h-[300px] group cursor-pointer">
+         <FadeIn 
+            delay={400} 
+            className="lg:col-span-2 relative rounded-3xl overflow-hidden min-h-[300px] group cursor-pointer"
+            onClick={() => navigate('/dashboard/events/featured')}
+         >
             <img src="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80&w=1200" alt="Highlight" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-t from-purple-900/90 via-purple-900/20 to-transparent" />
             <div className="absolute bottom-0 left-0 p-8 text-white w-full">
@@ -267,7 +273,12 @@ export const DashboardEvents = () => {
          {UPCOMING_EVENTS.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {UPCOMING_EVENTS.map((evt, i) => (
-                   <FadeIn key={evt.id} delay={i * 100} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all group cursor-pointer">
+                   <FadeIn 
+                     key={evt.id} 
+                     delay={i * 100} 
+                     className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:border-purple-200 transition-all group cursor-pointer transform hover:-translate-y-1"
+                     onClick={() => navigate(`/dashboard/events/${evt.id}`)}
+                   >
                       <div className="aspect-[16/9] relative overflow-hidden">
                          <img src={evt.image} alt={evt.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
