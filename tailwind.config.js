@@ -7,6 +7,7 @@ export default {
     "./components/**/*.{js,ts,jsx,tsx}",
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./layouts/**/*.{js,ts,jsx,tsx}",
+    "./*.{js,ts,jsx,tsx}", // Covers App.tsx and other root files
   ],
   theme: {
     extend: {
