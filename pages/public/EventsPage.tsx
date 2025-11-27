@@ -31,7 +31,6 @@ export const EventsPage: React.FC = () => {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiMatches, setAiMatches] = useState<number[] | null>(null);
   
-  // Simulate initial data loading
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -44,7 +43,6 @@ export const EventsPage: React.FC = () => {
     setShowCalendar(false);
   };
 
-  // AI Search Logic (Secure)
   const handleAISearch = async () => {
     if (!searchQuery.trim()) {
       setAiMatches(null);
@@ -118,21 +116,21 @@ export const EventsPage: React.FC = () => {
     <div className="bg-white pt-20 min-h-screen font-sans">
       
       {/* 1. Hero Section */}
-      <section className="relative py-12 md:py-24 overflow-hidden bg-gradient-to-b from-purple-50/40 via-white to-white">
+      <section className="relative py-16 md:py-24 lg:py-32 overflow-hidden bg-gradient-to-b from-purple-50/40 via-white to-white">
          <div className="container mx-auto px-4 sm:px-6 md:px-12 text-center relative z-10">
             <FadeIn>
                <SectionTag>Curated Experiences</SectionTag>
-               <h1 className="text-4xl sm:text-6xl md:text-7xl font-serif font-bold text-fashion-black mb-4 sm:mb-6 tracking-tight leading-tight">
+               <h1 className="text-4xl sm:text-5xl md:text-7xl font-serif font-bold text-fashion-black mb-4 sm:mb-6 tracking-tight leading-[1.1]">
                   Discover Fashion Events <br className="hidden md:block"/> Near You
                </h1>
-               <p className="text-lg sm:text-xl text-gray-500 mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed px-4">
+               <p className="text-lg sm:text-xl text-gray-500 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed px-2">
                   AI-curated shows, exhibitions, workshops, and industry meetups.
                </p>
 
                {/* AI Search Bar */}
-               <div className="max-w-2xl mx-auto relative mb-8 px-4 sm:px-0">
-                  <div className={`flex flex-wrap sm:flex-nowrap items-center bg-white rounded-2xl sm:rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-2 border transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] ${isAiLoading ? 'border-purple-400 ring-4 ring-purple-50' : 'border-gray-100'}`}>
-                     <Search className={`ml-2 sm:ml-4 shrink-0 transition-colors ${isAiLoading ? 'text-purple-500' : 'text-gray-400'}`} size={20} />
+               <div className="max-w-2xl mx-auto relative mb-8 px-2 sm:px-0">
+                  <div className={`flex flex-wrap sm:flex-nowrap items-center bg-white rounded-2xl sm:rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-1.5 sm:p-2 border transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] ${isAiLoading ? 'border-purple-400 ring-4 ring-purple-50' : 'border-gray-100'}`}>
+                     <Search className={`ml-3 sm:ml-4 shrink-0 transition-colors ${isAiLoading ? 'text-purple-500' : 'text-gray-400'}`} size={20} />
                      <input 
                         type="text" 
                         value={searchQuery}
@@ -152,11 +150,11 @@ export const EventsPage: React.FC = () => {
                            <X size={16} />
                         </button>
                      )}
-                     <div className="w-full sm:w-auto mt-2 sm:mt-0 order-5 sm:order-4 flex justify-end sm:block">
+                     <div className="w-full sm:w-auto mt-2 sm:mt-0 order-last sm:order-4 flex justify-end sm:block">
                        <button 
                           onClick={handleAISearch}
                           disabled={isAiLoading}
-                          className="bg-black text-white w-full sm:w-auto px-6 py-3 sm:p-3.5 rounded-xl sm:rounded-full hover:bg-gray-800 transition-all disabled:bg-gray-400 shadow-md flex items-center justify-center hover:scale-105"
+                          className="bg-black text-white w-full sm:w-auto px-6 py-3 sm:p-3.5 rounded-xl sm:rounded-full hover:bg-gray-800 transition-all disabled:bg-gray-400 shadow-md flex items-center justify-center hover:scale-105 active:scale-95"
                        >
                           <span className="sm:hidden mr-2 text-xs font-bold uppercase">Search</span> <ArrowRight size={18} />
                        </button>
@@ -164,7 +162,7 @@ export const EventsPage: React.FC = () => {
                   </div>
                </div>
 
-               <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 px-6">
+               <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 px-4">
                   <Button variant="accent" size="sm" className="rounded-full px-6 w-full sm:w-auto order-2 sm:order-1" onClick={resetFilters}>Browse All Events</Button>
                   <Link to="/dashboard/events/new" className="w-full sm:w-auto order-1 sm:order-2">
                     <Button variant="outline" size="sm" className="rounded-full px-6 w-full sm:w-auto">Create Event</Button>
@@ -247,7 +245,7 @@ export const EventsPage: React.FC = () => {
                   </button>
                   <div className="h-4 w-px bg-gray-200 hidden lg:block"></div>
                   <span className="text-xs text-gray-400 whitespace-nowrap"><strong className="text-black">{filteredEvents.length}</strong> events</span>
-                  <Link to="/dashboard/events/new" className="flex-1 lg:flex-none">
+                  <Link to="/dashboard/events/new" className="flex-1 lg:flex-none hidden sm:block">
                      <Button variant="accent" size="sm" className="whitespace-nowrap w-full lg:w-auto justify-center">Start Event Wizard</Button>
                   </Link>
                </div>
@@ -256,14 +254,14 @@ export const EventsPage: React.FC = () => {
       </div>
 
       {/* 3. Featured Event */}
-      <section className="py-8 md:py-16">
+      <section className="py-8 md:py-12">
          <div className="container mx-auto px-4 sm:px-6 md:px-12">
             <FadeIn>
                <div className="flex items-center gap-2 mb-4 md:mb-6">
                   <Star size={16} className="text-purple-600 fill-purple-600" />
                   <h2 className="text-sm font-bold uppercase tracking-widest">Featured This Week</h2>
                </div>
-               <div className="group relative rounded-2xl md:rounded-[2rem] overflow-hidden aspect-[4/5] sm:aspect-video md:aspect-[21/9] shadow-xl cursor-pointer hover:shadow-2xl transition-all duration-500">
+               <div className="group relative rounded-2xl md:rounded-[2rem] overflow-hidden aspect-[4/5] sm:aspect-[16/9] md:aspect-[21/9] shadow-xl cursor-pointer hover:shadow-2xl transition-all duration-500">
                   <img src={FEATURED_EVENT.image} alt="Featured" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-6 md:p-16 max-w-3xl text-white w-full">

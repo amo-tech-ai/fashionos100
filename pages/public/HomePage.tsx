@@ -140,14 +140,18 @@ export const HomePage: React.FC = () => {
                   className="space-y-4 md:space-y-6 mt-12 lg:mt-24 will-change-transform"
                   style={{ transform: `translateY(${scrollY * 0.05}px)` }}
                 >
+                  {/* Fixed Image 1 */}
                   <img src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=800&auto=format&fit=crop" alt="Runway" className="w-full aspect-[3/4] object-cover rounded-2xl shadow-lg" loading="lazy" />
-                  <img src="https://images.unsplash.com/photo-1550614000-4b9519e0013f?q=80&w=800&auto=format&fit=crop" alt="Detail" className="w-full aspect-square object-cover rounded-2xl shadow-lg" loading="lazy" />
+                  {/* Fixed Image 2 - Replaced broken link */}
+                  <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=800&auto=format&fit=crop" alt="Detail" className="w-full aspect-square object-cover rounded-2xl shadow-lg" loading="lazy" />
                 </div>
                 <div 
                   className="space-y-4 md:space-y-6 will-change-transform"
                   style={{ transform: `translateY(-${scrollY * 0.03}px)` }}
                 >
-                  <img src="https://images.unsplash.com/photo-1529139574466-a302d2052505?q=80&w=800&auto=format&fit=crop" alt="Editorial" className="w-full aspect-square object-cover rounded-2xl shadow-lg" loading="lazy" />
+                  {/* Fixed Image 3 - Replaced broken link */}
+                  <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop" alt="Editorial" className="w-full aspect-square object-cover rounded-2xl shadow-lg" loading="lazy" />
+                  {/* Fixed Image 4 */}
                   <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop" alt="Model" className="w-full aspect-[3/4] object-cover rounded-2xl shadow-lg" loading="lazy" />
                 </div>
               </div>
@@ -190,7 +194,8 @@ export const HomePage: React.FC = () => {
           
           <FadeIn delay={100}>
             <div className="relative w-full h-[300px] md:h-[500px] rounded-2xl overflow-hidden mb-12 group shadow-xl">
-               <img src="https://images.unsplash.com/photo-1534595032350-92298174321c?q=80&w=2000&auto=format&fit=crop" alt="Studio Set" className="w-full h-full object-cover" loading="lazy" />
+               {/* Fixed Image 5 - Replaced broken link */}
+               <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=2000&auto=format&fit=crop" alt="Studio Set" className="w-full h-full object-cover" loading="lazy" />
                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
             </div>
           </FadeIn>

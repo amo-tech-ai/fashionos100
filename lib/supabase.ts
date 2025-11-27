@@ -1,13 +1,13 @@
-
 import { createClient } from '@supabase/supabase-js';
 
+// Helper to safely get env vars in Vite
 const getEnv = (key: string) => {
-  // Cast to any to avoid TypeScript errors if types aren't perfectly set up
-  const meta = import.meta as any;
-  if (typeof meta !== 'undefined' && meta.env && meta.env[key]) {
-    return meta.env[key];
+  try {
+    // @ts-ignore
+    return import.meta.env[key] || '';
+  } catch (e) {
+    return '';
   }
-  return '';
 };
 
 export const supabaseUrl = getEnv('VITE_SUPABASE_URL');
@@ -22,7 +22,7 @@ export const isConfigured =
 
 if (!isConfigured) {
   console.warn(
-    '⚠️ Supabase credentials missing or invalid. Features requiring DB/Auth will fail gracefully. Check your .env file.'
+    '⚠️ Supabase credentials missing or invalid. Features requiring DB/Auth will fail gracefully. Check your .env file or Cloud Run Environment Variables.'
   );
 }
 
@@ -38,9 +38,10 @@ export const supabase = createClient(clientUrl, clientKey, {
     autoRefreshToken: isConfigured,
     detectSessionInUrl: isConfigured,
   },
-  realtime: {
+  // Disable realtime if not configured to stop websocket errors
+  realtime: isConfigured ? {
     params: {
       eventsPerSecond: 10,
     },
-  },
+  } : undefined,
 });
