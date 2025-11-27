@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight, Save } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { DealStep, DealState } from '../../types/deal';
-import { supabase } from '../../lib/supabase';
+import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 
 // Steps
 import { StepQualification } from '../../components/sponsors/wizard/StepQualification';
@@ -59,17 +59,18 @@ export const SponsorDealWizard: React.FC = () => {
   const handleSubmit = async () => {
     setIsSaving(true);
     try {
+      const dealStatus = data.contractStatus === 'Signed' ? 'Signed' : 'Negotiating';
+
       // 1. Create Deal (Event Sponsor)
       const { data: deal, error: dealError } = await supabase
         .from('event_sponsors')
         .insert({
           sponsor_id: data.sponsorId,
           event_id: data.eventId,
-          status: data.contractStatus === 'Signed' ? 'Signed' : 'Negotiating',
+          status: dealStatus,
           level: data.packageTier,
           cash_value: data.cashValue,
           in_kind_value: data.inKindValue,
-          // Store AI/Fit notes in a metadata JSON column if it existed, but standard columns are sufficient for MVP
         })
         .select()
         .single();
@@ -94,8 +95,22 @@ export const SponsorDealWizard: React.FC = () => {
         if (actError) throw actError;
       }
 
-      // 3. ROI Goals (Optional - if you had a table for it, insert here)
-      // For now, just navigating back.
+      // 3. Trigger Automation Workflow if Signed
+      if (dealStatus === 'Signed') {
+        // Non-blocking call to automation function
+        fetch(`${supabaseUrl}/functions/v1/automation-workflow`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseAnonKey}`
+            },
+            body: JSON.stringify({ 
+              type: 'deal-signed', 
+              dealId: deal.id, 
+              sponsorName: data.sponsorName 
+            })
+        }).catch(err => console.error("Automation trigger failed:", err));
+      }
 
       navigate('/dashboard/sponsors'); 
     } catch (error: any) {

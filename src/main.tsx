@@ -2,10 +2,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-// App is at project root, so we go up one level from src/
-import App from '../App';
-import { ToastProvider } from '../components/Toast';
-// Tailwind directives are in this file
+import App from './App';
+import { ToastProvider } from './components/Toast';
 import './index.css';
 
 const rootElement = document.getElementById('root');

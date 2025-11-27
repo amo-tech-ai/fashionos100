@@ -3,10 +3,27 @@ export type SponsorStatus = 'Lead' | 'Contacted' | 'Negotiating' | 'Signed' | 'P
 export type ActivationStatus = 'planning' | 'approved' | 'in_progress' | 'ready' | 'completed';
 export type DeliverableStatus = 'pending' | 'uploaded' | 'reviewing' | 'approved' | 'rejected';
 
+export type SponsorType = 
+  | 'Luxury Brand' 
+  | 'Beauty & Cosmetics' 
+  | 'Retailer' 
+  | 'Media Outlet' 
+  | 'Lifestyle & Wellness' 
+  | 'Technology Partner' 
+  | 'Beverage & Spirits' 
+  | 'Automotive Partner' 
+  | 'Local Business' 
+  | 'Other';
+
+export type LeadCategory = 'High' | 'Medium' | 'Low';
+
 export interface SponsorProfile {
   id: string;
   name: string;
   industry?: string;
+  sponsor_type?: SponsorType;
+  lead_category?: LeadCategory;
+  lead_score?: number;
   website_url?: string;
   logo_url?: string;
   contact_name?: string;

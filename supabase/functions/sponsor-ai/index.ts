@@ -54,54 +54,61 @@ serve(async (req) => {
         }
       };
 
-    } else if (action === 'recommend-packages') {
-      systemInstruction = "Act as a Sponsorship Sales Strategist.";
+    } else if (action === 'score-lead') {
+      systemInstruction = "Act as a Sponsorship Sales Analyst. Scoring rules: Industry Fit (40%), Brand Power (30%), Budget Potential (30%).";
+      
       prompt = `
-        Analyze the fit for ${sponsorName} (${sponsorIndustry}) for event: ${eventDetails}.
-        Suggest 3 sponsorship tiers (Title, Gold, Silver) with prices and features tailored to their industry goals.
-        For example, if they are a Tech company, emphasize 'Digital Integration' or 'Data Access' in the Title package.
+        Evaluate the sponsor lead: ${sponsorName}
+        Industry: ${sponsorIndustry}
+        Event Context: ${eventDetails}
+        
+        Task: Calculate a Lead Score (0-100) based on the fit between the sponsor and a fashion event.
+        Provide a Category (High/Medium/Low) and a brief reasoning.
       `;
 
       responseSchema = {
         type: Type.OBJECT,
         properties: {
-          recommendations: {
+          score: { type: Type.NUMBER },
+          category: { type: Type.STRING, enum: ["High", "Medium", "Low"] },
+          reasoning: { type: Type.STRING }
+        },
+        required: ["score", "category", "reasoning"]
+      };
+
+    } else if (action === 'generate-social-plan') {
+      systemInstruction = `You are a Social Media Strategist for luxury fashion events.
+      Create a 5-post content calendar for a sponsor leading up to and during the event.
+      Focus on platform-specific best practices (IG vs TikTok).`;
+
+      prompt = `
+        Sponsor: ${sponsorName} (${sponsorIndustry})
+        Event: ${eventDetails}
+        
+        Task: Create 5 social media posts (mix of Instagram, TikTok, LinkedIn) to maximize sponsor visibility.
+        Include visual direction and caption.
+      `;
+
+      responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+          posts: {
             type: Type.ARRAY,
             items: {
               type: Type.OBJECT,
               properties: {
-                tier_name: { type: Type.STRING },
-                price: { type: Type.NUMBER },
-                features: { type: Type.ARRAY, items: { type: Type.STRING } }
-              }
+                day: { type: Type.STRING },
+                platform: { type: Type.STRING, enum: ["Instagram", "TikTok", "LinkedIn", "Twitter"] },
+                content_type: { type: Type.STRING },
+                caption: { type: Type.STRING },
+                visual_idea: { type: Type.STRING }
+              },
+              required: ["day", "platform", "content_type", "caption", "visual_idea"]
             }
           }
         }
       };
 
-    } else if (action === 'draft-contract') {
-      systemInstruction = "Act as a Legal Assistant for a fashion production agency.";
-      prompt = `
-        Context:
-        - Sponsor: ${sponsorName}
-        - Industry: ${sponsorIndustry}
-        - Terms: ${JSON.stringify(contractTerms)}
-        
-        Task: Draft a concise, professional sponsorship agreement summary. 
-        Include specific clauses relevant to the industry (e.g. Exclusivity in ${sponsorIndustry} category).
-        Sections: Deliverables, Payment Terms, Exclusivity, Intellectual Property.
-        
-        Output format: Plain text with Markdown formatting.
-      `;
-      responseMimeType = 'text/plain';
-
-    } else if (action === 'lead-score') {
-      systemInstruction = "Act as a Sales Analyst for event sponsorships.";
-      prompt = `
-        Evaluate the fit of ${sponsorName} (${sponsorIndustry}) for a fashion event described as: ${eventDetails}.
-        Return a JSON object with: "score" (0-100), "reasoning" (string), and "suggested_pitch_angle" (string).
-      `;
-      
     } else if (action === 'generate-roi-report') {
       systemInstruction = `You are a Senior Account Manager at a fashion PR agency. 
       Your goal is to write a persuasive, professional post-event executive summary for a sponsor.
@@ -120,41 +127,6 @@ serve(async (req) => {
       `;
       responseMimeType = 'text/plain';
 
-    } else if (action === 'generate-social-plan') {
-      systemInstruction = `You are a Social Media Manager for a luxury fashion event.
-      Your goal is to create a content calendar for a sponsor to maximize their ROI.
-      Create a mix of "Teaser", "Live Event", and "Recap" content.
-      Tailor tone to the sponsor industry: ${sponsorIndustry}.`;
-
-      prompt = `
-        Sponsor: ${sponsorName}
-        Event: ${eventDetails}
-        
-        Task: Generate a 5-post social media schedule.
-        Include 1 pre-event hype post, 3 during-event posts, and 1 post-event recap.
-        Suggested platforms: Instagram (Story/Reel), TikTok, LinkedIn.
-      `;
-
-      responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-          posts: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                day: { type: Type.STRING, description: "e.g., '2 Days Before' or 'Event Day'" },
-                platform: { type: Type.STRING },
-                content_type: { type: Type.STRING, description: "e.g. Reel, Carousel, Story" },
-                caption: { type: Type.STRING },
-                visual_idea: { type: Type.STRING }
-              },
-              required: ["day", "platform", "content_type", "caption", "visual_idea"]
-            }
-          }
-        }
-      };
-
     } else if (action === 'generate-pitch') {
       systemInstruction = "You are a Senior Sponsorship Sales Executive.";
       prompt = `
@@ -170,18 +142,6 @@ serve(async (req) => {
         - Format: Plain text.
       `;
       responseMimeType = 'text/plain';
-
-    } else if (action === 'ops-planning') {
-         // Ops Agent Logic (Preserved)
-         systemInstruction = "Act as an Event Operations Manager.";
-         const { floorplanBase64 } = await req.json(); 
-         prompt = `Analyze the logistical requirements for the venue.`;
-         if (floorplanBase64) prompt += ` See attached floorplan.`;
-
-    } else if (action === 'analyze-media') {
-         // Media Agent Logic (Preserved)
-         systemInstruction = "Act as a Digital Asset Manager.";
-         prompt = `Analyze this media asset for brand consistency and specs.`;
     }
 
     const response = await ai.models.generateContent({

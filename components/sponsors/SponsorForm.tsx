@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Save, Building2, Globe, User, Mail, Phone, FileImage } from 'lucide-react';
+import { X, Save, Building2, Globe, User, Mail, Phone, FileImage, Tag } from 'lucide-react';
 import { Button } from '../Button';
 import { Input } from '../forms/Input';
-import { SponsorProfile } from '../../types/sponsorship';
+import { Select } from '../forms/Select';
+import { SponsorProfile, SponsorType } from '../../types/sponsorship';
 import { supabase } from '../../lib/supabase';
 import { LoadingSpinner } from '../LoadingSpinner';
 
@@ -13,11 +14,18 @@ interface SponsorFormProps {
   onSave: () => void;
 }
 
+const SPONSOR_TYPES: SponsorType[] = [
+  'Luxury Brand', 'Beauty & Cosmetics', 'Retailer', 'Media Outlet', 
+  'Lifestyle & Wellness', 'Technology Partner', 'Beverage & Spirits', 
+  'Automotive Partner', 'Local Business', 'Other'
+];
+
 export const SponsorForm: React.FC<SponsorFormProps> = ({ sponsor, onClose, onSave }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<SponsorProfile>>({
     name: '',
     industry: '',
+    sponsor_type: 'Other',
     website_url: '',
     logo_url: '',
     contact_name: '',
@@ -30,6 +38,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ sponsor, onClose, onSa
       setFormData({
         name: sponsor.name,
         industry: sponsor.industry,
+        sponsor_type: sponsor.sponsor_type || 'Other',
         website_url: sponsor.website_url,
         logo_url: sponsor.logo_url,
         contact_name: sponsor.contact_name,
@@ -95,15 +104,22 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ sponsor, onClose, onSa
                 required
                 className="bg-gray-50"
               />
-              <Input 
-                label="Industry" 
-                value={formData.industry || ''} 
-                onChange={e => setFormData({...formData, industry: e.target.value})}
-                placeholder="e.g. Beauty, Tech"
+              <Select
+                label="Sponsor Type"
+                value={formData.sponsor_type}
+                onChange={e => setFormData({...formData, sponsor_type: e.target.value as SponsorType})}
+                options={SPONSOR_TYPES}
                 className="bg-gray-50"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input 
+                label="Industry (Specific)" 
+                value={formData.industry || ''} 
+                onChange={e => setFormData({...formData, industry: e.target.value})}
+                placeholder="e.g. Organic Skincare"
+                className="bg-gray-50"
+              />
               <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1 flex items-center gap-1">
                   <Globe size={12} /> Website
@@ -115,7 +131,8 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ sponsor, onClose, onSa
                   placeholder="https://"
                 />
               </div>
-              <div className="space-y-1.5">
+            </div>
+            <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1 flex items-center gap-1">
                   <FileImage size={12} /> Logo URL
                 </label>
@@ -125,7 +142,6 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ sponsor, onClose, onSa
                   onChange={e => setFormData({...formData, logo_url: e.target.value})}
                   placeholder="https://"
                 />
-              </div>
             </div>
           </div>
 

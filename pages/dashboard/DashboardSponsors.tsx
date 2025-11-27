@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Plus, Sparkles, Download, 
-  ArrowRight, X
+  ArrowRight, X, SlidersHorizontal
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
@@ -10,6 +10,7 @@ import { FadeIn } from '../../components/FadeIn';
 import { SponsorCard } from '../../components/sponsors/SponsorCard';
 import { SponsorList } from '../../components/sponsors/SponsorList';
 import { SponsorKPIWidget } from '../../components/sponsors/SponsorKPIWidget';
+import { SponsorCardSkeleton, KPICardSkeleton } from '../../components/sponsors/SponsorSkeleton';
 import { EventSponsor } from '../../types/sponsorship';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { Input } from '../../components/forms/Input';
@@ -25,6 +26,7 @@ export const DashboardSponsors: React.FC = () => {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiIdeas, setAiIdeas] = useState<any[] | null>(null);
   const [showAiModal, setShowAiModal] = useState(false);
+  const [aiMode, setAiMode] = useState<'activation' | 'scoring'>('activation');
   const [aiParams, setAiParams] = useState({
     sponsorName: '',
     industry: '',
@@ -56,14 +58,15 @@ export const DashboardSponsors: React.FC = () => {
     fetchSponsors();
   }, []);
 
-  // AI Agent: Ideation
-  const handleAiIdeation = async () => {
-    if (!aiParams.sponsorName || !aiParams.eventDetails) return;
+  // AI Agent: Ideation or Scoring
+  const handleAiAction = async () => {
+    if (!aiParams.sponsorName) return;
     
     setAiLoading(true);
     setAiIdeas(null);
 
     try {
+      const actionType = aiMode === 'scoring' ? 'score-lead' : 'activation-ideas';
       const response = await fetch(`${supabaseUrl}/functions/v1/sponsor-ai`, {
         method: 'POST',
         headers: {
@@ -71,14 +74,24 @@ export const DashboardSponsors: React.FC = () => {
           'Authorization': `Bearer ${supabaseAnonKey}`
         },
         body: JSON.stringify({
-          action: 'activation-ideas',
+          action: actionType,
           sponsorName: aiParams.sponsorName,
           sponsorIndustry: aiParams.industry,
-          eventDetails: aiParams.eventDetails
+          eventDetails: aiParams.eventDetails || 'Upcoming Fashion Event'
         })
       });
       const data = await response.json();
-      setAiIdeas(data.ideas);
+      
+      if (aiMode === 'scoring') {
+        setAiIdeas([{ 
+            title: `Lead Score: ${data.score}/100`, 
+            description: data.reasoning, 
+            category: data.category,
+            estimated_cost: 'Score' 
+        }]);
+      } else {
+        setAiIdeas(data.ideas);
+      }
       setShowAiModal(false);
     } catch (err) {
       console.error(err);
@@ -86,6 +99,20 @@ export const DashboardSponsors: React.FC = () => {
     } finally {
       setAiLoading(false);
     }
+  };
+
+  const openAiModal = (mode: 'activation' | 'scoring', sponsor?: any) => {
+      setAiMode(mode);
+      if (sponsor) {
+          setAiParams({
+              sponsorName: sponsor.sponsor?.name || '',
+              industry: sponsor.sponsor?.industry || '',
+              eventDetails: sponsor.event?.title || ''
+          });
+      } else {
+          setAiParams({ sponsorName: '', industry: '', eventDetails: '' });
+      }
+      setShowAiModal(true);
   };
 
   return (
@@ -97,7 +124,8 @@ export const DashboardSponsors: React.FC = () => {
           <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-serif font-bold flex items-center gap-2">
-                <Sparkles className="text-purple-600" size={20} /> Sponsor AI Agent
+                <Sparkles className="text-purple-600" size={20} /> 
+                {aiMode === 'scoring' ? 'Lead Scoring Agent' : 'Activation Ideator'}
               </h3>
               <button onClick={() => setShowAiModal(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                 <X size={20} />
@@ -119,15 +147,15 @@ export const DashboardSponsors: React.FC = () => {
                 className="bg-gray-50"
               />
               <Textarea 
-                label="Event Context" 
-                placeholder="e.g. Summer Runway Show in Miami, 500 VIP guests, sustainable theme." 
+                label="Context" 
+                placeholder={aiMode === 'scoring' ? "Budget, History, Goals..." : "Event theme, audience size..."} 
                 className="h-24 bg-gray-50"
                 value={aiParams.eventDetails}
                 onChange={(e) => setAiParams({...aiParams, eventDetails: e.target.value})}
               />
               <div className="pt-2">
-                <Button fullWidth variant="primary" onClick={handleAiIdeation} disabled={!aiParams.sponsorName || aiLoading}>
-                  {aiLoading ? 'Generating Ideas...' : 'Suggest Activations'}
+                <Button fullWidth variant="primary" onClick={handleAiAction} disabled={!aiParams.sponsorName || aiLoading}>
+                  {aiLoading ? 'Analyzing...' : (aiMode === 'scoring' ? 'Calculate Score' : 'Generate Ideas')}
                 </Button>
               </div>
             </div>
@@ -144,8 +172,8 @@ export const DashboardSponsors: React.FC = () => {
           <h1 className="text-3xl font-serif font-bold text-[#1A1D2D]">Sponsorship Manager</h1>
         </div>
         <div className="flex items-center gap-3">
-           <Button variant="white" size="sm" className="gap-2 rounded-full border-gray-200 text-gray-600">
-             <Download size={14} /> Report
+           <Button variant="white" size="sm" className="gap-2 rounded-full border-gray-200 text-gray-600" onClick={() => openAiModal('scoring')}>
+             <SlidersHorizontal size={14} /> Score Lead
            </Button>
            <Link to="/dashboard/sponsors/new-deal">
              <Button variant="primary" size="sm" className="gap-2 rounded-full shadow-lg shadow-purple-500/20">
@@ -156,20 +184,29 @@ export const DashboardSponsors: React.FC = () => {
       </div>
 
       {/* KPI Widget */}
-      <SponsorKPIWidget 
-        sponsors={sponsors} 
-        loading={loading} 
-        onAiTrigger={() => setShowAiModal(true)} 
-      />
+      {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+              <KPICardSkeleton />
+              <KPICardSkeleton />
+              <KPICardSkeleton />
+              <KPICardSkeleton />
+          </div>
+      ) : (
+          <SponsorKPIWidget 
+            sponsors={sponsors} 
+            loading={false} 
+            onAiTrigger={() => openAiModal('activation')} 
+          />
+      )}
 
       {/* AI Suggestions Panel */}
       {aiIdeas && (
         <FadeIn>
-          <div className="bg-purple-50 border border-purple-100 rounded-2xl p-6">
+          <div className="bg-purple-50 border border-purple-100 rounded-2xl p-6 mb-8">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-purple-900 font-bold flex items-center gap-2">
                 <Sparkles size={16} /> 
-                AI Concepts for {aiParams.sponsorName || 'Sponsor'}
+                AI Results for {aiParams.sponsorName}
               </h3>
               <button onClick={() => setAiIdeas(null)} className="text-purple-400 hover:text-purple-700"><X size={16} /></button>
             </div>
@@ -177,11 +214,15 @@ export const DashboardSponsors: React.FC = () => {
               {aiIdeas.map((idea, i) => (
                 <div key={i} className="bg-white p-4 rounded-xl border border-purple-100 shadow-sm hover:shadow-md transition-shadow">
                   <h4 className="font-serif font-bold text-lg mb-2 text-gray-900">{idea.title}</h4>
+                  {idea.category && (
+                      <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase mb-2 inline-block ${
+                          idea.category === 'High' ? 'bg-green-100 text-green-700' : 
+                          idea.category === 'Medium' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                      }`}>
+                          {idea.category} Priority
+                      </span>
+                  )}
                   <p className="text-sm text-gray-600 mb-4 leading-relaxed">{idea.description}</p>
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-50">
-                    <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded">Est: {idea.estimated_cost}</span>
-                    <button className="text-purple-600 hover:bg-purple-50 p-1 rounded transition-colors"><ArrowRight size={16}/></button>
-                  </div>
                 </div>
               ))}
             </div>
@@ -220,11 +261,18 @@ export const DashboardSponsors: React.FC = () => {
                     </span>
                   </div>
                   <div className="space-y-3">
-                    {sponsors.filter(s => s.status === status).map(sponsor => (
-                      <Link key={sponsor.id} to={`/dashboard/sponsors/${sponsor.sponsor_id}`} className="block">
-                        <SponsorCard sponsor={sponsor} />
-                      </Link>
-                    ))}
+                    {loading ? (
+                        <>
+                            <SponsorCardSkeleton />
+                            <SponsorCardSkeleton />
+                        </>
+                    ) : (
+                        sponsors.filter(s => s.status === status).map(sponsor => (
+                        <Link key={sponsor.id} to={`/dashboard/sponsors/${sponsor.sponsor_id}`} className="block">
+                            <SponsorCard sponsor={sponsor} />
+                        </Link>
+                        ))
+                    )}
                     <Link to="/dashboard/sponsors/new-deal">
                       <button className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-xs font-bold hover:border-purple-300 hover:text-purple-500 transition-all flex items-center justify-center gap-2">
                         <Plus size={14} /> Add Deal

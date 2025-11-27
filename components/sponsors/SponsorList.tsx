@@ -16,17 +16,23 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTier, setFilterTier] = useState<string>('All Tiers');
   const [filterStatus, setFilterStatus] = useState<string>('All Statuses');
+  const [filterType, setFilterType] = useState<string>('All Types');
   const [sortBy, setSortBy] = useState<SortOption>('Name (A-Z)');
   const [showFilters, setShowFilters] = useState(false);
 
   const uniqueTiers = useMemo(() => {
     const tiers = new Set(sponsors.map(s => s.level));
-    return ['All Tiers', ...Array.from(tiers)];
+    return ['All Tiers', ...Array.from(tiers).filter(Boolean)];
   }, [sponsors]);
 
   const uniqueStatuses = useMemo(() => {
     const statuses = new Set(sponsors.map(s => s.status));
     return ['All Statuses', ...Array.from(statuses)];
+  }, [sponsors]);
+
+  const uniqueTypes = useMemo(() => {
+    const types = new Set(sponsors.map(s => s.sponsor?.sponsor_type));
+    return ['All Types', ...Array.from(types).filter(Boolean)];
   }, [sponsors]);
 
   const filteredAndSortedSponsors = useMemo(() => {
@@ -37,7 +43,7 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
       const q = searchQuery.toLowerCase();
       result = result.filter(s => 
         s.sponsor?.name.toLowerCase().includes(q) || 
-        s.sponsor?.industry.toLowerCase().includes(q)
+        s.sponsor?.industry?.toLowerCase().includes(q)
       );
     }
 
@@ -47,6 +53,10 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
 
     if (filterStatus !== 'All Statuses') {
       result = result.filter(s => s.status === filterStatus);
+    }
+
+    if (filterType !== 'All Types') {
+      result = result.filter(s => s.sponsor?.sponsor_type === filterType);
     }
 
     // 2. Sort
@@ -66,7 +76,7 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
     });
 
     return result;
-  }, [sponsors, searchQuery, filterTier, filterStatus, sortBy]);
+  }, [sponsors, searchQuery, filterTier, filterStatus, filterType, sortBy]);
 
   return (
     <div className="space-y-6">
@@ -116,7 +126,7 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
 
       {/* Expandable Filters */}
       {showFilters && (
-        <FadeIn className="bg-gray-50 p-6 rounded-2xl border border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FadeIn className="bg-gray-50 p-6 rounded-2xl border border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 block">Sponsor Tier</label>
             <div className="flex flex-wrap gap-2">
@@ -145,6 +155,20 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
               ))}
             </div>
           </div>
+          <div>
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 block">Category Type</label>
+            <div className="flex flex-wrap gap-2">
+              {uniqueTypes.map(type => (
+                <button
+                  key={type}
+                  onClick={() => setFilterType(type as string)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${filterType === type ? 'bg-black text-white border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
+                >
+                  {type as string}
+                </button>
+              ))}
+            </div>
+          </div>
         </FadeIn>
       )}
 
@@ -165,7 +189,7 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
           <h3 className="font-serif font-bold text-xl text-gray-900 mb-2">No sponsors found</h3>
           <p className="text-gray-500 text-sm mb-6">Try adjusting your search or filters.</p>
           <button 
-            onClick={() => { setSearchQuery(''); setFilterTier('All Tiers'); setFilterStatus('All Statuses'); }}
+            onClick={() => { setSearchQuery(''); setFilterTier('All Tiers'); setFilterStatus('All Statuses'); setFilterType('All Types'); }}
             className="text-purple-600 font-bold text-xs hover:underline"
           >
             Clear Filters
