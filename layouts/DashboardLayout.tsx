@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
 import { 
-  LayoutDashboard, Calendar, CalendarCheck, Ticket, Wallet, Share2, Users, 
-  ShoppingBag, Settings, LogOut, Menu, Search, FileText, Image, MessageSquare, Heart,
-  Briefcase, Target, Package, Mic2, BarChart3, Globe, TrendingUp
+  LayoutDashboard, Calendar, Ticket, Wallet, Settings, LogOut, Menu, Search, 
+  FileText, Image, MessageSquare, Heart, Target, Users, TrendingUp, Package, 
+  Mic2, BarChart3, Globe
 } from 'lucide-react';
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
 import { NotificationsMenu } from '../components/dashboard/NotificationsMenu';
@@ -13,21 +13,20 @@ export const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Updated Menu Items based on the requirements
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: Target, label: 'Leads', path: '/dashboard/leads' }, // New
+    { icon: Target, label: 'Leads', path: '/dashboard/leads' },
     { icon: Users, label: 'Sponsors', path: '/dashboard/sponsors' }, 
-    { icon: TrendingUp, label: 'Opportunities', path: '/dashboard/opportunities' }, // New Item
-    { icon: Package, label: 'Packages', path: '/dashboard/packages' }, // New
-    { icon: FileText, label: 'Contracts', path: '/dashboard/contracts' }, // New
-    { icon: Mic2, label: 'Activations', path: '/dashboard/activations' }, // New
+    { icon: TrendingUp, label: 'Opportunities', path: '/dashboard/opportunities' },
+    { icon: Package, label: 'Packages', path: '/dashboard/packages' },
+    { icon: FileText, label: 'Contracts', path: '/dashboard/contracts' },
+    { icon: Mic2, label: 'Activations', path: '/dashboard/activations' },
     { icon: Calendar, label: 'Bookings', path: '/dashboard/bookings' },
     { icon: Ticket, label: 'Events', path: '/dashboard/events' },
     { icon: Wallet, label: 'Financials', path: '/dashboard/financials' },
-    { icon: Image, label: 'Media & Assets', path: '/dashboard/media' }, // New
-    { icon: BarChart3, label: 'ROI & Reports', path: '/dashboard/roi' }, // New
-    { icon: Globe, label: 'Sponsor Portal', path: '/dashboard/portal' }, // New
+    { icon: Image, label: 'Media & Assets', path: '/dashboard/media' },
+    { icon: BarChart3, label: 'ROI & Reports', path: '/dashboard/roi' },
+    { icon: Globe, label: 'Sponsor Portal', path: '/dashboard/portal' },
     { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
   ];
 
@@ -37,10 +36,10 @@ export const DashboardLayout: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F8F9FB] font-sans">
+    <div className="flex h-screen bg-[#F8F9FB] font-sans overflow-hidden">
        {/* Sidebar Desktop */}
        <aside className="w-64 bg-white border-r border-gray-100 hidden lg:flex flex-col fixed h-full z-20">
-          <div className="p-8">
+          <div className="p-8 flex-shrink-0">
              <Link to="/" className="text-2xl font-serif font-bold tracking-tighter text-black no-underline">FashionOS</Link>
              <span className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">Command Center</span>
           </div>
@@ -58,7 +57,7 @@ export const DashboardLayout: React.FC = () => {
                 </NavLink>
              ))}
           </nav>
-          <div className="p-6 border-t border-gray-50">
+          <div className="p-6 border-t border-gray-50 flex-shrink-0">
              <button onClick={handleSignOut} className="flex items-center gap-2 text-gray-400 hover:text-red-500 text-xs font-bold uppercase tracking-wider transition-colors w-full">
                <LogOut size={14} /> Sign Out
              </button>
@@ -92,8 +91,9 @@ export const DashboardLayout: React.FC = () => {
        </aside>
 
        {/* Main Content Wrapper */}
-       <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
-          <header className="bg-white/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+       <div className="flex-1 lg:ml-64 flex flex-col min-w-0 h-full">
+          {/* Header (Fixed at top of content area) */}
+          <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center flex-shrink-0 z-30">
              <div className="flex items-center gap-4 flex-1">
                 <button className="lg:hidden" onClick={() => setIsMobileMenuOpen(true)}><Menu className="text-gray-500" /></button>
                 <div className="relative w-full max-w-md hidden md:block">
@@ -110,8 +110,9 @@ export const DashboardLayout: React.FC = () => {
              </div>
           </header>
 
-          <main className="flex-1 p-6 md:p-8 overflow-y-auto overflow-x-hidden">
-             <div className="max-w-7xl mx-auto">
+          {/* Scrollable Main Content Area */}
+          <main className="flex-1 p-6 md:p-8 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-200">
+             <div className="max-w-7xl mx-auto pb-12">
                 <Outlet />
              </div>
           </main>
