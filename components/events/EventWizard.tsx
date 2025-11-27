@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, CheckCircle2, X, ImageIcon } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, X, ImageIcon, AlertTriangle } from 'lucide-react';
 import { Button } from '../Button';
 import { FadeIn } from '../FadeIn';
 import { supabase, supabaseUrl, supabaseAnonKey, isConfigured } from '../../lib/supabase';
@@ -76,7 +76,9 @@ export const EventWizard: React.FC = () => {
 
   const handleAIGenerate = async () => {
     if (!isConfigured) {
-      alert("App not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env");
+      console.warn("Skipping AI generation: App not configured.");
+      // Just move to next step if config is missing, don't crash
+      setCurrentStep(Step.BASICS);
       return;
     }
 
@@ -94,7 +96,7 @@ export const EventWizard: React.FC = () => {
       `.trim();
 
       // Get Session Token for Auth
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await (supabase.auth as any).getSession();
       const token = session?.access_token || supabaseAnonKey;
 
       // Call the backend Edge Function
@@ -225,7 +227,7 @@ export const EventWizard: React.FC = () => {
 
   const handlePublish = async () => {
     if (!isConfigured) {
-      alert("Cannot publish: Supabase is not configured.");
+      alert("Cannot publish: App is not connected to Supabase. Please check your configuration.");
       return;
     }
     if (isPublishing) return;
@@ -238,7 +240,8 @@ export const EventWizard: React.FC = () => {
     setIsPublishing(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await (supabase.auth as any).getUser();
+      // Fallback ID for development if auth is bypassed/mocked
       const organizerId = user?.id || '00000000-0000-0000-0000-000000000000'; 
 
       const slug = `${slugify(state.title)}-${Math.random().toString(36).substring(2, 7)}`;
@@ -324,6 +327,14 @@ export const EventWizard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F8F9FB] pb-24">
+      {/* Config Warning Banner */}
+      {!isConfigured && (
+        <div className="bg-amber-50 border-b border-amber-200 p-3 text-center text-amber-800 text-sm font-medium flex items-center justify-center gap-2">
+          <AlertTriangle size={16} />
+          Demo Mode: Supabase is not configured. AI generation and saving will be simulated or disabled.
+        </div>
+      )}
+
       {/* Top Progress Bar */}
       {currentStep !== Step.SUCCESS && (
         <div className="bg-white border-b border-gray-100 sticky top-0 z-30">

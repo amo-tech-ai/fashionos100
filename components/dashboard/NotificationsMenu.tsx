@@ -46,7 +46,7 @@ export const NotificationsMenu: React.FC = () => {
   }, []);
 
   const fetchNotifications = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) return;
 
     const { data } = await supabase
@@ -69,7 +69,7 @@ export const NotificationsMenu: React.FC = () => {
   };
 
   const markAllRead = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await (supabase.auth as any).getUser();
     if (!user) return;
     await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id);
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));

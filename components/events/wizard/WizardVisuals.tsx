@@ -54,7 +54,7 @@ export const WizardVisuals: React.FC<WizardVisualsProps> = ({ data, updateData, 
 
     try {
       // 1. Get Auth Token
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await (supabase.auth as any).getSession();
       const token = session?.access_token || supabaseAnonKey;
 
       // 2. Prepare Payload

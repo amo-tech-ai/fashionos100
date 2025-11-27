@@ -27,7 +27,7 @@ export const SponsorPortal: React.FC = () => {
 
   const fetchSponsorData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await (supabase.auth as any).getUser();
       if (!user) return;
 
       const { data: profile, error: profileError } = await supabase

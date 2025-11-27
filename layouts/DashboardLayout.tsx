@@ -32,7 +32,7 @@ export const DashboardLayout: React.FC = () => {
   ];
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await (supabase.auth as any).signOut();
     navigate('/login');
   };
 

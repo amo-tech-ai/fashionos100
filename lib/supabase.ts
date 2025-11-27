@@ -1,18 +1,10 @@
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { createClient } from '@supabase/supabase-js';
 
 const getEnv = (key: string) => {
-  // Check import.meta.env (Vite)
-  if (typeof import.meta !== 'undefined' && (import.meta as any).env?.[key]) {
-    return (import.meta as any).env[key];
-  }
-  // Check process.env (Node/other)
-  try {
-    if (typeof process !== 'undefined' && process.env?.[key]) {
-      return process.env[key];
-    }
-  } catch (e) {
-    // Ignore errors accessing process
+  const meta = import.meta as any;
+  if (typeof meta !== 'undefined' && meta.env && meta.env[key]) {
+    return meta.env[key];
   }
   return '';
 };
@@ -20,32 +12,36 @@ const getEnv = (key: string) => {
 export const supabaseUrl = getEnv('VITE_SUPABASE_URL');
 export const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
 
-// Check if keys are real and not placeholders
+// Strict check: Must exist and not be a placeholder
 export const isConfigured = 
-  supabaseUrl && 
-  supabaseAnonKey && 
+  !!supabaseUrl && 
+  !!supabaseAnonKey && 
   !supabaseUrl.includes('placeholder') && 
   !supabaseAnonKey.includes('placeholder');
 
 if (!isConfigured) {
-  console.warn('⚠️ Supabase credentials missing or invalid. Check your .env file. Features requiring DB/Auth will fail gracefully.');
+  console.warn(
+    '⚠️ Supabase credentials missing or invalid. Features requiring DB/Auth will fail gracefully. Check your .env file.'
+  );
 }
 
-// Initialize client with options to avoid console spam if keys are missing
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder',
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
+// Create client. If not configured, we use a dummy URL to prevent "URL required" errors,
+// but disable all network-dependent features (Auth persistence, Realtime) to prevent connection spam.
+const clientUrl = isConfigured ? supabaseUrl : 'https://supabase.example.com';
+const clientKey = isConfigured ? supabaseAnonKey : 'anon-key';
+
+export const supabase = createClient(clientUrl, clientKey, {
+  auth: {
+    // Only persist session if we actually have a valid backend
+    persistSession: isConfigured,
+    autoRefreshToken: isConfigured,
+    detectSessionInUrl: isConfigured,
+  },
+  realtime: {
+    // Completely disable realtime if not configured to prevent WebSocket connection errors
+    enabled: isConfigured,
+    params: {
+      eventsPerSecond: 10,
     },
-    // Disable realtime if not configured to prevent WebSocket error loops
-    realtime: isConfigured ? {
-      params: {
-        eventsPerSecond: 10,
-      },
-    } : undefined,
-  }
-);
+  },
+});

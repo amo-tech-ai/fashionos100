@@ -23,7 +23,7 @@ export const ProRefinementPanel: React.FC<ProRefinementPanelProps> = ({ previewI
     setIsRefining(true);
     try {
       // 1. Get User Session
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await (supabase.auth as any).getSession();
       const token = session?.access_token || supabaseAnonKey;
 
       // 2. Call Edge Function
