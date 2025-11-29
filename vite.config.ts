@@ -2,10 +2,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Fix for __dirname in ES modules if needed, or use process.cwd()
+const __dirname = path.resolve();
 
 export default defineConfig({
   plugins: [react()],
@@ -22,6 +21,6 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
-    host: true // Ensure it listens on all interfaces for cloud/docker environments
+    host: true 
   }
 });

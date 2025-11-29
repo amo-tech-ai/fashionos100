@@ -2,7 +2,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-// Layouts
+// Layouts - Using explicit relative paths
 import { PublicLayout } from './layouts/PublicLayout';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { BookingLayout } from './layouts/BookingLayout';
@@ -28,8 +28,10 @@ import { SocialPage } from './pages/public/SocialPage';
 import { EcommercePage } from './pages/public/EcommercePage';
 import { AmazonServicesPage } from './pages/public/AmazonServicesPage';
 import { InstagramPage } from './pages/public/InstagramPage';
-import { ContactPage } from './pages/public/ContactPage';
+
+// Main Pages
 import { AboutPage } from './pages/public/AboutPage';
+import { ContactPage } from './pages/public/ContactPage';
 import { PricingPage } from './pages/public/PricingPage';
 
 // Booking Wizard Pages
