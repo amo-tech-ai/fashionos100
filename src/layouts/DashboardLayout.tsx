@@ -45,11 +45,11 @@ export const DashboardLayout: React.FC = () => {
   const initials = user?.email ? user.email.substring(0, 2).toUpperCase() : 'U';
 
   return (
-    // h-[100dvh] locks the layout to the dynamic viewport height on mobile (avoiding scroll bounce)
+    // h-[100dvh] locks the layout to the dynamic viewport height on mobile
     <div className="flex h-[100dvh] w-full bg-[#F8F9FB] font-sans overflow-hidden">
        
        {/* Desktop Sidebar */}
-       <aside className="w-64 bg-white border-r border-gray-100 hidden lg:flex flex-col fixed h-full z-30 top-0 left-0">
+       <aside className="w-64 bg-white border-r border-gray-100 hidden lg:flex flex-col fixed h-full z-30 top-0 left-0 shadow-sm">
           <div className="p-8 flex-shrink-0">
              <Link to="/" className="text-2xl font-serif font-bold tracking-tighter text-black no-underline">FashionOS</Link>
              <span className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">Command Center</span>
@@ -81,10 +81,10 @@ export const DashboardLayout: React.FC = () => {
        )}
        
        {/* Mobile Sidebar Drawer */}
-       <aside className={`fixed inset-y-0 left-0 w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden shadow-2xl ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="p-6 flex justify-between items-center border-b border-gray-50">
+       <aside className={`fixed inset-y-0 left-0 w-72 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden shadow-2xl ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="p-6 flex justify-between items-center border-b border-gray-50 bg-gray-50/50">
             <span className="text-xl font-serif font-bold">FashionOS</span>
-            <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 hover:bg-gray-100 rounded-md"><X size={20} /></button>
+            <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors"><X size={20} /></button>
           </div>
           <nav className="px-4 py-4 space-y-1 overflow-y-auto h-[calc(100vh-80px)]">
             {menuItems.map((item) => (
@@ -100,19 +100,21 @@ export const DashboardLayout: React.FC = () => {
                    <item.icon size={18} />{item.label}
                 </NavLink>
              ))}
-             <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 mt-4">
-               <LogOut size={18} /> Sign Out
-             </button>
+             <div className="pt-4 mt-4 border-t border-gray-100">
+                <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50">
+                  <LogOut size={18} /> Sign Out
+                </button>
+             </div>
           </nav>
        </aside>
 
        {/* Main Content Wrapper */}
        <div className="flex-1 lg:ml-64 flex flex-col min-w-0 h-full relative">
-          {/* Header - Not sticky to avoid conflicts, it just sits at top of flex col */}
-          <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center flex-shrink-0 z-20">
+          {/* Header */}
+          <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-8 py-4 flex justify-between items-center flex-shrink-0 z-20 sticky top-0">
              <div className="flex items-center gap-4 flex-1">
-                <button className="lg:hidden p-2 -ml-2 hover:bg-gray-100 rounded-lg" onClick={() => setIsMobileMenuOpen(true)}>
-                    <Menu className="text-gray-600" size={24} />
+                <button className="lg:hidden p-2 -ml-2 hover:bg-gray-100 rounded-lg text-gray-600" onClick={() => setIsMobileMenuOpen(true)}>
+                    <Menu size={24} />
                 </button>
                 <div className="relative w-full max-w-md hidden md:block">
                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -131,7 +133,7 @@ export const DashboardLayout: React.FC = () => {
                        <p className="text-sm font-bold leading-none truncate max-w-[120px]">{user?.email || 'User'}</p>
                        <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Admin</p>
                    </div>
-                   <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500 overflow-hidden border-2 border-white shadow-sm">
+                   <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500 overflow-hidden border-2 border-white shadow-sm">
                       {initials}
                    </div>
                 </div>
@@ -139,8 +141,8 @@ export const DashboardLayout: React.FC = () => {
           </header>
 
           {/* Main Content Scroll Area */}
-          <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-200 relative">
-             <div className="max-w-7xl mx-auto pb-12">
+          <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden custom-scrollbar relative">
+             <div className="max-w-[1600px] mx-auto pb-12">
                 <Outlet />
              </div>
           </main>

@@ -13,13 +13,10 @@ interface ErrorBoundaryState {
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = {
-      hasError: false,
-      error: null,
-    };
-  }
+  public state: ErrorBoundaryState = {
+    hasError: false,
+    error: null,
+  };
 
   public static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     // Update state so the next render will show the fallback UI.
@@ -42,6 +39,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         return this.props.fallback;
       }
 
+      // Use type assertion for import.meta to access env property safely
+      const isDev = (import.meta as any).env?.DEV;
+
       return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center bg-white">
           <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-6 text-red-500">
@@ -58,7 +58,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           </p>
 
           {/* Environment check for dev mode error display */}
-          {import.meta.env.DEV && this.state.error && (
+          {isDev && this.state.error && (
             <div className="w-full max-w-2xl bg-gray-50 p-4 rounded-xl border border-gray-200 text-left mb-8 overflow-auto max-h-40">
               <p className="text-xs font-mono text-red-600 whitespace-pre-wrap">
                 {this.state.error.toString()}

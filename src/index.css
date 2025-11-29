@@ -5,7 +5,7 @@
 
 html {
   height: 100%;
-  -webkit-text-size-adjust: 100%; /* Prevent iOS text zoom */
+  -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 
@@ -15,14 +15,19 @@ body {
   padding: 0;
   scroll-behavior: smooth;
   background-color: #FBF8F5;
-  overflow-x: hidden; /* Prevent horizontal scroll from animations */
-  width: 100vw;
+  /* Critical Fix: Changed from width: 100vw to max-width to prevent scrollbar layout shift */
+  max-width: 100vw;
+  overflow-x: hidden;
   touch-action: manipulation;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
   min-height: 100%;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Safe Area Utilities for Mobile */
@@ -35,22 +40,23 @@ body {
   }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
+/* Custom scrollbar for dashboard panels */
+.custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
-::-webkit-scrollbar-thumb {
+.custom-scrollbar::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 3px;
 }
-::-webkit-scrollbar-thumb:hover {
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
+/* Utility Classes */
 .text-gradient {
   background-clip: text;
   -webkit-background-clip: text;

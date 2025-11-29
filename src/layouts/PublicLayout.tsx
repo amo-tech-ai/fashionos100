@@ -20,14 +20,15 @@ export const PublicLayout: React.FC = () => {
     setIsOpen(false);
   }, [location]);
 
+  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     };
   }, [isOpen]);
 
@@ -41,9 +42,18 @@ export const PublicLayout: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen font-sans text-fashion-black bg-[#FBF8F5]">
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-white/95 backdrop-blur-md py-4 shadow-sm border-b border-gray-100' : 'bg-white/0 py-6'}`}>
+      {/* Navbar */}
+      <nav 
+        className={`fixed top-0 w-full z-50 transition-all duration-300 
+        ${isScrolled || isOpen 
+          ? 'bg-white/95 backdrop-blur-md py-4 shadow-sm border-b border-gray-100' 
+          : 'bg-transparent py-6'
+        }`}
+      >
         <div className="container mx-auto px-6 md:px-12 flex justify-between items-center">
-          <Link to="/" className="text-2xl font-serif font-bold tracking-tighter z-50 relative">FashionOS <span className="text-fashion-purple">.</span></Link>
+          <Link to="/" className="text-2xl font-serif font-bold tracking-tighter z-50 relative">
+            FashionOS <span className="text-fashion-purple">.</span>
+          </Link>
           
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">
@@ -67,20 +77,25 @@ export const PublicLayout: React.FC = () => {
           </div>
 
           {/* Mobile Toggle */}
-          <button className="md:hidden z-50 relative p-2 -mr-2" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle Menu">
+          <button 
+            className="md:hidden z-50 relative p-2 -mr-2 text-black" 
+            onClick={() => setIsOpen(!isOpen)} 
+            aria-label="Toggle Menu"
+          >
             {isOpen ? <X /> : <Menu />}
           </button>
         </div>
       </nav>
 
-      {/* Mobile Overlay */}
+      {/* Mobile Menu Overlay & Panel */}
+      {/* Overlay */}
       <div 
         className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity duration-500 md:hidden ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setIsOpen(false)}
         aria-hidden="true"
       />
 
-      {/* Mobile Menu Panel */}
+      {/* Panel */}
       <div 
         className={`fixed inset-y-0 right-0 w-full max-w-xs bg-white z-40 shadow-2xl transform transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) md:hidden flex flex-col pt-24 px-8 pb-8 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
@@ -104,7 +119,7 @@ export const PublicLayout: React.FC = () => {
          </div>
       </div>
 
-      <main className="flex-grow">
+      <main className="flex-grow w-full">
         <Outlet />
       </main>
 
