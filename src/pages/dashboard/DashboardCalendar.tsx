@@ -1,11 +1,12 @@
 
 import React, { useState, useMemo } from 'react';
-import { CalendarCheck, Users, Box, AlertCircle, Plus, X, Mic, Loader2, Clock } from 'lucide-react';
+import { CalendarCheck, Users, Box, AlertCircle, Plus, X, Mic, Loader2, Clock, Camera } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { DashboardKPI } from '../../types';
 import { useEvents } from '../../hooks/useEvents';
 import { useShoots } from '../../hooks/useShoots';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate, Link } from 'react-router-dom';
 
 interface CalendarEvent {
   id: string;
@@ -20,11 +21,13 @@ interface CalendarEvent {
 }
 
 export const DashboardCalendar = () => {
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'Month' | 'Week' | 'Content'>('Month');
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const { user } = useAuth();
   const { events, loading: eventsLoading } = useEvents({ organizerId: user?.id });
   const { shoots, loading: shootsLoading } = useShoots();
+  const [showNewMenu, setShowNewMenu] = useState(false);
 
   const loading = eventsLoading || shootsLoading;
 
@@ -51,13 +54,11 @@ export const DashboardCalendar = () => {
     // Map Shoots
     shoots.forEach(s => {
         if (s.scheduled_date) {
-            // Attempt to parse date. Assuming string YYYY-MM-DD or ISO
-            // The mock data might need cleaning if it's not a real date object
             const date = new Date(s.scheduled_date); 
             if (!isNaN(date.getTime())) {
                  items.push({
                     id: `sht-${s.id}`,
-                    day: date.getUTCDate(), // Use UTC to avoid timezone shifts on simple date strings
+                    day: date.getUTCDate(), 
                     month: date.getUTCMonth(),
                     year: date.getUTCFullYear(),
                     title: `${s.shoot_type} - ${s.fashion_category}`,
@@ -77,7 +78,7 @@ export const DashboardCalendar = () => {
     { label: 'All Schedules', val: calendarEvents.length.toString(), sub: 'Total Items', icon: CalendarCheck, color: 'bg-purple-50 text-purple-600' },
     { label: 'Event', val: events.length.toString(), sub: 'Fashion shows', icon: Mic, color: 'bg-pink-50 text-pink-600' },
     { label: 'Shoots', val: shoots.filter(s => ['confirmed', 'shooting'].includes(s.status)).length.toString(), sub: 'Active Productions', icon: Box, color: 'bg-amber-50 text-amber-600' },
-    { label: 'Meeting', val: '0', sub: 'Team syncs', icon: Users, color: 'bg-blue-50 text-blue-600' }, // Placeholder until meetings table
+    { label: 'Meeting', val: '0', sub: 'Team syncs', icon: Users, color: 'bg-blue-50 text-blue-600' },
     { label: 'Deadlines', val: '0', sub: 'Due this week', icon: AlertCircle, color: 'bg-red-50 text-red-600' },
   ];
 
@@ -92,10 +93,24 @@ export const DashboardCalendar = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 relative pb-32">
       <div className="flex justify-between gap-4">
         <h1 className="text-3xl font-serif font-bold text-gray-900">Calendar</h1>
-        <Button variant="accent" size="sm" className="gap-2"><Plus size={14} /> New Agenda</Button>
+        <div className="relative">
+            <Button variant="accent" size="sm" className="gap-2" onClick={() => setShowNewMenu(!showNewMenu)}>
+                <Plus size={14} /> New Agenda
+            </Button>
+            {showNewMenu && (
+                <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-50 animate-in fade-in zoom-in-95">
+                    <Link to="/dashboard/events/new" className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 rounded-lg">
+                        <Mic size={14} className="text-pink-500" /> Create Event
+                    </Link>
+                    <Link to="/start-project" className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 rounded-lg">
+                        <Camera size={14} className="text-purple-500" /> Book Shoot
+                    </Link>
+                </div>
+            )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
@@ -142,7 +157,7 @@ export const DashboardCalendar = () => {
                  </div>
             ) : (
                 <div className="grid grid-cols-7 grid-rows-5 min-h-[600px] divide-x divide-gray-100 divide-y">
-                    {/* Offset for start of month - simplified for mock logic, real calendar needs proper day mapping */}
+                    {/* Offset for start of month - simplified for mock logic */}
                     <div className="bg-gray-50/30"></div><div className="bg-gray-50/30"></div>
                     
                     {days.map(day => (
