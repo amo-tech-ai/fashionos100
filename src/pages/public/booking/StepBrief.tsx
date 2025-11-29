@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../../../context/BookingContext';
@@ -6,10 +5,10 @@ import { FadeIn } from '../../../components/FadeIn';
 import { Button } from '../../../components/Button';
 import { ArrowRight, Wand2, Loader2, Sparkles, Tag, Palette, Lightbulb, BookOpen, RefreshCw } from 'lucide-react';
 import { Textarea } from '../../../components/forms/Textarea';
-import { supabaseUrl, supabaseAnonKey } from '../../../lib/supabase';
 import { getUserBrand, getBrandProfile } from '../../../lib/brand-service';
 import { FullBrandProfile } from '../../../types/brand';
 import { useToast } from '../../../components/Toast';
+import { useBookingAI } from '../../../hooks/useBookingAI';
 
 interface AIAnalysis {
   keywords: string[];
@@ -21,7 +20,8 @@ export const StepBrief: React.FC = () => {
   const { state, updateState } = useBooking();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isPolishing, setIsPolishing] = useState(false);
+  const { polishBrief, loading: aiLoading } = useBookingAI();
+  
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
   
   // Brand Profile Integration
@@ -80,45 +80,25 @@ export const StepBrief: React.FC = () => {
   };
 
   const handlePolish = async () => {
-    if (!state.brief || state.brief.length < 10) return;
-    setIsPolishing(true);
+    if (!state.brief || state.brief.length < 5) return;
     
     try {
-      const response = await fetch(`${supabaseUrl}/functions/v1/polish-brief`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`
-        },
-        body: JSON.stringify({ 
-            brief: state.brief,
-            type: 'creative',
-            // Pass brand context if available for deeper alignment
-            brandContext: brandProfile ? {
-                moods: brandProfile.visuals?.moods,
-                identity: brandProfile.identity?.core_description
-            } : undefined
-        })
-      });
-
-      if (!response.ok) throw new Error('AI service unavailable');
+      const result = await polishBrief(state.brief, brandProfile || undefined);
       
-      const data = await response.json();
-      
-      // Handle structured response
-      if (data.polished_text) {
-        updateState({ brief: data.polished_text });
+      if (result && result.polished_text) {
+        updateState({ brief: result.polished_text });
         setAiAnalysis({
-          keywords: data.keywords || [],
-          mood: data.mood || '',
-          visual_style: data.visual_style
+          keywords: result.keywords || [],
+          mood: result.mood || '',
+          visual_style: result.visual_style
         });
+        toast("Brief polished for clarity and detail.", "success");
+      } else {
+        toast("Failed to polish brief. Please try again.", "error");
       }
     } catch (error) {
       console.error("Polish failed", error);
-      // Optional: Show error toast
-    } finally {
-      setIsPolishing(false);
+      toast("AI service error.", "error");
     }
   };
 
@@ -157,11 +137,11 @@ export const StepBrief: React.FC = () => {
                     )}
                     <button 
                         onClick={handlePolish}
-                        disabled={isPolishing || !state.brief}
-                        className="text-[10px] font-bold uppercase tracking-widest text-purple-600 flex items-center gap-1 hover:text-purple-800 transition-colors disabled:opacity-50 bg-purple-50 px-3 py-1.5 rounded-full"
+                        disabled={aiLoading || !state.brief}
+                        className="text-[10px] font-bold uppercase tracking-widest text-purple-600 flex items-center gap-1 hover:text-purple-800 transition-colors disabled:opacity-50 bg-purple-50 px-3 py-1.5 rounded-full border border-purple-100"
                     >
-                        {isPolishing ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
-                        {isPolishing ? 'Analyzing...' : 'AI Polish & Suggest'}
+                        {aiLoading ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
+                        {aiLoading ? 'Improving...' : 'AI Improve Clarity'}
                     </button>
                 </div>
             </div>
@@ -174,7 +154,7 @@ export const StepBrief: React.FC = () => {
             />
             
             <div className="mt-4 flex justify-between items-center text-xs text-gray-400 border-b border-gray-100 pb-4 mb-4">
-                <span>Min 10 characters for AI Polish</span>
+                <span>Min 5 characters for AI Polish</span>
                 <span>{state.brief.length} chars</span>
             </div>
 

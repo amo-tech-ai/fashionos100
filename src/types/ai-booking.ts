@@ -16,12 +16,10 @@ export interface AiRequestPayload {
 }
 
 export interface PolishedBrief {
-  title: string;
-  concept: string;
+  polished_text: string;
+  keywords: string[];
   mood: string;
-  lighting: string;
-  styling: string;
-  tags: string[];
+  visual_style: string;
 }
 
 export interface ShotRecommendation {

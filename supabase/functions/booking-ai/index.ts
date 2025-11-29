@@ -15,12 +15,12 @@ serve(async (req) => {
     const { action, context } = await req.json()
     const ai = new GoogleGenAI({ apiKey })
 
-    // --- 1. BRIEF POLISHER ---
+    // --- 1. BRIEF POLISHER (Enhanced for Clarity) ---
     if (action === 'polish-brief') {
       const schema = {
         type: Type.OBJECT,
         properties: {
-          polished_text: { type: Type.STRING, description: "The rewritten, professional brief." },
+          polished_text: { type: Type.STRING, description: "The rewritten brief, improved for clarity, detail, and professional tone." },
           keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
           mood: { type: Type.STRING },
           visual_style: { type: Type.STRING }
@@ -28,20 +28,28 @@ serve(async (req) => {
         required: ["polished_text", "keywords", "mood", "visual_style"]
       };
 
-      let systemPrompt = `You are a Fashion Creative Director. Rewrite the user's brief to be professional and structured.`;
+      let systemPrompt = `
+        You are a Senior Fashion Creative Director and Production Manager.
+        Your goal is to take a client's rough creative brief and rewrite it into a production-ready document.
+        
+        Priorities:
+        1. **Clarity & Detail:** Expand on vague ideas. If they say "cool light", specify "high-contrast, hard lighting".
+        2. **Structure:** Organize the text logically (Concept, Lighting, Styling, technical needs).
+        3. **Professionalism:** Use industry-standard terminology.
+      `;
       
       // Add brand voice if available
       if (context.brandContext) {
           systemPrompt += `
-            Align the tone with this brand identity:
+            Ensure the output aligns with this brand identity:
             - Mood: ${context.brandContext.mood?.join(', ') || 'Modern'}
             - Voice: ${context.brandContext.voice?.join(', ') || 'Professional'}
           `;
       }
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash', 
-        contents: [{ role: 'user', parts: [{ text: `Input Brief: "${context.rawText}"` }] }],
+        model: 'gemini-3-pro-preview', // Upgraded for complex reasoning and rewriting
+        contents: [{ role: 'user', parts: [{ text: `Input Brief to Polish: "${context.rawText}"` }] }],
         config: {
           responseMimeType: "application/json",
           responseSchema: schema,
@@ -101,6 +109,12 @@ serve(async (req) => {
       });
 
       return new Response(response.text || "{}", { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    // --- 3. BUNDLE SUGGESTIONS ---
+    if (action === 'suggest-bundle') {
+        // Logic for bundles (if needed)
+        return new Response(JSON.stringify({ error: "Not implemented" }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     throw new Error('Invalid Action')
