@@ -32,15 +32,14 @@ export const PublicLayout: React.FC = () => {
   }, [isOpen]);
 
   const navLinks = [
-    { name: 'Home', path: '/' },
     { name: 'Services', path: '/services' },
     { name: 'Directory', path: '/directory' },
-    { name: 'Marketplace', path: '/shop' }, 
-    { name: 'BTS', path: '/social' }, 
+    { name: 'Events', path: '/events' },
+    { name: 'Marketplace', path: '/shop' },
+    { name: 'Social Media', path: '/services/social' },
   ];
 
   return (
-    // Added min-h-screen and flex-col here to manage footer positioning explicitly
     <div className="flex flex-col min-h-screen font-sans text-fashion-black bg-[#FBF8F5]">
       <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-white/95 backdrop-blur-md py-4 shadow-sm border-b border-gray-100' : 'bg-white/0 py-6'}`}>
         <div className="container mx-auto px-6 md:px-12 flex justify-between items-center">
