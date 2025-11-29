@@ -4,14 +4,19 @@ import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../../../context/BookingContext';
 import { FadeIn } from '../../../components/FadeIn';
 import { Button } from '../../../components/Button';
-import { ArrowRight, Plus, Trash2, FileText, Link as LinkIcon, Image as ImageIcon, Upload, Loader2, X } from 'lucide-react';
+import { ArrowRight, Plus, Trash2, FileText, Link as LinkIcon, Image as ImageIcon, Upload, Loader2, X, Sparkles } from 'lucide-react';
 import { Input } from '../../../components/forms/Input';
 import { ShotListItem } from '../../../lib/pricing';
 import { uploadEventImage } from '../../../lib/storage';
+import { useBookingAI } from '../../../hooks/useBookingAI';
+import { useToast } from '../../../components/Toast';
 
 export const StepShotListBuilder: React.FC = () => {
   const { state, updateState } = useBooking();
   const navigate = useNavigate();
+  const { recommendShots, loading: aiLoading } = useBookingAI();
+  const { toast } = useToast();
+
   const [newItem, setNewItem] = useState({ name: '', instructions: '', referenceImage: '' });
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -31,6 +36,26 @@ export const StepShotListBuilder: React.FC = () => {
 
   const removeItem = (id: string) => {
     updateState({ shotList: state.shotList.filter(i => i.id !== id) });
+  };
+
+  const handleAiSuggest = async () => {
+    if (!state.category) return;
+    
+    toast("AI is analyzing your style to suggest shots...", "info");
+    
+    const result = await recommendShots(state.category, state.style || 'standard');
+    
+    if (result && result.suggestedAngles) {
+        const newItems: ShotListItem[] = result.suggestedAngles.map(angle => ({
+            id: Math.random().toString(36).substr(2, 9),
+            name: angle,
+            instructions: `Standard ${state.style} lighting. Focus on ${state.category} details.`,
+            referenceImage: ''
+        }));
+        
+        updateState({ shotList: [...state.shotList, ...newItems] });
+        toast(`Added ${newItems.length} suggested shots`, "success");
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,6 +90,20 @@ export const StepShotListBuilder: React.FC = () => {
 
         <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm mb-8">
             
+            <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-gray-900">Build Your List</h3>
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleAiSuggest} 
+                    disabled={aiLoading}
+                    className="text-purple-600 bg-purple-50 hover:bg-purple-100"
+                >
+                    {aiLoading ? <Loader2 size={14} className="animate-spin mr-2" /> : <Sparkles size={14} className="mr-2" />}
+                    AI Suggest Shots
+                </Button>
+            </div>
+
             {/* Builder Form */}
             <div className="grid gap-5 mb-8 p-6 bg-gray-50 rounded-2xl border border-gray-100">
                 <div className="flex justify-between items-center mb-2">
@@ -152,7 +191,7 @@ export const StepShotListBuilder: React.FC = () => {
                             <FileText size={24} />
                         </div>
                         <p className="text-gray-500 font-medium">Your shot list is empty</p>
-                        <p className="text-gray-400 text-sm">Add items above to build your brief.</p>
+                        <p className="text-gray-400 text-sm">Add items above or use AI to get started.</p>
                     </div>
                 )}
                 

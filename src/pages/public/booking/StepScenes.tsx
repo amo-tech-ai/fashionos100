@@ -18,27 +18,26 @@ export const StepScenes: React.FC = () => {
       ? current.filter(s => s !== id)
       : [...current, id];
     
-    // Soft limit to 3, hard limit handled by logic if needed, but UX allows selecting/deselecting
     updateState({ scenes: updated });
   };
 
   return (
     <FadeIn>
-      <div className="max-w-6xl">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-serif font-bold mb-3 text-gray-900">Set the Scene</h1>
-            <p className="text-gray-500 text-lg max-w-xl">
-              Select the environments that best match your brand's aesthetic. You can mix studio backdrops with lifestyle settings.
+      <div className="max-w-[1400px] mx-auto px-4 md:px-0">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+          <div className="text-center md:text-left">
+            <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 text-gray-900">Set the scene</h1>
+            <p className="text-gray-500 text-lg font-light max-w-xl leading-relaxed">
+              Select environments that match your brand aesthetic. Mix studio backdrops with lifestyle settings.
             </p>
           </div>
-          <div className="text-right hidden md:block">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Selected</span>
-            <p className="text-2xl font-serif font-bold text-fashion-purple">{state.scenes.length} <span className="text-sm text-gray-300 font-sans font-medium">/ Unlimited</span></p>
+          <div className="hidden md:block bg-white px-6 py-3 rounded-2xl border border-gray-100 shadow-sm">
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block mb-1">Selection</span>
+            <p className="text-2xl font-serif font-bold text-purple-600">{state.scenes.length} <span className="text-sm text-gray-400 font-sans font-medium">Scenes</span></p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-16">
           {WIZARD_DATA.scenes.map((scene) => {
             const isSelected = state.scenes.includes(scene.id);
             return (
@@ -50,24 +49,21 @@ export const StepScenes: React.FC = () => {
                 badge={scene.badge}
                 selected={isSelected}
                 onClick={() => toggleScene(scene.id)}
-                subtitle={isSelected ? "Selected for shoot" : "Click to select"}
+                subtitle={isSelected ? "Included in package" : "Click to add to shoot"}
               />
             );
           })}
         </div>
 
-        <div className="flex justify-between items-center border-t border-gray-100 pt-8">
-          <div className="text-sm text-gray-500">
-            <strong className="text-black">{state.scenes.length}</strong> scenes added to quote
-          </div>
+        <div className="flex justify-center pb-10">
           <Button 
-            variant="primary" 
+            variant="outline" 
             size="lg" 
             onClick={() => navigate('/start-project/shot-type')}
             disabled={state.scenes.length === 0}
-            className="shadow-lg shadow-purple-500/20"
+            className="px-12 h-14 text-sm border-gray-300 hover:border-black hover:bg-black hover:text-white transition-all shadow-sm"
           >
-            Next: Shot Type <ArrowRight size={18} className="ml-2" />
+            Next Step <ArrowRight size={16} className="ml-2" />
           </Button>
         </div>
       </div>

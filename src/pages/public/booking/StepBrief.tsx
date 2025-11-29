@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../../../context/BookingContext';
 import { FadeIn } from '../../../components/FadeIn';
 import { Button } from '../../../components/Button';
-import { ArrowRight, Wand2, Loader2, Sparkles, Tag, Palette, Lightbulb, BookOpen } from 'lucide-react';
+import { ArrowRight, Wand2, Loader2, Sparkles, Tag, Palette, Lightbulb, BookOpen, RefreshCw } from 'lucide-react';
 import { Textarea } from '../../../components/forms/Textarea';
 import { supabaseUrl, supabaseAnonKey } from '../../../lib/supabase';
 import { getUserBrand, getBrandProfile } from '../../../lib/brand-service';
@@ -30,15 +30,40 @@ export const StepBrief: React.FC = () => {
 
   useEffect(() => {
     const fetchBrand = async () => {
-        const brandId = await getUserBrand();
-        if (brandId) {
-            const profile = await getBrandProfile(brandId);
-            setBrandProfile(profile);
+        try {
+            const brandId = await getUserBrand();
+            if (brandId) {
+                const profile = await getBrandProfile(brandId);
+                setBrandProfile(profile);
+            }
+        } catch (e) {
+            console.error("Error loading brand:", e);
+        } finally {
+            setLoadingBrand(false);
         }
-        setLoadingBrand(false);
     };
     fetchBrand();
   }, []);
+
+  // Auto-fill logic
+  useEffect(() => {
+    if (loadingBrand) return;
+
+    // Only auto-fill if brief is currently empty
+    if (!state.brief || state.brief.trim() === '') {
+        if (brandProfile) {
+            const visualTone = brandProfile.visuals?.moods?.join(', ') || 'Modern';
+            const identity = brandProfile.identity?.core_description || '';
+            const suggestion = `Shoot Goal: Align with our brand identity. \n\nContext: "${identity}"\n\nVisual Direction: ${visualTone} aesthetics. We need high-quality assets for ${state.category} use.`;
+            updateState({ brief: suggestion });
+            toast("Brief pre-filled from your Brand DNA", "success");
+        } else {
+            // Default suggestion based on category/style
+            const defaultSuggestion = `I need a professional ${state.category} shoot with a ${state.style} style.\n\nKey requirements:\n- Focus on product details and texture\n- Lighting should be clean and professional\n- We need around ${state.shotCount} final images`;
+            updateState({ brief: defaultSuggestion });
+        }
+    }
+  }, [loadingBrand, brandProfile, state.category, state.style]);
 
   const applyBrandVoice = () => {
       if (!brandProfile) return;
@@ -111,13 +136,23 @@ export const StepBrief: React.FC = () => {
                    Instructions
                 </label>
                 <div className="flex gap-2">
-                    {brandProfile && (
+                    {brandProfile ? (
                         <button 
                             onClick={applyBrandVoice}
                             className="text-[10px] font-bold uppercase tracking-widest text-gray-600 flex items-center gap-1 hover:text-black transition-colors bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200"
-                            title="Inject your Brand Profile settings"
+                            title="Re-inject Brand Profile settings"
                         >
-                            <BookOpen size={12} /> Apply Brand DNA
+                            <BookOpen size={12} /> Re-Apply DNA
+                        </button>
+                    ) : (
+                        <button 
+                            onClick={() => {
+                                const defaultSuggestion = `I need a professional ${state.category} shoot with a ${state.style} style.\n\nKey requirements:\n- Focus on product details and texture\n- Lighting should be clean and professional\n- We need around ${state.shotCount} final images`;
+                                updateState({ brief: defaultSuggestion });
+                            }}
+                             className="text-[10px] font-bold uppercase tracking-widest text-gray-600 flex items-center gap-1 hover:text-black transition-colors bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200"
+                        >
+                            <RefreshCw size={12} /> Use Template
                         </button>
                     )}
                     <button 

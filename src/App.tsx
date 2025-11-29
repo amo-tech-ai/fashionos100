@@ -45,6 +45,7 @@ const EventsPage = lazy(() => import('./pages/public/EventsPage').then(m => ({ d
 const EventDetailPage = lazy(() => import('./pages/public/EventDetailPage').then(m => ({ default: m.EventDetailPage })));
 
 // Booking Wizard
+const StartProjectPage = lazy(() => import('./pages/public/booking/StartProjectPage').then(m => ({ default: m.StartProjectPage })));
 const StepCategory = lazy(() => import('./pages/public/booking/StepCategory').then(m => ({ default: m.StepCategory })));
 const StepStyle = lazy(() => import('./pages/public/booking/StepStyle').then(m => ({ default: m.StepStyle })));
 const StepSize = lazy(() => import('./pages/public/booking/StepSize').then(m => ({ default: m.StepSize })));
@@ -112,7 +113,9 @@ const App: React.FC = () => {
               <BookingLayout />
             </BookingProvider>
           }>
-            <Route index element={<Navigate to="category" replace />} />
+            {/* Changed: Root is now the Smart Start Page instead of redirecting */}
+            <Route index element={<StartProjectPage />} />
+            
             <Route path="category" element={<StepCategory />} />
             <Route path="style" element={<StepStyle />} />
             <Route path="size" element={<StepSize />} />

@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../../../context/BookingContext';
 import { FadeIn } from '../../../components/FadeIn';
 import { WIZARD_DATA } from '../../../data/wizardData';
-import { CheckCircle2 } from 'lucide-react';
+import { StyleCard } from '../../../components/booking/ui/StyleCard';
+import { Button } from '../../../components/Button';
+import { ArrowRight } from 'lucide-react';
 
 export const StepStyle: React.FC = () => {
   const { state, updateState } = useBooking();
@@ -12,56 +14,60 @@ export const StepStyle: React.FC = () => {
 
   const handleSelect = (styleId: string) => {
     updateState({ style: styleId });
-    navigate('/start-project/size');
   };
 
   return (
     <FadeIn>
-      <div className="max-w-5xl">
-        <h1 className="text-4xl font-serif font-bold mb-4">Select Style</h1>
-        <p className="text-gray-500 text-lg mb-10">
-          Choose the visual direction for your shoot.
-        </p>
+      <div className="max-w-[1400px] mx-auto px-4 md:px-0">
+        <div className="mb-10 text-center lg:text-left">
+            <h1 className="text-4xl md:text-5xl font-serif font-bold mb-6 text-gray-900">Select Style</h1>
+            <p className="text-gray-500 text-lg font-light leading-relaxed max-w-2xl mx-auto lg:mx-0">
+              Choose the aesthetic direction for your content. This determines the lighting and art direction.
+            </p>
+        </div>
+        
+        {/* Popular Choices */}
+        <div className="flex flex-wrap gap-3 mb-10 justify-center lg:justify-start">
+           <span className="text-xs font-bold uppercase tracking-widest text-gray-400 self-center mr-2">Trending:</span>
+           {['Catalog', 'Editorial', 'On-Model'].map(tag => (
+             <button 
+                key={tag}
+                className="px-4 py-2 rounded-full bg-white border border-gray-200 text-gray-600 text-xs font-bold uppercase tracking-wider hover:border-black hover:text-black transition-all shadow-sm"
+                onClick={() => {
+                   const match = WIZARD_DATA.styles.find(s => s.label.includes(tag));
+                   if (match) handleSelect(match.id);
+                }}
+             >
+                {tag}
+             </button>
+           ))}
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {WIZARD_DATA.styles.map((style) => {
-             const isSelected = state.style === style.id;
-             return (
-                <button 
-                  key={style.id}
-                  onClick={() => handleSelect(style.id)}
-                  className={`group relative flex flex-col h-96 rounded-2xl overflow-hidden border-2 text-left transition-all duration-500 w-full ${
-                    isSelected 
-                      ? 'border-black ring-2 ring-black ring-offset-2 shadow-2xl scale-[1.02]' 
-                      : 'border-gray-100 hover:border-purple-200 hover:shadow-xl'
-                  }`}
-                >
-                  <img 
-                    src={style.image} 
-                    alt={style.label} 
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-opacity duration-300 ${isSelected ? 'opacity-95' : 'opacity-70 group-hover:opacity-80'}`} />
-                  
-                  <div className="absolute inset-0 p-8 flex flex-col justify-end text-white">
-                    <div className="flex justify-between items-end mb-3">
-                       <h3 className="text-3xl font-serif font-bold">{style.label}</h3>
-                       {isSelected && (
-                         <div className="bg-white text-black rounded-full p-1.5 shadow-lg animate-in zoom-in duration-300">
-                           <CheckCircle2 size={20} />
-                         </div>
-                       )}
-                    </div>
-                    <p className="text-gray-300 text-sm mb-6 leading-relaxed font-medium">{style.desc}</p>
-                    
-                    <div className="flex items-center justify-between border-t border-white/20 pt-4">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Starting at</span>
-                      <span className="font-bold text-xl">${style.price}<span className="text-xs font-normal text-gray-400">/shot</span></span>
-                    </div>
-                  </div>
-                </button>
-             );
-          })}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-16">
+          {WIZARD_DATA.styles.map((style) => (
+             <StyleCard
+               key={style.id}
+               id={style.id}
+               title={style.label}
+               price={style.price}
+               imageUrl={style.image}
+               isSelected={state.style === style.id}
+               onClick={() => handleSelect(style.id)}
+             />
+          ))}
+        </div>
+
+        {/* Secondary CTA */}
+        <div className="flex justify-center pb-10">
+           <Button 
+             size="lg" 
+             variant="outline" 
+             disabled={!state.style}
+             onClick={() => navigate('/start-project/size')}
+             className="px-12 h-14 text-sm border-gray-300 hover:border-black hover:bg-black hover:text-white transition-all shadow-sm"
+           >
+             Next Step <ArrowRight size={16} className="ml-2" />
+           </Button>
         </div>
       </div>
     </FadeIn>

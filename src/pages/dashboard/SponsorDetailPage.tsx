@@ -459,3 +459,63 @@ export const SponsorDetailPage: React.FC = () => {
             {!sponsor.owner_id && (
                 <div className="pt-2">
                     {!showInvite ? (
+                        <Button variant="primary" size="sm" fullWidth onClick={() => setShowInvite(true)}>
+                            <Send size={14} className="mr-2" /> Invite to Portal
+                        </Button>
+                    ) : (
+                        <div className="space-y-2 bg-purple-50 p-3 rounded-xl animate-in fade-in">
+                            <p className="text-xs font-bold text-purple-700 mb-1">Send Invite To:</p>
+                            <Input 
+                              value={inviteEmail} 
+                              onChange={(e) => setInviteEmail(e.target.value)} 
+                              className="bg-white text-xs"
+                              placeholder="Enter email"
+                            />
+                            <div className="flex gap-2 mt-2">
+                                <Button size="sm" variant="primary" fullWidth onClick={handleInvite} disabled={inviting}>
+                                    {inviting ? 'Sending...' : 'Send'}
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => setShowInvite(false)}>Cancel</Button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Contact Info */}
+            <div className="mt-6 pt-6 border-t border-gray-100 space-y-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">
+                        <User size={14} />
+                    </div>
+                    <div>
+                        <p className="text-sm font-bold text-gray-900">{sponsor.contact_name || 'No Name'}</p>
+                        <p className="text-xs text-gray-500">Primary Contact</p>
+                    </div>
+                </div>
+                {sponsor.contact_email && (
+                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <Mail size={14} className="text-gray-400" /> {sponsor.contact_email}
+                    </div>
+                )}
+                {sponsor.contact_phone && (
+                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <Phone size={14} className="text-gray-400" /> {sponsor.contact_phone}
+                    </div>
+                )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Edit Modal */}
+      {showEditForm && (
+        <SponsorForm 
+          sponsor={sponsor}
+          onClose={() => setShowEditForm(false)}
+          onSave={fetchData}
+        />
+      )}
+    </div>
+  );
+};

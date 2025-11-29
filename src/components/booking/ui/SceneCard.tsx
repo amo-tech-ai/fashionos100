@@ -28,12 +28,12 @@ export const SceneCard: React.FC<SceneCardProps> = ({
       onClick={onClick}
       disabled={disabled}
       className={`
-        group relative w-full aspect-[4/5] md:aspect-[4/3] 
+        group relative w-full aspect-[4/5] 
         rounded-2xl overflow-hidden text-left transition-all duration-500 ease-out
         ${disabled ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer'}
         ${selected 
-          ? 'ring-2 ring-white ring-offset-4 ring-offset-[#FBF8F5] shadow-[0_20px_40px_-15px_rgba(192,132,252,0.4)] transform scale-[1.02]' 
-          : 'hover:-translate-y-1 hover:shadow-2xl border border-transparent'
+          ? 'ring-4 ring-fashion-purple ring-offset-4 shadow-2xl transform scale-[1.02]' 
+          : 'hover:-translate-y-2 hover:shadow-xl border border-transparent'
         }
       `}
     >
@@ -50,45 +50,45 @@ export const SceneCard: React.FC<SceneCardProps> = ({
 
       {/* Overlay Gradient */}
       <div className={`
-        absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent 
+        absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent 
         transition-opacity duration-500
-        ${selected ? 'opacity-80' : 'opacity-50 group-hover:opacity-80'}
+        ${selected ? 'opacity-90' : 'opacity-70 group-hover:opacity-80'}
       `} />
 
       {/* Selection Checkmark */}
       <div className={`
-        absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center
-        backdrop-blur-md border border-white/20 transition-all duration-500
+        absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center
+        backdrop-blur-md border border-white/20 transition-all duration-500 shadow-lg z-10
         ${selected 
-          ? 'bg-fashion-purple text-white scale-100 opacity-100 shadow-lg' 
-          : 'bg-black/20 text-white/0 scale-75 opacity-0'
+          ? 'bg-fashion-purple text-white scale-100 opacity-100' 
+          : 'bg-white/10 text-white/0 scale-75 opacity-0'
         }
       `}>
-        <Check size={16} strokeWidth={3} />
+        <Check size={20} strokeWidth={3} />
       </div>
 
       {/* Content */}
-      <div className="absolute bottom-0 left-0 p-6 w-full transform transition-transform duration-500 translate-y-1 group-hover:translate-y-0">
+      <div className="absolute bottom-0 left-0 p-8 w-full transform transition-transform duration-500 translate-y-2 group-hover:translate-y-0">
         {badge && (
-          <span className="inline-block px-2.5 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest text-white bg-white/20 backdrop-blur-md rounded-md border border-white/10 shadow-sm">
+          <span className="inline-block px-3 py-1 mb-3 text-[10px] font-bold uppercase tracking-widest text-white bg-white/20 backdrop-blur-md rounded-lg border border-white/10 shadow-sm">
             {badge}
           </span>
         )}
         <h3 className={`
-          font-serif text-2xl md:text-3xl font-bold text-white leading-none mb-2 transition-all duration-300
-          ${selected ? 'text-fashion-purple drop-shadow-sm' : 'group-hover:text-white'}
+          font-serif text-3xl font-bold text-white leading-none mb-2 transition-all duration-300
+          ${selected ? 'text-purple-100' : 'group-hover:text-white'}
         `}>
           {label}
         </h3>
         {subtitle && (
-          <p className="text-xs text-gray-300 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-75 line-clamp-1">
+          <p className="text-sm text-gray-300 font-medium transition-opacity duration-500 line-clamp-2 opacity-80 group-hover:opacity-100">
             {subtitle}
           </p>
         )}
       </div>
       
       {/* Disabled Overlay */}
-      {disabled && <div className="absolute inset-0 bg-gray-900/20 backdrop-grayscale" />}
+      {disabled && <div className="absolute inset-0 bg-gray-900/60 backdrop-grayscale z-20" />}
     </button>
   );
 };
