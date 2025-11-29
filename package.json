@@ -20,7 +20,9 @@
     "path": "^0.12.7",
     "url": "^0.11.4",
     "zod": "^4.1.13",
-    "react-hook-form": "^7.67.0"
+    "react-hook-form": "^7.67.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
