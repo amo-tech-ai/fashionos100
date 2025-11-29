@@ -1,0 +1,12 @@
+### Test 3: Remote image URL - Should download, convert, and process
+POST http://localhost:54321/functions/v1/generate-image-final
+Content-Type: application/json
+
+{
+  "prompt": "Enhance this image with professional fashion photography lighting",
+  "image_url": "https://picsum.photos/600/600"
+}
+
+### Expected: Should return 200 with refined image base64
+### Should include fileUri in debug section (if file upload flow is used)
+

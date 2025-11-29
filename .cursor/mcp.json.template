@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "gcloud": {
+      "command": "npx",
+      "args": ["-y", "@google-cloud/gcloud-mcp"]
+    },
+    "observability": {
+      "command": "npx",
+      "args": ["-y", "@google-cloud/observability-mcp"]
+    },
+    "storage": {
+      "command": "npx",
+      "args": ["-y", "@google-cloud/storage-mcp"]
+    }
+  }
+}
+

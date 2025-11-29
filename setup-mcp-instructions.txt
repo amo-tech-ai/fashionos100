@@ -1,0 +1,21 @@
+# Quick Setup Instructions for Google Cloud MCP
+
+## Step 1: Install gcloud CLI (if not installed)
+curl https://sdk.cloud.google.com | bash
+exec -l $SHELL
+gcloud init
+
+## Step 2: Authenticate
+gcloud auth login
+gcloud auth application-default login
+
+## Step 3: Create MCP Config
+# Copy the template to the actual config file:
+cp .cursor/mcp.json.template .cursor/mcp.json
+
+## Step 4: Restart Cursor
+# Close and reopen Cursor to load the MCP configuration
+
+## Step 5: Verify
+# MCP servers will auto-connect when you use them
+# Check available MCP resources in Cursor's MCP panel

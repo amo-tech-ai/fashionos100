@@ -1,79 +1,23 @@
-
-import React, { useEffect, useState } from 'react';
-import { Calendar, CheckCircle, Clock, Star, X, Plus, ArrowUpRight, ArrowDownRight, Loader2, Camera } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { Calendar, CheckCircle, Clock, Star, X, Plus, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { DashboardKPI } from '../../types';
-import { supabase } from '../../lib/supabase';
-import { FadeIn } from '../../components/FadeIn';
-
-const StatusBadge = ({ status }: { status: string }) => {
-  const styles: Record<string, string> = {
-    requested: "bg-amber-50 text-amber-700 border-amber-200",
-    confirmed: "bg-blue-50 text-blue-700 border-blue-200",
-    shooting: "bg-purple-50 text-purple-700 border-purple-200",
-    completed: "bg-green-50 text-green-700 border-green-200",
-  };
-  const normalized = status?.toLowerCase() || 'requested';
-  return (
-    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${styles[normalized] || 'bg-gray-100'}`}>
-      {status}
-    </span>
-  );
-};
 
 export const DashboardBookings = () => {
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchMyBookings = async () => {
-      try {
-        const { data: { user } } = await (supabase.auth as any).getUser();
-        // If user is not logged in, we might not show anything or show local storage/demo data
-        // For this MVP, we'll fetch all shoots to demonstrate the feature if no RLS restricts it, 
-        // or filter by user if they are logged in.
-        
-        let query = supabase.from('shoots').select('*').order('created_at', { ascending: false });
-        
-        if (user) {
-           query = query.eq('designer_id', user.id);
-        }
-
-        const { data, error } = await query;
-        
-        if (!error && data) {
-          setBookings(data);
-        }
-      } catch (e) {
-        console.error("Error fetching bookings", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMyBookings();
-  }, []);
-
   const kpis: DashboardKPI[] = [
-    { label: 'Total Bookings', val: bookings.length.toString(), sub: 'All-time', icon: Calendar, color: 'bg-indigo-50 text-indigo-600', trend: 'up' },
-    { label: 'In Production', val: bookings.filter(b => ['confirmed', 'shooting'].includes(b.status)).length.toString(), sub: 'Active shoots', icon: Camera, color: 'bg-pink-50 text-pink-600', trend: 'up' },
-    { label: 'Total Spend', val: `$${bookings.reduce((acc, curr) => acc + (curr.estimated_quote || 0), 0).toLocaleString()}`, sub: 'Lifetime', icon: Clock, color: 'bg-blue-50 text-blue-600', trend: 'up' },
-    { label: 'Completed', val: bookings.filter(b => b.status === 'completed').length.toString(), sub: 'Assets delivered', icon: CheckCircle, color: 'bg-green-50 text-green-600', trend: 'up' },
-    { label: 'Drafts', val: '2', sub: 'Saved projects', icon: Star, color: 'bg-amber-50 text-amber-600', trend: 'up' },
+    { label: 'Total Bookings', val: '55,000', sub: 'All-time bookings', icon: Calendar, color: 'bg-indigo-50 text-indigo-600', trend: 'up' },
+    { label: 'Tickets Sold', val: '45,000', sub: 'Confirmed tickets', icon: CheckCircle, color: 'bg-pink-50 text-pink-600', trend: 'up' },
+    { label: 'Total Earnings', val: '$275,450', sub: 'Gross Revenue', icon: Clock, color: 'bg-blue-50 text-blue-600', trend: 'up' },
+    { label: 'Upcoming', val: '124', sub: 'Next 7 days', icon: Star, color: 'bg-amber-50 text-amber-600', trend: 'up' },
+    { label: 'Cancelled', val: '12', sub: 'This month', icon: X, color: 'bg-red-50 text-red-600', trend: 'down' },
   ];
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col md:flex-row justify-between gap-4 items-end">
-        <div>
-            <h1 className="text-3xl font-serif font-bold text-gray-900">My Bookings</h1>
-            <p className="text-gray-500">Track your photoshoots and download assets.</p>
-        </div>
+      <div className="flex flex-col md:flex-row justify-between gap-4">
+        <h1 className="text-3xl font-serif font-bold text-gray-900">Bookings</h1>
         <div className="flex items-center gap-3">
-           <Link to="/start-project">
-             <Button variant="accent" size="sm" className="gap-2"><Plus size={14} /> Book New Shoot</Button>
-           </Link>
+           <Button variant="accent" size="sm" className="gap-2"><Plus size={14} /> Add Booking</Button>
         </div>
       </div>
 
@@ -91,58 +35,9 @@ export const DashboardBookings = () => {
           </div>
         ))}
       </div>
-
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[300px]">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="font-bold text-xl">Recent Projects</h2>
-          </div>
-          
-          {loading ? (
-             <div className="flex items-center justify-center h-64">
-                <Loader2 className="animate-spin text-gray-300" size={32} />
-             </div>
-          ) : bookings.length === 0 ? (
-             <div className="flex flex-col items-center justify-center h-64 text-center p-8">
-                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                    <Camera className="text-gray-400" size={24} />
-                </div>
-                <h3 className="font-bold text-gray-900 mb-2">No bookings yet</h3>
-                <p className="text-gray-500 mb-6 max-w-xs">Start your first project to see it tracked here.</p>
-                <Link to="/start-project"><Button variant="outline">Start Project</Button></Link>
-             </div>
-          ) : (
-             <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-50">
-                   <tr>
-                      <th className="px-6 py-4">Project ID</th>
-                      <th className="px-6 py-4">Service</th>
-                      <th className="px-6 py-4">Date</th>
-                      <th className="px-6 py-4">Amount</th>
-                      <th className="px-6 py-4">Status</th>
-                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                   {bookings.map((booking) => (
-                      <tr key={booking.id} className="hover:bg-gray-50/50 transition-colors">
-                         <td className="px-6 py-4 font-mono text-xs text-gray-500 uppercase">#{booking.id.substring(0, 8)}</td>
-                         <td className="px-6 py-4">
-                            <p className="font-bold text-gray-900 capitalize">{booking.shoot_type}</p>
-                            <p className="text-xs text-gray-500 capitalize">{booking.fashion_category}</p>
-                         </td>
-                         <td className="px-6 py-4 text-gray-600">
-                            {new Date(booking.created_at).toLocaleDateString()}
-                         </td>
-                         <td className="px-6 py-4 font-medium">
-                            ${(booking.estimated_quote || 0).toLocaleString()}
-                         </td>
-                         <td className="px-6 py-4">
-                            <StatusBadge status={booking.status} />
-                         </td>
-                      </tr>
-                   ))}
-                </tbody>
-             </table>
-          )}
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+          <h2 className="font-bold mb-4">Recent Bookings Table</h2>
+          <p className="text-sm text-gray-500">Full booking ledger and transaction history.</p>
       </div>
     </div>
   );

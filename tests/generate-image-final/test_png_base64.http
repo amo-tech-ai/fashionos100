@@ -1,0 +1,12 @@
+### Test 2: PNG base64 - Should process successfully
+POST http://localhost:54321/functions/v1/generate-image-final
+Content-Type: application/json
+
+{
+  "prompt": "Fashion show stage preview with enhanced lighting",
+  "baseImageBase64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+}
+
+### Expected: Should return 200 with refined image base64 and debug info
+### Note: The base64 above is a 1x1 pixel PNG for testing
+

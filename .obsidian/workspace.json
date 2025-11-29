@@ -1,0 +1,225 @@
+{
+  "main": {
+    "id": "8837ad7865d6f657",
+    "type": "split",
+    "children": [
+      {
+        "id": "6b00a180df425c7d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9ef1e77fd8381324",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "5389befd675729ce",
+    "type": "split",
+    "children": [
+      {
+        "id": "dd63fbd97902b219",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "074dc46deaed8653",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "8eba7f37963d1830",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "9931fb70d5cf8091",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "f899a3bd5e25983d",
+    "type": "split",
+    "children": [
+      {
+        "id": "5a8839c80b4ea941",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8d023afbcafecdd2",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "ac8e9449c810ebdd",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "ea163e7c39d46e07",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "e44738c3987eb63b",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "ab82c205702fe46d",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "074dc46deaed8653",
+  "lastOpenFiles": [
+    "docs/services/00-DOCUMENTATION-UPDATES.md",
+    "docs/services/03-shoot-schema.md",
+    "docs/services/002-service-gemeni.md",
+    "docs/services/04-diagrams.md",
+    "docs/services/001-service-plan.md",
+    "docs/services",
+    "services/07-services-prompts.md",
+    "services/Untitled.md",
+    "services/11-shoot-flow.md",
+    "services/10-shoot-booking-plan.md",
+    "services/06-service-prompts.md",
+    "services/05-design-prompts.md",
+    "services/04-diagrams.md",
+    "services/03-shoot-schema.md",
+    "services/002-service-gemeni.md",
+    "services/001-service-plan.md",
+    "services/00-DOCUMENTATION-UPDATES.md",
+    "services",
+    "docs/services/Untitled.md",
+    "docs/services/06-service-prompts.md",
+    "docs/gemeni/01-progress-gemeni.md",
+    "docs/services/05-design-prompts.md",
+    "docs/services/11-shoot-flow.md",
+    "docs/services/10-shoot-booking-plan.md",
+    "docs/services/06-shoot-flow.md",
+    "docs/services/05-shoot-booking-plan.md",
+    "docs/services/02-service-gemeni.md",
+    "dist/index.html",
+    "dist/assets/vendor-BfiL1hLP.js",
+    "dist/assets/main-D7Ws4It2.css",
+    "dist/assets/main-Cd1l12r2.js",
+    "dist/assets",
+    "docs/17-prompt-fix.md",
+    "node_modules/@tailwindcss/oxide-linux-x64-gnu/LICENSE",
+    "node_modules/enhanced-resolve/types.d.ts",
+    "node_modules/enhanced-resolve/package.json",
+    "figma/node_modules/date-fns/docs/logotype.svg",
+    "figma/node_modules/date-fns/docs/logo.svg",
+    "screenshoots/event-wizard/5.png",
+    "screenshoots/event-wizard/4.png",
+    "screenshoots/event-wizard/2.png",
+    "screenshoots/event-wizard/1a.png",
+    "screenshoots/event-wizard/1.png"
+  ]
+}
