@@ -8,6 +8,8 @@ import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
 import { useInvoices } from '../../hooks/useInvoices';
 import { formatCurrency } from '../../utils/format';
+import { StatusBadge } from '../../components/StatusBadge';
+import { EmptyState } from '../../components/EmptyState';
 
 // --- Components ---
 
@@ -80,12 +82,7 @@ const TransactionRow: React.FC<TransactionRowProps> = ({ date, title, type, amou
       {amount > 0 ? 'Payment' : 'Refund/Exp'}
     </td>
     <td className="px-6 py-4">
-      <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-        status === 'succeeded' ? 'bg-green-50 text-green-600' : 
-        status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-500'
-      }`}>
-        {status}
-      </span>
+      <StatusBadge status={status} />
     </td>
   </tr>
 );
@@ -320,7 +317,15 @@ export const DashboardFinancials: React.FC = () => {
                         />
                      ))}
                      {invoices.length === 0 && (
-                        <tr><td colSpan={5} className="p-8 text-center text-gray-400">No transactions found</td></tr>
+                        <tr>
+                            <td colSpan={5}>
+                                <EmptyState 
+                                    title="No transactions found" 
+                                    description="Your financial history will appear here." 
+                                    className="border-none py-12"
+                                />
+                            </td>
+                        </tr>
                      )}
                   </tbody>
                </table>

@@ -3,14 +3,16 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Calendar, Ticket, MoreHorizontal, MapPin, 
-  Users, DollarSign, Search, 
-  CheckCircle2, AlertCircle, Plus, ArrowUpRight, Loader2
+  DollarSign, Search, 
+  CheckCircle2, Plus, ArrowUpRight, Loader2
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
 import { useEvents } from '../../hooks/useEvents';
 import { useRealtime } from '../../hooks/useRealtime';
 import { useAuth } from '../../context/AuthContext';
+import { StatusBadge } from '../../components/StatusBadge';
+import { EmptyState } from '../../components/EmptyState';
 
 // --- Components ---
 
@@ -194,8 +196,8 @@ export const DashboardEvents = () => {
                                <Calendar size={48} />
                             </div>
                          )}
-                         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                            {evt.status}
+                         <div className="absolute top-3 right-3">
+                            <StatusBadge status={evt.status} className="shadow-sm backdrop-blur-md bg-white/90" />
                          </div>
                       </div>
                       <div className="p-5 flex flex-col flex-grow">
@@ -213,16 +215,14 @@ export const DashboardEvents = () => {
                 ))}
             </div>
          ) : (
-            <div className="bg-white border-2 border-dashed border-gray-200 rounded-3xl p-12 text-center">
-               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-                  <Calendar size={24} />
-               </div>
-               <h3 className="text-xl font-serif font-bold text-gray-900 mb-2">No Events Yet</h3>
-               <p className="text-gray-500 mb-6">Get started by creating your first event with our AI wizard.</p>
-               <Link to="/dashboard/events/new">
-                  <Button variant="primary">Create New Event</Button>
-               </Link>
-            </div>
+            <EmptyState 
+               icon={Calendar}
+               title="No Events Yet"
+               description="Get started by creating your first event with our AI wizard."
+               actionLabel="Create New Event"
+               actionLink="/dashboard/events/new"
+               className="border-2 border-dashed border-gray-200"
+            />
          )}
       </section>
     </div>

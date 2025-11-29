@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { MoreHorizontal, DollarSign, CheckCircle2, Clock, AlertCircle, CalendarDays } from 'lucide-react';
+import { MoreHorizontal, DollarSign, AlertCircle, CalendarDays } from 'lucide-react';
 import { EventSponsor } from '../../types/sponsorship';
+import { StatusBadge } from '../StatusBadge';
 
 interface SponsorCardProps {
   sponsor: EventSponsor;
@@ -9,16 +10,6 @@ interface SponsorCardProps {
 }
 
 export const SponsorCard: React.FC<SponsorCardProps> = ({ sponsor, onClick }) => {
-  const statusColors: Record<string, string> = {
-    'Lead': 'bg-gray-100 text-gray-600',
-    'Contacted': 'bg-blue-50 text-blue-600',
-    'Negotiating': 'bg-amber-50 text-amber-600',
-    'Signed': 'bg-purple-50 text-purple-600',
-    'Paid': 'bg-green-50 text-green-600',
-    'Activation Ready': 'bg-indigo-50 text-indigo-600',
-    'Churned': 'bg-red-50 text-red-600'
-  };
-
   const totalValue = sponsor.cash_value + (sponsor.in_kind_value || 0);
 
   return (
@@ -66,9 +57,7 @@ export const SponsorCard: React.FC<SponsorCardProps> = ({ sponsor, onClick }) =>
       )}
 
       <div className="pt-3 border-t border-gray-50 flex justify-between items-center">
-        <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${statusColors[sponsor.status] || 'bg-gray-100 text-gray-600'}`}>
-          {sponsor.status}
-        </span>
+        <StatusBadge status={sponsor.status} />
         {sponsor.status === 'Signed' && !sponsor.contract_url && (
             <span className="flex items-center gap-1 text-[10px] text-amber-500 font-bold">
               <AlertCircle size={10} /> Contract Pending

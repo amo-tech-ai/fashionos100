@@ -2,17 +2,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Calendar, MapPin, Upload, Download, FileText, CheckCircle, 
-  Loader2, User, Eye, Heart, Share2, TrendingUp, Plus, Sparkles, DollarSign, CreditCard, Filter, CheckSquare, X
+  Loader2, Eye, Heart, Share2, TrendingUp, Sparkles, DollarSign, CreditCard, Filter, CheckSquare, X
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
-import { supabase } from '../../lib/supabase';
+import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { SponsorProfile, EventSponsor, SponsorActivation, SponsorDeliverable, SponsorRoiMetric } from '../../types/sponsorship';
 import { SocialPlanWidget } from '../../components/sponsors/SocialPlanWidget';
 import { ResponsiveLineChart, ResponsiveBarChart } from '../../components/charts/DynamicCharts';
 import { useToast } from '../../components/Toast';
 import { aiService } from '../../lib/ai-service';
-import { formatCurrency } from '../../utils/format';
+import { StatusBadge } from '../../components/StatusBadge';
 
 export const SponsorPortal: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'activations' | 'marketing'>('dashboard');
@@ -295,9 +295,7 @@ export const SponsorPortal: React.FC = () => {
                     <p className="text-sm font-bold uppercase tracking-widest mb-1">{(activeDeal.event as any)?.title}</p>
                     <p className="text-xs text-purple-100 mb-3">{activeDeal.level} Partner</p>
                     <div className="flex justify-end gap-2">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-bold border ${activeDeal.status === 'Activation Ready' ? 'bg-green-500/20 border-green-500/40 text-green-100' : 'bg-white/10 border-white/20 text-white'}`}>
-                           {activeDeal.status}
-                        </span>
+                        <StatusBadge status={activeDeal.status} className={activeDeal.status === 'Activation Ready' ? 'bg-green-500/20 border-green-500/40 text-green-100' : 'bg-white/10 border-white/20 text-white'} />
                         {activeDeal.status !== 'Paid' && activeDeal.status !== 'Activation Ready' && (
                             <Button 
                                 size="sm" 
@@ -449,9 +447,7 @@ export const SponsorPortal: React.FC = () => {
                                 </div>
                                 <div>
                                     {item.status === 'uploaded' || item.status === 'approved' ? (
-                                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold uppercase flex items-center gap-1">
-                                           <CheckSquare size={12} /> {item.status}
-                                        </span>
+                                        <StatusBadge status={item.status} />
                                     ) : (
                                         <div className="relative">
                                             <input 
@@ -522,7 +518,7 @@ export const SponsorPortal: React.FC = () => {
                       <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
                           <div className="flex justify-between items-start mb-4">
                               <h3 className="font-serif font-bold text-xl">{act.title}</h3>
-                              <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase">{act.status}</span>
+                              <StatusBadge status={act.status} />
                           </div>
                           <div className="space-y-2 text-sm text-gray-600">
                               <p className="flex items-center gap-2"><Calendar size={16}/> {(act as any).event_sponsor?.event?.title}</p>
