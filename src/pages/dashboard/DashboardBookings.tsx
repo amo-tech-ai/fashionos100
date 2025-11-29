@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Calendar, CheckCircle, Clock, Star, X, Plus, ArrowUpRight, ArrowDownRight, Loader2, Camera } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, Star, X, Plus, ArrowUpRight, ArrowDownRight, Loader2, Camera, Search, Filter, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { DashboardKPI } from '../../types';
@@ -12,8 +11,9 @@ const StatusBadge = ({ status }: { status: string }) => {
   const styles: Record<string, string> = {
     requested: "bg-amber-50 text-amber-700 border-amber-200",
     confirmed: "bg-blue-50 text-blue-700 border-blue-200",
-    shooting: "bg-purple-50 text-purple-700 border-purple-200",
+    shooting: "bg-purple-50 text-purple-700 border-purple-200 animate-pulse",
     completed: "bg-green-50 text-green-700 border-green-200",
+    cancelled: "bg-red-50 text-red-700 border-red-200",
   };
   const normalized = status?.toLowerCase() || 'requested';
   return (
@@ -24,7 +24,19 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 export const DashboardBookings = () => {
-  const { shoots, loading, kpis, refetch } = useShoots();
+  const { 
+    shoots, 
+    loading, 
+    kpis, 
+    refetch,
+    filters,
+    setPage,
+    setStatusFilter,
+    setSearchTerm,
+    updateStatus,
+    currentPage,
+    totalPages
+  } = useShoots();
 
   // Realtime updates for bookings
   useRealtime('shoots', () => {
@@ -53,6 +65,7 @@ export const DashboardBookings = () => {
         </div>
       </div>
 
+      {/* KPI Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {kpiList.map((k, i) => (
           <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
@@ -68,9 +81,37 @@ export const DashboardBookings = () => {
         ))}
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[300px]">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="font-bold text-xl">Recent Projects</h2>
+      {/* Main Content Table */}
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[400px]">
+          
+          {/* Toolbar */}
+          <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50/50">
+             <div className="flex gap-2 overflow-x-auto hide-scrollbar w-full md:w-auto">
+                {['All', 'Requested', 'Confirmed', 'Completed', 'Cancelled'].map(status => (
+                   <button
+                      key={status}
+                      onClick={() => setStatusFilter(status)}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${filters.status === status ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
+                   >
+                      {status}
+                   </button>
+                ))}
+             </div>
+             <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="relative flex-1 md:w-64">
+                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                   <input 
+                      type="text" 
+                      placeholder="Search by ID or Category..." 
+                      className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-full text-xs focus:outline-none focus:ring-2 focus:ring-purple-100 transition-all"
+                      value={filters.search}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                   />
+                </div>
+                <Button variant="white" size="sm" className="gap-2">
+                   <Filter size={14} /> Filter
+                </Button>
+             </div>
           </div>
           
           {loading ? (
@@ -82,8 +123,8 @@ export const DashboardBookings = () => {
                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                     <Camera className="text-gray-400" size={24} />
                 </div>
-                <h3 className="font-bold text-gray-900 mb-2">No bookings yet</h3>
-                <p className="text-gray-500 mb-6 max-w-xs">Start your first project to see it tracked here.</p>
+                <h3 className="font-bold text-gray-900 mb-2">No bookings found</h3>
+                <p className="text-gray-500 mb-6 max-w-xs">Try adjusting your filters or start a new project.</p>
                 <Link to="/start-project"><Button variant="outline">Start Project</Button></Link>
              </div>
           ) : (
@@ -95,11 +136,12 @@ export const DashboardBookings = () => {
                       <th className="px-6 py-4">Date</th>
                       <th className="px-6 py-4">Amount</th>
                       <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
                    </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                    {shoots.map((booking) => (
-                      <tr key={booking.id} className="hover:bg-gray-50/50 transition-colors">
+                      <tr key={booking.id} className="hover:bg-gray-50/50 transition-colors group">
                          <td className="px-6 py-4 font-mono text-xs text-gray-500 uppercase">#{booking.id.substring(0, 8)}</td>
                          <td className="px-6 py-4">
                             <p className="font-bold text-gray-900 capitalize">{booking.shoot_type}</p>
@@ -112,13 +154,52 @@ export const DashboardBookings = () => {
                             ${(booking.estimated_quote || 0).toLocaleString()}
                          </td>
                          <td className="px-6 py-4">
-                            <StatusBadge status={booking.status} />
+                            <div className="flex items-center gap-2">
+                                <StatusBadge status={booking.status} />
+                                {/* Quick Action Mock for Optimistic Update Demo */}
+                                {booking.status === 'requested' && (
+                                    <button 
+                                        onClick={() => updateStatus(booking.id, 'confirmed')}
+                                        className="text-[10px] text-blue-600 underline hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        Confirm
+                                    </button>
+                                )}
+                            </div>
+                         </td>
+                         <td className="px-6 py-4 text-right">
+                             <button className="p-2 hover:bg-gray-200 rounded-full text-gray-400 hover:text-black transition-colors">
+                                 <MoreHorizontal size={16} />
+                             </button>
                          </td>
                       </tr>
                    ))}
                 </tbody>
              </table>
           )}
+
+          {/* Pagination Footer */}
+          <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <p className="text-xs text-gray-500">
+                  Page {currentPage} of {totalPages}
+              </p>
+              <div className="flex gap-2">
+                  <button 
+                    disabled={currentPage === 1}
+                    onClick={() => setPage(currentPage - 1)}
+                    className="p-2 border border-gray-200 rounded-lg bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                  >
+                      <ChevronLeft size={16} />
+                  </button>
+                  <button 
+                    disabled={currentPage === totalPages}
+                    onClick={() => setPage(currentPage + 1)}
+                    className="p-2 border border-gray-200 rounded-lg bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                  >
+                      <ChevronRight size={16} />
+                  </button>
+              </div>
+          </div>
       </div>
     </div>
   );

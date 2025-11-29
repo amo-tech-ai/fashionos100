@@ -1,24 +1,8 @@
-
-import React, { useEffect, useState } from 'react';
-import { DollarSign, Download, FileText, Search, Filter, CheckCircle2, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import React from 'react';
+import { DollarSign, Download, FileText, Search, Filter, Clock, Loader2 } from 'lucide-react';
 import { PageHeader, StatCard } from '../../components/dashboard/Shared';
 import { Button } from '../../components/Button';
-import { supabase } from '../../lib/supabase';
-import { FadeIn } from '../../components/FadeIn';
-
-interface Payment {
-  id: string;
-  amount: number;
-  status: string;
-  created_at: string;
-  shoot?: {
-    fashion_category: string;
-    shoot_type: string;
-  };
-  user?: {
-    email: string;
-  };
-}
+import { useInvoices } from '../../hooks/useInvoices';
 
 const StatusBadge = ({ status }: { status: string }) => {
   const styles = {
@@ -38,26 +22,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 export const DashboardInvoices: React.FC = () => {
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchPayments = async () => {
-      const { data, error } = await supabase
-        .from('payments')
-        .select('*, shoot:shoots(fashion_category, shoot_type)')
-        .order('created_at', { ascending: false });
-      
-      if (!error && data) {
-        setPayments(data);
-      }
-      setLoading(false);
-    };
-    fetchPayments();
-  }, []);
-
-  const totalRevenue = payments.filter(p => p.status === 'succeeded').reduce((acc, p) => acc + p.amount, 0);
-  const pendingRevenue = payments.filter(p => p.status === 'pending').reduce((acc, p) => acc + p.amount, 0);
+  const { invoices, stats, loading } = useInvoices();
 
   return (
     <div className="animate-in fade-in duration-500 pb-20">
@@ -69,16 +34,16 @@ export const DashboardInvoices: React.FC = () => {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <StatCard label="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} icon={DollarSign} color="bg-green-50 text-green-600" />
-        <StatCard label="Pending" value={`$${pendingRevenue.toLocaleString()}`} icon={Clock} color="bg-amber-50 text-amber-600" />
-        <StatCard label="Transactions" value={payments.length.toString()} icon={FileText} color="bg-blue-50 text-blue-600" />
+        <StatCard label="Total Revenue" value={`$${stats.totalRevenue.toLocaleString()}`} icon={DollarSign} color="bg-green-50 text-green-600" />
+        <StatCard label="Pending" value={`$${stats.pendingRevenue.toLocaleString()}`} icon={Clock} color="bg-amber-50 text-amber-600" />
+        <StatCard label="Transactions" value={stats.totalTransactions.toString()} icon={FileText} color="bg-blue-50 text-blue-600" />
       </div>
 
       <div className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden min-h-[400px]">
         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <div className="relative">
              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-             <input type="text" placeholder="Search invoice ID..." className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-full text-sm w-64" />
+             <input type="text" placeholder="Search invoice ID..." className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-full text-sm w-64 focus:ring-2 focus:ring-purple-100 outline-none" />
           </div>
           <Button variant="white" size="sm" className="gap-2">
              <Filter size={14} /> Filter
@@ -87,7 +52,7 @@ export const DashboardInvoices: React.FC = () => {
 
         {loading ? (
            <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin text-gray-300" /></div>
-        ) : payments.length === 0 ? (
+        ) : invoices.length === 0 ? (
            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
               <FileText size={48} className="mb-4 opacity-20" />
               <p>No invoices found.</p>
@@ -105,7 +70,7 @@ export const DashboardInvoices: React.FC = () => {
                  </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                 {payments.map((payment) => (
+                 {invoices.map((payment) => (
                     <tr key={payment.id} className="hover:bg-gray-50/50 transition-colors">
                        <td className="px-6 py-4 font-mono text-xs text-gray-500">#{payment.id.substring(0, 8)}</td>
                        <td className="px-6 py-4">
