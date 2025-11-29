@@ -160,3 +160,26 @@ export const SponsorDealWizard: React.FC = () => {
         <FadeIn key={step}>
           {renderStep()}
         </FadeIn>
+      </div>
+
+      {/* Footer Actions */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-40 lg:pl-64 pb-safe">
+        <div className="container mx-auto px-6 max-w-4xl flex justify-between items-center">
+          <Button variant="ghost" onClick={handleBack} className="text-gray-500">
+            <ArrowLeft size={16} className="mr-2" /> Back
+          </Button>
+          
+          {step === DealStep.REVIEW ? (
+            <Button variant="primary" className="px-8" onClick={handleSubmit} disabled={isSaving}>
+              {isSaving ? 'Saving...' : 'Create Deal'} <Save size={16} className="ml-2" />
+            </Button>
+          ) : (
+            <Button variant="primary" className="px-8" onClick={handleNext}>
+              Next Step <ArrowRight size={16} className="ml-2" />
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};

@@ -146,35 +146,37 @@ export const DashboardCalendar = () => {
       </div>
 
       {viewMode === 'Month' && (
-         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50/50">
-               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className="py-3 text-center text-[10px] font-bold uppercase tracking-widest text-gray-400">{d}</div>)}
+         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto">
+            <div className="min-w-[800px]">
+              <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50/50">
+                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className="py-3 text-center text-[10px] font-bold uppercase tracking-widest text-gray-400">{d}</div>)}
+              </div>
+              
+              {loading ? (
+                   <div className="min-h-[600px] flex items-center justify-center">
+                       <Loader2 className="animate-spin text-gray-300" size={48} />
+                   </div>
+              ) : (
+                  <div className="grid grid-cols-7 grid-rows-5 min-h-[600px] divide-x divide-gray-100 divide-y">
+                      {/* Offset for start of month - simplified for mock logic */}
+                      <div className="bg-gray-50/30"></div><div className="bg-gray-50/30"></div>
+                      
+                      {days.map(day => (
+                          <div key={day} className="relative p-2 h-full hover:bg-gray-50/50 transition-colors group min-h-[100px]">
+                              <span className="text-xs font-medium mb-2 block">{day}</span>
+                              <div className="space-y-1.5">
+                                  {getEventsForDay(day).map((ev, i) => (
+                                  <button key={i} onClick={() => setSelectedEvent(ev)} className={`w-full text-left p-2 rounded-lg text-[10px] ${ev.color} hover:brightness-95 transition-all`}>
+                                      <div className="font-bold truncate">{ev.title}</div>
+                                      <div className="text-[9px] opacity-80">{ev.time}</div>
+                                  </button>
+                                  ))}
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              )}
             </div>
-            
-            {loading ? (
-                 <div className="min-h-[600px] flex items-center justify-center">
-                     <Loader2 className="animate-spin text-gray-300" size={48} />
-                 </div>
-            ) : (
-                <div className="grid grid-cols-7 grid-rows-5 min-h-[600px] divide-x divide-gray-100 divide-y">
-                    {/* Offset for start of month - simplified for mock logic */}
-                    <div className="bg-gray-50/30"></div><div className="bg-gray-50/30"></div>
-                    
-                    {days.map(day => (
-                        <div key={day} className="relative p-2 h-full hover:bg-gray-50/50 transition-colors group min-h-[100px]">
-                            <span className="text-xs font-medium mb-2 block">{day}</span>
-                            <div className="space-y-1.5">
-                                {getEventsForDay(day).map((ev, i) => (
-                                <button key={i} onClick={() => setSelectedEvent(ev)} className={`w-full text-left p-2 rounded-lg text-[10px] ${ev.color} hover:brightness-95 transition-all`}>
-                                    <div className="font-bold truncate">{ev.title}</div>
-                                    <div className="text-[9px] opacity-80">{ev.time}</div>
-                                </button>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
          </div>
       )}
 
