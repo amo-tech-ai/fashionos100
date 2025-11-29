@@ -3,7 +3,7 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    "./**/*.{js,ts,jsx,tsx}", // 👈 Fix: Scans all subfolders recursively in root as backup
+    "./**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {

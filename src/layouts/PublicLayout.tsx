@@ -39,8 +39,8 @@ export const PublicLayout: React.FC = () => {
   ];
 
   return (
-    // Fix: min-h-[100dvh] ensures it fills mobile screens correctly including address bar area
-    <div className="flex flex-col min-h-[100dvh] font-sans text-fashion-black">
+    // flex-col and min-h-screen ensure the footer stays at the bottom
+    <div className="flex flex-col min-h-screen font-sans text-fashion-black bg-[#FBF8F5]">
       <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled ? 'bg-white/95 backdrop-blur-md py-4 shadow-sm border-b border-gray-100' : 'bg-white/0 py-6'}`}>
         <div className="container mx-auto px-6 md:px-12 flex justify-between items-center">
           <Link to="/" className="text-2xl font-serif font-bold tracking-tighter z-50 relative">FashionOS <span className="text-fashion-purple">.</span></Link>

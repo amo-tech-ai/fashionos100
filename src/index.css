@@ -12,16 +12,20 @@ html, body {
   padding: 0;
   scroll-behavior: smooth;
   background-color: #FBF8F5;
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
   /* 
-     Fix: Removed 'display: flex' and 'min-height'.
-     This allows DashboardLayout to use h-dvh (dynamic viewport height) 
-     without parent container conflicts.
+     Fix: Removed 'height: 100%' constraint.
+     min-height allows the public pages to grow naturally.
+     DashboardLayout will enforce its own height constraints.
   */
-  display: block;
+  min-height: 100%;
   width: 100%;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Custom scrollbar */
