@@ -1,6 +1,20 @@
 
 # Changelog
 
+## [1.5.0] - 2025-03-04
+### 🚀 Production Readiness & Integration
+- **Studio Database Integration:** Connected `VisualQAPage` and `DeliveryPortal` to real Supabase tables (`shoot_assets`, `qa_reviews`).
+- **Brand Intelligence:** Implemented `BrandProfilePage` with `generate-brand-profile` Edge Function.
+- **Workflow Connection:** Integrated Brand DNA into the Booking Wizard's Creative Brief step for context-aware AI suggestions.
+- **Settings Module:** Fully functional `DashboardSettings` connected to `profiles` and `companies` tables.
+- **Schema:** Applied `brand_profile_schema.sql` and `studio_production.sql` migrations.
+
+## [1.4.0] - 2025-03-04
+### 🚀 Brand & Style Analysis
+- **Brand Profile:** Added `BrandProfilePage` to analyze and store brand identity (Voice, Visuals, Recommendations).
+- **AI Analysis:** New `generate-brand-profile` Edge Function analyzing brand websites and descriptions.
+- **Type Definitions:** Added comprehensive types for Brand entities.
+
 ## [1.3.0] - 2025-03-03
 ### 🚀 Booking System Enhancements
 - **AI Moodboard Generator:** Added a new tab in `StepReferences` allowing users to generate visual concepts using Gemini 2.5 Flash Image.

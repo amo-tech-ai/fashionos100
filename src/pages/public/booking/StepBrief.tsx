@@ -1,17 +1,58 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../../../context/BookingContext';
 import { FadeIn } from '../../../components/FadeIn';
 import { Button } from '../../../components/Button';
-import { ArrowRight, Wand2, Loader2 } from 'lucide-react';
+import { ArrowRight, Wand2, Loader2, Sparkles, Tag, Palette, Lightbulb, BookOpen } from 'lucide-react';
 import { Textarea } from '../../../components/forms/Textarea';
 import { supabaseUrl, supabaseAnonKey } from '../../../lib/supabase';
+import { getUserBrand, getBrandProfile } from '../../../lib/brand-service';
+import { FullBrandProfile } from '../../../types/brand';
+import { useToast } from '../../../components/Toast';
+
+interface AIAnalysis {
+  keywords: string[];
+  mood: string;
+  visual_style?: string;
+}
 
 export const StepBrief: React.FC = () => {
   const { state, updateState } = useBooking();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isPolishing, setIsPolishing] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
+  
+  // Brand Profile Integration
+  const [brandProfile, setBrandProfile] = useState<FullBrandProfile | null>(null);
+  const [loadingBrand, setLoadingBrand] = useState(true);
+
+  useEffect(() => {
+    const fetchBrand = async () => {
+        const brandId = await getUserBrand();
+        if (brandId) {
+            const profile = await getBrandProfile(brandId);
+            setBrandProfile(profile);
+        }
+        setLoadingBrand(false);
+    };
+    fetchBrand();
+  }, []);
+
+  const applyBrandVoice = () => {
+      if (!brandProfile) return;
+      
+      const visualTone = brandProfile.visuals?.moods?.join(', ') || '';
+      const identity = brandProfile.identity?.core_description || '';
+      const colors = brandProfile.visuals?.colors?.join(', ') || '';
+      
+      // Construct a prompt-ready addition
+      const brandContext = `\n\n[Brand Context]: Align with our brand identity: "${identity}". Visual Mood: ${visualTone}. Colors: ${colors}.`;
+      
+      updateState({ brief: (state.brief || '') + brandContext });
+      toast("Brand DNA applied to brief!", "success");
+  };
 
   const handlePolish = async () => {
     if (!state.brief || state.brief.length < 10) return;
@@ -26,15 +67,27 @@ export const StepBrief: React.FC = () => {
         },
         body: JSON.stringify({ 
             brief: state.brief,
-            type: 'creative' 
+            type: 'creative',
+            // Pass brand context if available for deeper alignment
+            brandContext: brandProfile ? {
+                moods: brandProfile.visuals?.moods,
+                identity: brandProfile.identity?.core_description
+            } : undefined
         })
       });
 
       if (!response.ok) throw new Error('AI service unavailable');
       
       const data = await response.json();
-      if (data.text) {
-        updateState({ brief: data.text });
+      
+      // Handle structured response
+      if (data.polished_text) {
+        updateState({ brief: data.polished_text });
+        setAiAnalysis({
+          keywords: data.keywords || [],
+          mood: data.mood || '',
+          visual_style: data.visual_style
+        });
       }
     } catch (error) {
       console.error("Polish failed", error);
@@ -57,14 +110,25 @@ export const StepBrief: React.FC = () => {
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">
                    Instructions
                 </label>
-                <button 
-                    onClick={handlePolish}
-                    disabled={isPolishing || !state.brief}
-                    className="text-[10px] font-bold uppercase tracking-widest text-purple-600 flex items-center gap-1 hover:text-purple-800 transition-colors disabled:opacity-50"
-                >
-                    {isPolishing ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
-                    {isPolishing ? 'Polishing...' : 'AI Polish'}
-                </button>
+                <div className="flex gap-2">
+                    {brandProfile && (
+                        <button 
+                            onClick={applyBrandVoice}
+                            className="text-[10px] font-bold uppercase tracking-widest text-gray-600 flex items-center gap-1 hover:text-black transition-colors bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200"
+                            title="Inject your Brand Profile settings"
+                        >
+                            <BookOpen size={12} /> Apply Brand DNA
+                        </button>
+                    )}
+                    <button 
+                        onClick={handlePolish}
+                        disabled={isPolishing || !state.brief}
+                        className="text-[10px] font-bold uppercase tracking-widest text-purple-600 flex items-center gap-1 hover:text-purple-800 transition-colors disabled:opacity-50 bg-purple-50 px-3 py-1.5 rounded-full"
+                    >
+                        {isPolishing ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
+                        {isPolishing ? 'Analyzing...' : 'AI Polish & Suggest'}
+                    </button>
+                </div>
             </div>
 
             <Textarea 
@@ -74,10 +138,47 @@ export const StepBrief: React.FC = () => {
                 placeholder="e.g. I want a dark, moody aesthetic similar to Balenciaga's latest campaign. High contrast lighting, neon accents, and focus on the texture of the fabrics."
             />
             
-            <div className="mt-4 flex justify-between items-center text-xs text-gray-400">
+            <div className="mt-4 flex justify-between items-center text-xs text-gray-400 border-b border-gray-100 pb-4 mb-4">
                 <span>Min 10 characters for AI Polish</span>
                 <span>{state.brief.length} chars</span>
             </div>
+
+            {/* AI Suggestions Panel */}
+            {aiAnalysis && (
+              <div className="animate-in fade-in slide-in-from-top-2 bg-gray-50 rounded-xl p-5 border border-gray-100">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles size={16} className="text-purple-600" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-purple-700">AI Creative Direction</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  {aiAnalysis.mood && (
+                    <div className="bg-white p-3 rounded-lg border border-purple-100 shadow-sm">
+                      <div className="text-[10px] font-bold text-purple-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                         <Lightbulb size={10} /> Mood
+                      </div>
+                      <p className="text-sm font-medium text-gray-900">{aiAnalysis.mood}</p>
+                    </div>
+                  )}
+                  {aiAnalysis.visual_style && (
+                    <div className="bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
+                      <div className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                         <Palette size={10} /> Visual Style
+                      </div>
+                      <p className="text-sm font-medium text-gray-900">{aiAnalysis.visual_style}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {aiAnalysis.keywords.map((keyword, i) => (
+                    <span key={i} className="px-2.5 py-1 rounded-md bg-white text-gray-600 text-xs font-medium border border-gray-200 flex items-center gap-1 shadow-sm">
+                      <Tag size={10} className="text-gray-400" /> {keyword}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
         </div>
 
         <div className="flex justify-end">

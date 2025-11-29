@@ -1,89 +1,91 @@
 
-import React, { useState, useMemo } from 'react';
-import { Sparkles, CheckCircle2, AlertTriangle, RefreshCw, ChevronLeft, Zap, Filter, Download } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Sparkles, CheckCircle2, AlertTriangle, RefreshCw, ChevronLeft, Zap, Filter, Download, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FadeIn } from '../../components/FadeIn';
 import { QACard } from '../../components/studio/QACard';
 import { QAImage, QAStatus } from '../../types/qa';
 import { Button } from '../../components/Button';
-
-// Mock Data generated "by Gemini"
-const MOCK_RESULTS: QAImage[] = [
-  {
-    id: '1',
-    url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600',
-    name: 'Look 01 - Portrait',
-    overall_score: 98,
-    grade: 'A',
-    metrics: { sharpness: 99, lighting: 95, framing: 100, cleanliness: 98, color_accuracy: 97 },
-    detected_issues: [],
-    status: 'pending'
-  },
-  {
-    id: '2',
-    url: 'https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=600',
-    name: 'Look 01 - Detail',
-    overall_score: 85,
-    grade: 'B',
-    metrics: { sharpness: 92, lighting: 75, framing: 90, cleanliness: 88, color_accuracy: 80 },
-    detected_issues: ['Uneven Lighting', 'Mild Color Cast'],
-    status: 'pending'
-  },
-  {
-    id: '3',
-    url: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=600',
-    name: 'Look 02 - Full Body',
-    overall_score: 65,
-    grade: 'C',
-    metrics: { sharpness: 60, lighting: 70, framing: 85, cleanliness: 60, color_accuracy: 70 },
-    detected_issues: ['Soft Focus', 'Background Clutter', 'Wrinkles'],
-    status: 'pending'
-  },
-  {
-    id: '4',
-    url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600',
-    name: 'Look 03 - Studio',
-    overall_score: 92,
-    grade: 'A',
-    metrics: { sharpness: 95, lighting: 90, framing: 95, cleanliness: 90, color_accuracy: 90 },
-    detected_issues: ['Minor Dust'],
-    status: 'pending'
-  },
-  {
-    id: '5',
-    url: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=600',
-    name: 'Look 03 - Motion',
-    overall_score: 88,
-    grade: 'B',
-    metrics: { sharpness: 85, lighting: 90, framing: 92, cleanliness: 85, color_accuracy: 88 },
-    detected_issues: ['Motion Blur (Intentional?)'],
-    status: 'pending'
-  },
-  {
-    id: '6',
-    url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=600',
-    name: 'Look 04 - Back',
-    overall_score: 72,
-    grade: 'C',
-    metrics: { sharpness: 70, lighting: 65, framing: 80, cleanliness: 75, color_accuracy: 70 },
-    detected_issues: ['Underexposed', 'Poor Framing'],
-    status: 'pending'
-  }
-];
+import { supabase } from '../../lib/supabase';
+import { ShootAsset } from '../../types/studio';
 
 export const VisualQAPage: React.FC = () => {
-  const [items, setItems] = useState<QAImage[]>(MOCK_RESULTS);
+  const [items, setItems] = useState<QAImage[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<QAStatus | 'all'>('all');
 
-  const handleAction = (id: string, action: 'approve' | 'retouch' | 'pending') => {
+  useEffect(() => {
+    fetchQAData();
+  }, []);
+
+  const fetchQAData = async () => {
+    try {
+        setLoading(true);
+        // Fetch assets that have QA reviews
+        // In a real scenario, we might filter by a specific active shoot or 'pending' status
+        const { data, error } = await supabase
+            .from('shoot_assets')
+            .select(`
+                *,
+                qa_reviews (*)
+            `)
+            .not('qa_reviews', 'is', null) // Only get items with reviews
+            .limit(50);
+
+        if (error) throw error;
+
+        // Map DB types to UI types
+        const mappedItems: QAImage[] = (data as any[]).map(asset => {
+            const review = asset.qa_reviews?.[0] || {};
+            
+            // Map asset status to QA Status
+            let qaStatus: QAStatus = 'pending';
+            if (asset.status === 'approved') qaStatus = 'approved';
+            if (asset.status === 'revision_requested') qaStatus = 'retouch';
+            
+            return {
+                id: asset.id,
+                url: asset.url,
+                name: asset.filename || 'Untitled Asset',
+                overall_score: review.overall_score || 0,
+                grade: review.grade || 'C',
+                metrics: review.metrics || { sharpness: 0, lighting: 0, framing: 0, cleanliness: 0, color_accuracy: 0 },
+                detected_issues: review.detected_issues || [],
+                status: qaStatus,
+                ai_reasoning: review.ai_reasoning
+            };
+        });
+        
+        setItems(mappedItems);
+    } catch (err) {
+        console.error("Error fetching QA data:", err);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const handleAction = async (id: string, action: 'approve' | 'retouch' | 'pending') => {
+    // Optimistic Update
     let status: QAStatus = 'pending';
-    if (action === 'approve') status = 'approved';
-    else if (action === 'retouch') status = 'retouch';
-    else if (action === 'pending') status = 'pending';
+    let dbStatus = 'review';
+
+    if (action === 'approve') {
+        status = 'approved';
+        dbStatus = 'approved';
+    } else if (action === 'retouch') {
+        status = 'retouch';
+        dbStatus = 'revision_requested';
+    }
 
     setItems(prev => prev.map(item => 
       item.id === id ? { ...item, status } : item
     ));
+
+    // Database Update
+    await supabase
+        .from('shoot_assets')
+        .update({ status: dbStatus })
+        .eq('id', id);
   };
 
   // Derived Stats
@@ -122,26 +124,22 @@ export const VisualQAPage: React.FC = () => {
                     <h1 className="text-2xl font-serif font-bold text-gray-900 flex items-center gap-2">
                         AI Quality Check <Sparkles size={18} className="text-purple-500" />
                     </h1>
-                    <p className="text-xs text-gray-500">Gemini Vision Analysis • Batch #2025-SHOOT-A</p>
+                    <p className="text-xs text-gray-500">Gemini Vision Analysis • Recent Uploads</p>
                 </div>
             </div>
             
             <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-                 {/* Timeline Impact Banner */}
                  <div className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-lg border ${stats.retouch > 2 ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-green-50 border-green-200 text-green-700'}`}>
                     {stats.retouch > 2 ? <AlertTriangle size={16} /> : <CheckCircle2 size={16} />}
                     <div className="text-xs">
-                        <p className="font-bold uppercase tracking-wider">Timeline Impact</p>
-                        <p>{stats.retouch > 2 ? '+2 Days (Retouching)' : 'On Schedule'}</p>
+                        <p className="font-bold uppercase tracking-wider">Impact</p>
+                        <p>{stats.retouch > 2 ? 'Review Required' : 'On Track'}</p>
                     </div>
                  </div>
 
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" className="gap-2">
-                        <Download size={16} /> Export
-                    </Button>
-                    <Button variant="primary" size="sm" disabled={stats.pending > 0} className={stats.pending > 0 ? "opacity-50 cursor-not-allowed" : ""}>
-                        Finalize Batch
+                        <Download size={16} /> Export Report
                     </Button>
                 </div>
             </div>
@@ -210,9 +208,6 @@ export const VisualQAPage: React.FC = () => {
                                 )
                                 : "Quality looks consistent across the board. Sharpness and color accuracy are performing well above baseline. Ready for client review."}
                         </p>
-                        {stats.mostCommonIssue && (
-                            <button className="mt-3 text-xs font-bold text-white underline hover:text-purple-300">View all affected images</button>
-                        )}
                     </div>
                 </div>
 
@@ -246,16 +241,12 @@ export const VisualQAPage: React.FC = () => {
              >
                 Approved <span className="bg-white/20 px-1.5 py-0.5 rounded text-[10px]">{stats.approved}</span>
              </button>
-             
-             <div className="w-px h-6 bg-gray-300 mx-2" />
-             
-             <button className="px-4 py-2 rounded-full text-xs font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 flex items-center gap-2">
-                <Filter size={14} /> More Filters
-             </button>
         </div>
 
         {/* Image Grid */}
-        {filteredItems.length > 0 ? (
+        {loading ? (
+            <div className="flex justify-center py-20"><Loader2 className="animate-spin text-gray-300" size={32}/></div>
+        ) : filteredItems.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredItems.map((item, i) => (
                     <FadeIn key={item.id} delay={i * 50}>

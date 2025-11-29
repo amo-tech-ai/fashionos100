@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { 
   LayoutDashboard, Calendar, Ticket, Wallet, Settings, LogOut, Menu, Search, 
   FileText, Image, MessageSquare, Heart, Target, Users, TrendingUp, Package, 
-  Mic2, BarChart3, Globe, Camera, Truck, Plus
+  Mic2, BarChart3, Globe, Camera, Truck, Plus, BookOpen
 } from 'lucide-react';
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
 import { NotificationsMenu } from '../components/dashboard/NotificationsMenu';
@@ -16,6 +16,7 @@ export const DashboardLayout: React.FC = () => {
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+    { icon: BookOpen, label: 'Brand Profile', path: '/dashboard/brand-profile' },
     { icon: Camera, label: 'Studio Command', path: '/dashboard/studio' },
     { icon: Truck, label: 'Delivery Portal', path: '/dashboard/delivery' },
     { icon: Target, label: 'Leads', path: '/dashboard/leads' },

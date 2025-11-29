@@ -1,12 +1,14 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Download, Filter, Heart, CheckCircle2, AlertCircle, 
   MoreHorizontal, ChevronDown, Sparkles, X, MessageSquare,
-  Grid, List, Check, Image as ImageIcon, Search, ArrowRight
+  Grid, List, Check, Image as ImageIcon, Search, ArrowRight, Loader2
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
+import { supabase } from '../../lib/supabase';
+import { ShootAsset } from '../../types/studio';
 
 // --- Types ---
 interface Asset {
@@ -15,99 +17,70 @@ interface Asset {
   title: string;
   status: 'raw' | 'retouched' | 'revision' | 'approved';
   metadata: {
-    angle: 'Front' | 'Back' | 'Detail' | 'Lifestyle';
-    model: string;
-    background: 'White' | 'Color' | 'Location';
+    angle: string;
+    model?: string;
+    background?: string;
   };
   isFavorite: boolean;
-  aiScore?: number; // 0-100
+  aiScore?: number;
   aiReason?: string;
 }
 
-// --- Mock Cloudinary/Supabase Data ---
-const MOCK_ASSETS: Asset[] = [
-  {
-    id: '1',
-    url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800',
-    title: 'Look 01 - Front',
-    status: 'approved',
-    metadata: { angle: 'Front', model: 'Sarah', background: 'White' },
-    isFavorite: true,
-    aiScore: 98,
-    aiReason: 'Strong eye contact & perfect exposure'
-  },
-  {
-    id: '2',
-    url: 'https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=80&w=800',
-    title: 'Look 01 - Detail',
-    status: 'retouched',
-    metadata: { angle: 'Detail', model: 'Sarah', background: 'White' },
-    isFavorite: false,
-  },
-  {
-    id: '3',
-    url: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800',
-    title: 'Look 02 - Lifestyle',
-    status: 'revision',
-    metadata: { angle: 'Lifestyle', model: 'Marcus', background: 'Location' },
-    isFavorite: false,
-  },
-  {
-    id: '4',
-    url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800',
-    title: 'Look 03 - Full',
-    status: 'raw',
-    metadata: { angle: 'Front', model: 'Marcus', background: 'White' },
-    isFavorite: false,
-  },
-  {
-    id: '5',
-    url: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=800',
-    title: 'Look 04 - Motion',
-    status: 'retouched',
-    metadata: { angle: 'Lifestyle', model: 'Sarah', background: 'Location' },
-    isFavorite: true,
-    aiScore: 92,
-    aiReason: 'Dynamic movement captured sharply'
-  },
-  {
-    id: '6',
-    url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800',
-    title: 'Look 02 - Side',
-    status: 'retouched',
-    metadata: { angle: 'Back', model: 'Marcus', background: 'White' },
-    isFavorite: false,
-  },
-];
-
-// --- Helper: Simulate Cloudinary Transforms ---
-const getDownloadUrl = (url: string, preset: 'original' | 'web' | 'square') => {
-  // In production, this would manipulate the Cloudinary URL string
-  // e.g. replace '/upload/' with '/upload/w_2000,q_auto/'
-  return url; 
-};
-
 export const DeliveryPortal: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [assets, setAssets] = useState<Asset[]>(MOCK_ASSETS);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeRevision, setActiveRevision] = useState<Asset | null>(null);
   
   // Filters
   const [filterAngle, setFilterAngle] = useState('All');
-  const [filterModel, setFilterModel] = useState('All');
   const [showFavorites, setShowFavorites] = useState(false);
+
+  useEffect(() => {
+    fetchAssets();
+  }, []);
+
+  const fetchAssets = async () => {
+      try {
+        setLoading(true);
+        // Fetch assets that are ready for client view
+        const { data, error } = await supabase
+            .from('shoot_assets')
+            .select('*')
+            .in('status', ['review', 'approved', 'revision_requested', 'final'])
+            .order('created_at', { ascending: false });
+            
+        if (error) throw error;
+
+        const mappedAssets: Asset[] = (data as any[]).map(a => ({
+            id: a.id,
+            url: a.url,
+            title: a.filename || 'Untitled',
+            status: (a.status === 'revision_requested' ? 'revision' : a.status === 'final' ? 'approved' : a.status === 'review' ? 'retouched' : 'raw') as any,
+            metadata: {
+                angle: a.metadata?.angle || 'General',
+                model: a.metadata?.model || 'Unknown',
+                background: a.metadata?.background || 'Studio'
+            },
+            isFavorite: a.is_favorite
+        }));
+
+        setAssets(mappedAssets);
+      } catch (e) {
+          console.error("Error loading assets:", e);
+      } finally {
+          setLoading(false);
+      }
+  };
 
   // --- Derived State ---
   const filteredAssets = useMemo(() => {
     return assets.filter(asset => {
       if (showFavorites && !asset.isFavorite) return false;
       if (filterAngle !== 'All' && asset.metadata.angle !== filterAngle) return false;
-      if (filterModel !== 'All' && asset.metadata.model !== filterModel) return false;
       return true;
     });
-  }, [assets, filterAngle, filterModel, showFavorites]);
-
-  const heroPicks = useMemo(() => assets.filter(a => (a.aiScore || 0) > 90), [assets]);
+  }, [assets, filterAngle, showFavorites]);
 
   // --- Handlers ---
   const toggleSelection = (id: string) => {
@@ -117,26 +90,45 @@ export const DeliveryPortal: React.FC = () => {
     setSelectedIds(newSet);
   };
 
-  const toggleFavorite = (id: string) => {
-    setAssets(prev => prev.map(a => a.id === id ? { ...a, isFavorite: !a.isFavorite } : a));
+  const toggleFavorite = async (id: string) => {
+    const asset = assets.find(a => a.id === id);
+    if (!asset) return;
+    
+    const newVal = !asset.isFavorite;
+    
+    // Optimistic update
+    setAssets(prev => prev.map(a => a.id === id ? { ...a, isFavorite: newVal } : a));
+    
+    // DB Update
+    await supabase.from('shoot_assets').update({ is_favorite: newVal }).eq('id', id);
   };
 
-  const handleDownload = (preset: 'original' | 'web' | 'square') => {
-    alert(`Downloading ${selectedIds.size} assets with preset: ${preset.toUpperCase()}`);
-    // Real logic: Loop selectedIds, gen Cloudinary URLs, trigger zip or individual downloads
-  };
-
-  const handleApprove = () => {
+  const handleApprove = async () => {
+    const ids = Array.from(selectedIds);
+    
+    // Optimistic
     setAssets(prev => prev.map(a => selectedIds.has(a.id) ? { ...a, status: 'approved' } : a));
     setSelectedIds(new Set());
+    
+    // DB
+    await supabase.from('shoot_assets').update({ status: 'final' }).in('id', ids);
   };
 
-  const submitRevision = (note: string) => {
+  const submitRevision = async (note: string) => {
     if (activeRevision) {
+      // Optimistic
       setAssets(prev => prev.map(a => a.id === activeRevision.id ? { ...a, status: 'revision' } : a));
+      
+      // DB
+      await supabase.from('shoot_assets').update({ status: 'revision_requested' }).eq('id', activeRevision.id);
+      
+      // Could also insert note into a feedback table here
+      
       setActiveRevision(null);
     }
   };
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-purple-600" size={48}/></div>;
 
   return (
     <div className="min-h-screen bg-[#F8F9FB] pb-32 relative">
@@ -146,11 +138,11 @@ export const DeliveryPortal: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">
-              <span>Project #SHO-2025-001</span>
+              <span>Assets Portal</span>
               <span className="w-1 h-1 rounded-full bg-gray-300" />
-              <span className="text-purple-600">In Review</span>
+              <span className="text-purple-600">Review Mode</span>
             </div>
-            <h1 className="text-2xl font-serif font-bold text-gray-900">Summer Campaign '25</h1>
+            <h1 className="text-2xl font-serif font-bold text-gray-900">Deliverables</h1>
           </div>
           
           <div className="flex items-center gap-3">
@@ -161,7 +153,6 @@ export const DeliveryPortal: React.FC = () => {
                 </p>
              </div>
              <Button variant="outline" size="sm">Share Gallery</Button>
-             <Button variant="primary" size="sm">Complete Project</Button>
           </div>
         </div>
 
@@ -175,22 +166,10 @@ export const DeliveryPortal: React.FC = () => {
                     value={filterAngle}
                     onChange={(e) => setFilterAngle(e.target.value)}
                  >
-                    <option value="All">All Angles</option>
+                    <option value="All">All Types</option>
                     <option value="Front">Front</option>
-                    <option value="Back">Back</option>
                     <option value="Detail">Detail</option>
                     <option value="Lifestyle">Lifestyle</option>
-                 </select>
-              </div>
-              <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-lg border border-gray-200">
-                 <select 
-                    className="bg-transparent text-xs font-bold p-1 outline-none cursor-pointer text-gray-700"
-                    value={filterModel}
-                    onChange={(e) => setFilterModel(e.target.value)}
-                 >
-                    <option value="All">All Models</option>
-                    <option value="Sarah">Sarah</option>
-                    <option value="Marcus">Marcus</option>
                  </select>
               </div>
               <button 
@@ -200,105 +179,78 @@ export const DeliveryPortal: React.FC = () => {
                  <Heart size={12} className={showFavorites ? "fill-current" : ""} /> Favorites
               </button>
            </div>
-           
-           <div className="flex items-center gap-2">
-              <div className="relative">
-                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                 <input type="text" placeholder="Search filenames..." className="pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-purple-400 w-48" />
-              </div>
-           </div>
         </div>
       </div>
 
       <div className="p-6 max-w-[1600px] mx-auto space-y-8">
         
-        {/* 2. AI Hero Strip */}
-        {!showFavorites && filterAngle === 'All' && (
-          <FadeIn>
-            <div className="mb-8">
-              <div className="flex items-center gap-2 mb-4">
-                 <Sparkles className="text-amber-500" size={18} />
-                 <h3 className="text-sm font-bold uppercase tracking-wider text-gray-900">Gemini's Hero Picks</h3>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {heroPicks.map((pick) => (
-                   <div key={pick.id} className="group relative aspect-[3/4] rounded-xl overflow-hidden cursor-pointer border border-transparent hover:border-amber-400 transition-all shadow-sm">
-                      <img src={pick.url} alt={pick.title} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
-                         <p className="text-white text-xs font-bold">{pick.title}</p>
-                         <p className="text-amber-300 text-[10px] mt-1">{pick.aiReason}</p>
-                      </div>
-                      <div className="absolute top-2 right-2 bg-amber-400 text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                         {pick.aiScore}% Match
-                      </div>
-                   </div>
-                ))}
-              </div>
-            </div>
-          </FadeIn>
-        )}
-
         {/* 3. Main Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-           {filteredAssets.map((asset) => {
-              const isSelected = selectedIds.has(asset.id);
-              return (
-                <FadeIn key={asset.id}>
-                  <div 
-                    className={`group relative bg-white rounded-2xl overflow-hidden border transition-all duration-200 ${
-                       isSelected ? 'border-purple-500 shadow-lg ring-1 ring-purple-500' : 'border-gray-200 hover:shadow-md'
-                    }`}
-                  >
-                     {/* Image Area */}
-                     <div className="aspect-[3/4] relative overflow-hidden cursor-pointer" onClick={() => toggleSelection(asset.id)}>
-                        <img src={asset.url} alt={asset.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                        
-                        {/* Status Badge */}
-                        <div className="absolute top-3 left-3">
-                           {asset.status === 'approved' && <span className="bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm flex items-center gap-1"><CheckCircle2 size={10}/> Approved</span>}
-                           {asset.status === 'revision' && <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm flex items-center gap-1"><AlertCircle size={10}/> Revision</span>}
-                           {asset.status === 'retouched' && <span className="bg-white/90 backdrop-blur text-gray-700 text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">Retouched</span>}
+        {filteredAssets.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            {filteredAssets.map((asset) => {
+                const isSelected = selectedIds.has(asset.id);
+                return (
+                    <FadeIn key={asset.id}>
+                    <div 
+                        className={`group relative bg-white rounded-2xl overflow-hidden border transition-all duration-200 ${
+                        isSelected ? 'border-purple-500 shadow-lg ring-1 ring-purple-500' : 'border-gray-200 hover:shadow-md'
+                        }`}
+                    >
+                        {/* Image Area */}
+                        <div className="aspect-[3/4] relative overflow-hidden cursor-pointer" onClick={() => toggleSelection(asset.id)}>
+                            <img src={asset.url} alt={asset.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                            
+                            {/* Status Badge */}
+                            <div className="absolute top-3 left-3">
+                            {asset.status === 'approved' && <span className="bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm flex items-center gap-1"><CheckCircle2 size={10}/> Approved</span>}
+                            {asset.status === 'revision' && <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm flex items-center gap-1"><AlertCircle size={10}/> Revision</span>}
+                            {asset.status === 'retouched' && <span className="bg-white/90 backdrop-blur text-gray-700 text-[10px] font-bold px-2 py-1 rounded-md shadow-sm">Review</span>}
+                            </div>
+
+                            {/* Hover Actions */}
+                            <div className={`absolute inset-0 bg-black/40 transition-opacity flex items-center justify-center gap-2 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); toggleFavorite(asset.id); }}
+                                className={`p-2 rounded-full bg-white/90 hover:bg-white transition-colors ${asset.isFavorite ? 'text-red-500' : 'text-gray-600'}`}
+                            >
+                                <Heart size={18} className={asset.isFavorite ? "fill-current" : ""} />
+                            </button>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setActiveRevision(asset); }}
+                                className="p-2 rounded-full bg-white/90 hover:bg-white text-gray-600 transition-colors"
+                                title="Request Revision"
+                            >
+                                <MessageSquare size={18} />
+                            </button>
+                            </div>
+
+                            {/* Selection Check */}
+                            <div className={`absolute top-3 right-3 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-purple-600 border-purple-600' : 'bg-white/30 border-white hover:bg-white/50'}`}>
+                            {isSelected && <Check size={14} className="text-white" />}
+                            </div>
                         </div>
 
-                        {/* Hover Actions */}
-                        <div className={`absolute inset-0 bg-black/40 transition-opacity flex items-center justify-center gap-2 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                           <button 
-                              onClick={(e) => { e.stopPropagation(); toggleFavorite(asset.id); }}
-                              className={`p-2 rounded-full bg-white/90 hover:bg-white transition-colors ${asset.isFavorite ? 'text-red-500' : 'text-gray-600'}`}
-                           >
-                              <Heart size={18} className={asset.isFavorite ? "fill-current" : ""} />
-                           </button>
-                           <button 
-                              onClick={(e) => { e.stopPropagation(); setActiveRevision(asset); }}
-                              className="p-2 rounded-full bg-white/90 hover:bg-white text-gray-600 transition-colors"
-                              title="Request Revision"
-                           >
-                              <MessageSquare size={18} />
-                           </button>
+                        {/* Meta Area */}
+                        <div className="p-3">
+                            <div className="flex justify-between items-center mb-1">
+                            <p className="text-xs font-bold text-gray-900 truncate">{asset.title}</p>
+                            <button className="text-gray-400 hover:text-gray-600"><MoreHorizontal size={16} /></button>
+                            </div>
+                            <div className="flex gap-2">
+                            <span className="text-[10px] text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{asset.metadata.angle}</span>
+                            </div>
                         </div>
-
-                        {/* Selection Check */}
-                        <div className={`absolute top-3 right-3 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-purple-600 border-purple-600' : 'bg-white/30 border-white hover:bg-white/50'}`}>
-                           {isSelected && <Check size={14} className="text-white" />}
-                        </div>
-                     </div>
-
-                     {/* Meta Area */}
-                     <div className="p-3">
-                        <div className="flex justify-between items-center mb-1">
-                           <p className="text-xs font-bold text-gray-900 truncate">{asset.title}</p>
-                           <button className="text-gray-400 hover:text-gray-600"><MoreHorizontal size={16} /></button>
-                        </div>
-                        <div className="flex gap-2">
-                           <span className="text-[10px] text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{asset.metadata.angle}</span>
-                           <span className="text-[10px] text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{asset.metadata.background}</span>
-                        </div>
-                     </div>
-                  </div>
-                </FadeIn>
-              );
-           })}
-        </div>
+                    </div>
+                    </FadeIn>
+                );
+            })}
+            </div>
+        ) : (
+            <div className="text-center py-20 text-gray-400">
+                <ImageIcon size={48} className="mx-auto mb-4 opacity-20" />
+                <p>No assets found.</p>
+            </div>
+        )}
 
       </div>
 
@@ -308,31 +260,12 @@ export const DeliveryPortal: React.FC = () => {
             <div className="bg-gray-900 text-white rounded-2xl shadow-2xl p-4 flex items-center justify-between">
                <div className="flex items-center gap-4 pl-2">
                   <div className="bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded-md">{selectedIds.size} Selected</div>
-                  <span className="text-sm text-gray-400 hidden sm:inline">Bulk Actions</span>
                </div>
                
                <div className="flex items-center gap-3">
-                  <div className="h-8 w-px bg-gray-700 mx-2 hidden sm:block"></div>
-                  
-                  {/* Download Dropdown Simulator */}
-                  <div className="relative group">
-                     <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 gap-2 border border-gray-600">
-                        <Download size={16} /> Download <ChevronDown size={14} />
-                     </Button>
-                     <div className="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-xl shadow-xl overflow-hidden text-gray-900 hidden group-hover:block animate-in fade-in zoom-in-95 origin-bottom-right">
-                        <div className="p-2">
-                           <button onClick={() => handleDownload('original')} className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg text-xs font-bold flex justify-between items-center">
-                              Original (TIFF) <span className="text-gray-400 font-normal">50MB</span>
-                           </button>
-                           <button onClick={() => handleDownload('web')} className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg text-xs font-bold flex justify-between items-center">
-                              Web (JPG) <span className="text-gray-400 font-normal">2MB</span>
-                           </button>
-                           <button onClick={() => handleDownload('square')} className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg text-xs font-bold flex justify-between items-center">
-                              Instagram (1:1) <span className="text-gray-400 font-normal">Crop</span>
-                           </button>
-                        </div>
-                     </div>
-                  </div>
+                  <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 gap-2 border border-gray-600">
+                     <Download size={16} /> Download
+                  </Button>
 
                   <Button variant="primary" size="sm" className="bg-white text-black hover:bg-gray-100 border-transparent" onClick={handleApprove}>
                      Approve Selected
@@ -363,7 +296,6 @@ export const DeliveryPortal: React.FC = () => {
                         {['Fix Lighting', 'Remove Blemish', 'Color Correct', 'Crop tighter', 'Clean Background'].map(chip => (
                            <button 
                               key={chip}
-                              onClick={() => {}} // Would append to text area
                               className="px-3 py-1.5 rounded-full border border-gray-200 text-xs font-medium text-gray-600 hover:border-purple-300 hover:text-purple-600 hover:bg-purple-50 transition-colors"
                            >
                               {chip}

@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   User, Bell, Shield, CreditCard, Save, Mail, Smartphone, 
-  Globe, LogOut, Building2, Plus, Trash2, Users as UsersIcon
+  Globe, LogOut, Building2, Plus, Trash2, Users as UsersIcon, Camera, Loader2
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/forms/Input';
@@ -10,6 +10,7 @@ import { FadeIn } from '../../components/FadeIn';
 import { PageHeader } from '../../components/dashboard/Shared';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
+import { profileService } from '../../lib/profile-service';
 
 // Helper Toggle Component
 const Toggle = ({ label, desc, checked, onChange }: { label: string, desc: string, checked: boolean, onChange: () => void }) => (
@@ -25,38 +26,91 @@ const Toggle = ({ label, desc, checked, onChange }: { label: string, desc: strin
 );
 
 export const DashboardSettings: React.FC = () => {
-  const { success } = useToast();
+  const { success, error } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'team' | 'billing'>('profile');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Mock State for Demo
-  const [profile, setProfile] = useState({
-    firstName: 'Orlando',
-    lastName: 'L.',
-    email: 'orlando@fashionos.com',
-    phone: '+1 (555) 123-4567',
-    company: 'FashionOS Studio',
-    role: 'Admin'
+  const [profileData, setProfileData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    companyName: '',
+    website: '',
+    avatarUrl: '',
+    role: ''
   });
 
-  const [notifications, setNotifications] = useState({
-    emailOrders: true,
-    emailMarketing: false,
-    pushMessages: true,
-    pushUpdates: false
-  });
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const data = await profileService.getProfile();
+      if (data && data.user) {
+        setProfileData({
+          fullName: data.profile?.full_name || '',
+          email: data.user.email || '',
+          phone: '', // Phone not in default auth schema usually, would need custom field
+          companyName: data.company?.name || data.profile?.company_name || '',
+          website: data.company?.website_url || '',
+          avatarUrl: data.profile?.avatar_url || '',
+          role: data.profile?.role || 'User'
+        });
+      }
+    } catch (e) {
+      console.error("Failed to load profile", e);
+    }
+  };
 
   const handleSave = async () => {
     setIsLoading(true);
-    // Simulate API Call
-    await new Promise(r => setTimeout(r, 1000));
-    setIsLoading(false);
-    success("Settings saved successfully");
+    try {
+      // Update Profile
+      await profileService.updateProfile({
+        full_name: profileData.fullName,
+      });
+
+      // Update Company
+      if (profileData.companyName) {
+        await profileService.updateCompany(profileData.companyName, profileData.website);
+      }
+
+      success("Settings saved successfully");
+    } catch (e) {
+      console.error(e);
+      error("Failed to save settings");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    setIsUploading(true);
+    try {
+      const file = e.target.files[0];
+      const url = await profileService.uploadAvatar(file);
+      setProfileData(prev => ({ ...prev, avatarUrl: url }));
+      success("Avatar updated");
+    } catch (e) {
+      console.error(e);
+      error("Failed to upload avatar");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     window.location.href = '/login';
+  };
+
+  const getInitials = (name: string) => {
+    return name ? name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'U';
   };
 
   return (
@@ -116,42 +170,66 @@ export const DashboardSettings: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-6">
-                  <div className="w-24 h-24 rounded-full bg-gray-100 border-4 border-white shadow-lg flex items-center justify-center text-3xl font-serif text-gray-400 relative overflow-hidden group cursor-pointer">
-                    {profile.firstName[0]}
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-bold uppercase">
-                      Change
+                  <div 
+                    className="w-24 h-24 rounded-full bg-gray-100 border-4 border-white shadow-lg flex items-center justify-center text-3xl font-serif text-gray-400 relative overflow-hidden group cursor-pointer"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {profileData.avatarUrl ? (
+                      <img src={profileData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      getInitials(profileData.fullName)
+                    )}
+                    
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white">
+                      {isUploading ? <Loader2 className="animate-spin" size={20} /> : <Camera size={20} />}
                     </div>
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      className="hidden" 
+                      accept="image/*" 
+                      onChange={handleAvatarUpload} 
+                    />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg">{profile.firstName} {profile.lastName}</h4>
-                    <p className="text-sm text-gray-500">{profile.role} at {profile.company}</p>
+                    <h4 className="font-bold text-lg">{profileData.fullName || 'User'}</h4>
+                    <p className="text-sm text-gray-500">{profileData.role} at {profileData.companyName || 'Unknown Company'}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input 
-                    label="First Name" 
-                    value={profile.firstName} 
-                    onChange={e => setProfile({...profile, firstName: e.target.value})} 
-                  />
-                  <Input 
-                    label="Last Name" 
-                    value={profile.lastName} 
-                    onChange={e => setProfile({...profile, lastName: e.target.value})} 
+                    label="Full Name" 
+                    value={profileData.fullName} 
+                    onChange={e => setProfileData({...profileData, fullName: e.target.value})} 
                   />
                   <Input 
                     label="Email Address" 
-                    value={profile.email} 
+                    value={profileData.email} 
                     type="email"
-                    onChange={e => setProfile({...profile, email: e.target.value})} 
+                    disabled // Email usually handled via auth provider update flow
                     icon={<Mail size={16} />}
+                    className="bg-gray-50 text-gray-500 cursor-not-allowed"
                   />
-                  <Input 
-                    label="Phone Number" 
-                    value={profile.phone} 
-                    onChange={e => setProfile({...profile, phone: e.target.value})} 
-                    icon={<Smartphone size={16} />}
-                  />
+                </div>
+
+                <div className="border-t border-gray-100 pt-6 space-y-6">
+                  <h4 className="font-bold text-sm uppercase tracking-wider text-gray-400">Company Details</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Input 
+                      label="Company Name" 
+                      value={profileData.companyName} 
+                      onChange={e => setProfileData({...profileData, companyName: e.target.value})} 
+                      icon={<Building2 size={16} />}
+                    />
+                    <Input 
+                      label="Website" 
+                      value={profileData.website} 
+                      onChange={e => setProfileData({...profileData, website: e.target.value})} 
+                      icon={<Globe size={16} />}
+                      placeholder="https://"
+                    />
+                  </div>
                 </div>
 
                 <div className="pt-6 border-t border-gray-100">
@@ -162,7 +240,7 @@ export const DashboardSettings: React.FC = () => {
               </div>
             )}
 
-            {/* NOTIFICATIONS */}
+            {/* NOTIFICATIONS (Mock for now, similar structure to before but clearer separation) */}
             {activeTab === 'notifications' && (
               <div className="space-y-8">
                 <div>
@@ -179,41 +257,27 @@ export const DashboardSettings: React.FC = () => {
                       <Toggle 
                         label="Order Updates" 
                         desc="Receive emails about your booking status and asset delivery."
-                        checked={notifications.emailOrders}
-                        onChange={() => setNotifications(p => ({...p, emailOrders: !p.emailOrders}))}
+                        checked={true}
+                        onChange={() => {}}
                       />
                       <div className="h-px bg-gray-200" />
                       <Toggle 
                         label="Marketing & Trends" 
                         desc="Weekly fashion insights and platform updates."
-                        checked={notifications.emailMarketing}
-                        onChange={() => setNotifications(p => ({...p, emailMarketing: !p.emailMarketing}))}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                    <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <Smartphone size={18} className="text-purple-600" /> Push Notifications
-                    </h4>
-                    <div className="space-y-4">
-                      <Toggle 
-                        label="New Messages" 
-                        desc="Get notified when talent or support messages you."
-                        checked={notifications.pushMessages}
-                        onChange={() => setNotifications(p => ({...p, pushMessages: !p.pushMessages}))}
+                        checked={false}
+                        onChange={() => {}}
                       />
                     </div>
                   </div>
                 </div>
                 
                 <div className="pt-4">
-                   <Button onClick={handleSave}>Save Preferences</Button>
+                   <Button onClick={() => success("Preferences saved")}>Save Preferences</Button>
                 </div>
               </div>
             )}
 
-            {/* TEAM */}
+            {/* TEAM (Mock for MVP, but ready structure) */}
             {activeTab === 'team' && (
               <div className="space-y-8">
                 <div className="flex justify-between items-start">
@@ -227,31 +291,35 @@ export const DashboardSettings: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {[
-                    { name: 'Orlando L.', role: 'Admin', email: 'orlando@fashionos.com' },
-                    { name: 'Sarah J.', role: 'Editor', email: 'sarah@fashionos.com' },
-                    { name: 'Mike R.', role: 'Viewer', email: 'mike@fashionos.com' },
-                  ].map((member, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50/30 transition-all group">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500">
-                          {member.name[0]}
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-gray-900 text-sm">{member.name}</h5>
-                          <p className="text-xs text-gray-500">{member.email}</p>
-                        </div>
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50/30 transition-all group">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500 overflow-hidden">
+                         {profileData.avatarUrl ? <img src={profileData.avatarUrl} className="w-full h-full object-cover" /> : getInitials(profileData.fullName)}
                       </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full uppercase tracking-wider">
-                          {member.role}
-                        </span>
-                        <button className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
-                          <Trash2 size={16} />
-                        </button>
+                      <div>
+                        <h5 className="font-bold text-gray-900 text-sm">{profileData.fullName} (You)</h5>
+                        <p className="text-xs text-gray-500">{profileData.email}</p>
                       </div>
                     </div>
-                  ))}
+                    <div className="flex items-center gap-4">
+                      <span className="text-xs font-bold bg-purple-100 text-purple-600 px-3 py-1 rounded-full uppercase tracking-wider">
+                        Owner
+                      </span>
+                    </div>
+                  </div>
+                  {/* Example invite */}
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50/50 opacity-60">
+                     <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-400">
+                           SJ
+                        </div>
+                        <div>
+                           <h5 className="font-bold text-gray-700 text-sm">Sarah J.</h5>
+                           <p className="text-xs text-gray-500">sarah@example.com</p>
+                        </div>
+                     </div>
+                     <span className="text-xs bg-gray-200 text-gray-500 px-2 py-1 rounded">Pending</span>
+                  </div>
                 </div>
               </div>
             )}

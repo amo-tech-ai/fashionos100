@@ -72,6 +72,7 @@ import { SponsorPortal } from './pages/dashboard/SponsorPortal';
 import { EventWizard } from './components/events/EventWizard';
 import { DeliveryPortal } from './pages/dashboard/DeliveryPortal';
 import { VisualQAPage } from './pages/dashboard/VisualQAPage';
+import { BrandProfilePage } from './pages/dashboard/BrandProfilePage';
 
 const App: React.FC = () => {
   return (
@@ -155,6 +156,10 @@ const App: React.FC = () => {
         <Route path="qa" element={<VisualQAPage />} /> 
         <Route path="calendar" element={<DashboardCalendar />} />
         
+        {/* Brand Profile */}
+        <Route path="brand-profile" element={<BrandProfilePage />} />
+        <Route path="brand/:id" element={<BrandProfilePage />} />
+
         {/* Events Module */}
         <Route path="events" element={<DashboardEvents />} />
         <Route path="events/new" element={<EventWizard />} />
