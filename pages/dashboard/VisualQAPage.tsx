@@ -101,7 +101,7 @@ export const VisualQAPage: React.FC = () => {
         return acc;
     }, {} as Record<string, number>);
     
-    const mostCommonIssue = Object.entries(issueCounts).sort((a,b) => b[1] - a[1])[0];
+    const mostCommonIssue = Object.entries(issueCounts).sort((a,b) => (b[1] as number) - (a[1] as number))[0];
 
     return { total, approved, retouch, pending, avgScore, mostCommonIssue };
   }, [items]);
@@ -204,7 +204,7 @@ export const VisualQAPage: React.FC = () => {
                             {stats.mostCommonIssue 
                                 ? (
                                     <>
-                                        <strong>Alert:</strong> {Math.round((stats.mostCommonIssue[1] / stats.total) * 100)}% of images have been flagged with <strong>"{stats.mostCommonIssue[0]}"</strong>. 
+                                        <strong>Alert:</strong> {Math.round(((stats.mostCommonIssue[1] as number) / stats.total) * 100)}% of images have been flagged with <strong>"{stats.mostCommonIssue[0]}"</strong>. 
                                         Consider checking your lighting setup or lens calibration for the next batch to reduce post-production time.
                                     </>
                                 )

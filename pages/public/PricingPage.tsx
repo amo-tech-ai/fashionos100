@@ -103,7 +103,7 @@ const FeatureItem = ({ text, included }: { text: string; included: boolean }) =>
   </li>
 );
 
-const AccordionItem = ({ q, a }: { q: string; a: string }) => {
+const AccordionItem: React.FC<{ q: string; a: string }> = ({ q, a }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (

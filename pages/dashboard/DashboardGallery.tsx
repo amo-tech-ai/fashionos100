@@ -82,7 +82,7 @@ const MEDIA_ITEMS: MediaItem[] = [
 
 // --- Sub-Components ---
 
-const FolderCard = ({ folder }: { folder: FolderItem }) => (
+const FolderCard: React.FC<{ folder: FolderItem }> = ({ folder }) => (
   <div className="group cursor-pointer min-w-[200px]">
     <div className="relative h-36 mb-3">
        {/* Stack Effect */}
@@ -119,7 +119,7 @@ const FolderCard = ({ folder }: { folder: FolderItem }) => (
   </div>
 );
 
-const MediaCard = ({ item }: { item: MediaItem }) => (
+const MediaCard: React.FC<{ item: MediaItem }> = ({ item }) => (
   <div className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer break-inside-avoid mb-6">
     <div className="aspect-[4/5] relative overflow-hidden">
       <img src={item.url} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />

@@ -8,7 +8,7 @@ export default defineConfig({
   base: '/',
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve('src'),
     },
   },
   build: {
@@ -17,7 +17,7 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'index.html'),
+        main: path.resolve('index.html'),
       },
       output: {
         manualChunks: {

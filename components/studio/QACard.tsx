@@ -99,7 +99,7 @@ export const QACard: React.FC<QACardProps> = ({ item, onAction }) => {
         {/* Bars */}
         <div className="space-y-1.5 mb-4">
           {Object.entries(item.metrics).map(([key, val]) => (
-            <MetricBar key={key} label={key} value={val} />
+            <MetricBar key={key} label={key} value={val as number} />
           ))}
         </div>
 

@@ -64,7 +64,8 @@ import { ActivationDetailPage } from './pages/dashboard/ActivationDetailPage';
 import { DashboardROI } from './pages/dashboard/AnalyticsPages';
 import { SponsorPortal } from './pages/dashboard/SponsorPortal';
 import { EventWizard } from './components/events/EventWizard';
-import { DeliveryPortal } from './pages/dashboard/DeliveryPortal'; // Imported
+import { DeliveryPortal } from './pages/dashboard/DeliveryPortal';
+import { VisualQAPage } from './pages/dashboard/VisualQAPage';
 
 const App: React.FC = () => {
   return (
@@ -139,6 +140,7 @@ const App: React.FC = () => {
         <Route path="bookings" element={<DashboardBookings />} />
         <Route path="studio" element={<DashboardStudio />} /> 
         <Route path="delivery" element={<DeliveryPortal />} /> 
+        <Route path="qa" element={<VisualQAPage />} /> 
         <Route path="calendar" element={<DashboardCalendar />} />
         
         {/* Events Module */}
