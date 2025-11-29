@@ -18,5 +18,8 @@
 | **Core Architecture** | | | | | | |
 | Responsive UI/UX | Mobile-first design | 🟢 Completed | 100% | Tailwind + Custom Layouts | — | None |
 | Navigation | Navbar, Footer, Sidebar | 🟢 Completed | 100% | `DashboardLayout.tsx` | — | None |
-| **Authentication** | | | | | | |
-| Login Page | Auth Entry UI | 🟢 Completed | 100% | `LoginPage.tsx` | — | None |
+| Settings & Profile | User preferences & billing | 🟢 Completed | 100% | `DashboardSettings.tsx` | — | None |
+| **Studio & Production** | | | | | | |
+| Visual QA | AI Grading & Retouch workflow | 🟢 Completed | 100% | `VisualQAPage.tsx` | — | None |
+| Delivery Portal | Client Asset Review | 🟢 Completed | 100% | `DeliveryPortal.tsx` | — | None |
+| Booking Wizard | 13-Step Booking Flow | 🟢 Completed | 100% | `StartProjectPage.tsx` | — | None |
