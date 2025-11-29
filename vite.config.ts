@@ -21,6 +21,7 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true
+    open: true,
+    host: true // Ensure it listens on all interfaces for cloud/docker environments
   }
 });

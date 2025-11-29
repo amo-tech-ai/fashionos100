@@ -3,80 +3,80 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Layouts
-import { PublicLayout } from './layouts/PublicLayout';
-import { DashboardLayout } from './layouts/DashboardLayout';
-import { BookingLayout } from './layouts/BookingLayout';
+import { PublicLayout } from '@/layouts/PublicLayout';
+import { DashboardLayout } from '@/layouts/DashboardLayout';
+import { BookingLayout } from '@/layouts/BookingLayout';
 
 // Components
-import { ErrorBoundary } from './components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Auth
-import { RequireAuth } from './components/auth/RequireAuth';
-import { LoginPage } from './pages/auth/LoginPage';
+import { RequireAuth } from '@/components/auth/RequireAuth';
+import { LoginPage } from '@/pages/auth/LoginPage';
 
 // Public Pages
-import { HomePage } from './pages/public/HomePage';
-import { ServicesPage } from './pages/public/ServicesPage';
-import { PhotographyPage } from './pages/public/PhotographyPage';
-import { VideoProductionPage } from './pages/public/VideoProductionPage';
-import { WebDesignPage } from './pages/public/WebDesignPage';
-import { DirectoryPage } from './pages/public/DirectoryPage';
-import { ProfileDetailPage } from './pages/public/ProfileDetailPage';
-import { DesignerProfilePage } from './pages/public/DesignerProfilePage';
-import { EventsPage } from './pages/public/EventsPage';
-import { SocialPage } from './pages/public/SocialPage';
-import { EcommercePage } from './pages/public/EcommercePage';
-import { AmazonServicesPage } from './pages/public/AmazonServicesPage';
-import { InstagramPage } from './pages/public/InstagramPage';
-import { ContactPage } from './pages/public/ContactPage';
-import { AboutPage } from './pages/public/AboutPage';
-import { PricingPage } from './pages/public/PricingPage';
+import { HomePage } from '@/pages/public/HomePage';
+import { ServicesPage } from '@/pages/public/ServicesPage';
+import { PhotographyPage } from '@/pages/public/PhotographyPage';
+import { VideoProductionPage } from '@/pages/public/VideoProductionPage';
+import { WebDesignPage } from '@/pages/public/WebDesignPage';
+import { DirectoryPage } from '@/pages/public/DirectoryPage';
+import { ProfileDetailPage } from '@/pages/public/ProfileDetailPage';
+import { DesignerProfilePage } from '@/pages/public/DesignerProfilePage';
+import { EventsPage } from '@/pages/public/EventsPage';
+import { SocialPage } from '@/pages/public/SocialPage';
+import { EcommercePage } from '@/pages/public/EcommercePage';
+import { AmazonServicesPage } from '@/pages/public/AmazonServicesPage';
+import { InstagramPage } from '@/pages/public/InstagramPage';
+import { ContactPage } from '@/pages/public/ContactPage';
+import { AboutPage } from '@/pages/public/AboutPage';
+import { PricingPage } from '@/pages/public/PricingPage';
 
 // Booking Wizard Pages
-import { StepCategory } from './pages/public/booking/StepCategory';
-import { StepStyle } from './pages/public/booking/StepStyle';
-import { StepSize } from './pages/public/booking/StepSize';
-import { StepScenes } from './pages/public/booking/StepScenes';
-import { StepShotType } from './pages/public/booking/StepShotType';
-import { StepSubCategory } from './pages/public/booking/StepSubCategory';
-import { StepModels } from './pages/public/booking/StepModels';
-import { StepShotList } from './pages/public/booking/StepShotList';
-import { StepReferences } from './pages/public/booking/StepReferences';
-import { StepBrief } from './pages/public/booking/StepBrief';
-import { StepShotListBuilder } from './pages/public/booking/StepShotListBuilder';
-import { StepRetouching } from './pages/public/booking/StepRetouching';
-import { StepSchedule } from './pages/public/booking/StepSchedule'; 
-import { StepReview } from './pages/public/booking/StepReview';
-import { StepCheckout } from './pages/public/booking/StepCheckout';
-import { BookingProvider } from './context/BookingContext';
+import { StepCategory } from '@/pages/public/booking/StepCategory';
+import { StepStyle } from '@/pages/public/booking/StepStyle';
+import { StepSize } from '@/pages/public/booking/StepSize';
+import { StepScenes } from '@/pages/public/booking/StepScenes';
+import { StepShotType } from '@/pages/public/booking/StepShotType';
+import { StepSubCategory } from '@/pages/public/booking/StepSubCategory';
+import { StepModels } from '@/pages/public/booking/StepModels';
+import { StepShotList } from '@/pages/public/booking/StepShotList';
+import { StepReferences } from '@/pages/public/booking/StepReferences';
+import { StepBrief } from '@/pages/public/booking/StepBrief';
+import { StepShotListBuilder } from '@/pages/public/booking/StepShotListBuilder';
+import { StepRetouching } from '@/pages/public/booking/StepRetouching';
+import { StepSchedule } from '@/pages/public/booking/StepSchedule'; 
+import { StepReview } from '@/pages/public/booking/StepReview';
+import { StepCheckout } from '@/pages/public/booking/StepCheckout';
+import { BookingProvider } from '@/context/BookingContext';
 
 // Dashboard Pages
-import { DashboardOverview } from './pages/dashboard/DashboardOverview';
-import { DashboardBookings } from './pages/dashboard/DashboardBookings';
-import { DashboardStudio } from './pages/dashboard/DashboardStudio';
-import { DashboardCalendar } from './pages/dashboard/DashboardCalendar';
-import { DashboardEvents } from './pages/dashboard/DashboardEvents';
-import { DashboardFinancials } from './pages/dashboard/DashboardFinancials';
-import { DashboardGallery } from './pages/dashboard/DashboardGallery';
-import { DashboardPlaceholder } from './pages/dashboard/DashboardPlaceholder';
-import { DashboardSponsors } from './pages/dashboard/DashboardSponsors';
-import { DashboardLeads } from './pages/dashboard/DashboardLeads';
-import { DashboardPackages } from './pages/dashboard/DashboardPackages';
-import { DashboardSettings } from './pages/dashboard/DashboardSettings';
-import { SponsorDetailPage } from './pages/dashboard/SponsorDetailPage';
-import { SponsorDealWizard } from './pages/dashboard/SponsorDealWizard';
-import { EventOpportunitiesPage } from './pages/dashboard/EventOpportunitiesPage';
-import { DashboardContracts, DashboardActivations, DashboardMedia } from './pages/dashboard/OperationsPages';
-import { ActivationDetailPage } from './pages/dashboard/ActivationDetailPage';
-import { DashboardROI } from './pages/dashboard/AnalyticsPages';
-import { SponsorPortal } from './pages/dashboard/SponsorPortal';
-import { EventWizard } from './components/events/EventWizard';
-import { DeliveryPortal } from './pages/dashboard/DeliveryPortal';
-import { VisualQAPage } from './pages/dashboard/VisualQAPage';
-import { BrandProfilePage } from './pages/dashboard/BrandProfilePage';
-import { SystemHealth } from './pages/dashboard/SystemHealth';
-import { DashboardInvoices } from './pages/dashboard/DashboardInvoices';
-import { DashboardMessages } from './pages/dashboard/DashboardMessages';
+import { DashboardOverview } from '@/pages/dashboard/DashboardOverview';
+import { DashboardBookings } from '@/pages/dashboard/DashboardBookings';
+import { DashboardStudio } from '@/pages/dashboard/DashboardStudio';
+import { DashboardCalendar } from '@/pages/dashboard/DashboardCalendar';
+import { DashboardEvents } from '@/pages/dashboard/DashboardEvents';
+import { DashboardFinancials } from '@/pages/dashboard/DashboardFinancials';
+import { DashboardGallery } from '@/pages/dashboard/DashboardGallery';
+import { DashboardPlaceholder } from '@/pages/dashboard/DashboardPlaceholder';
+import { DashboardSponsors } from '@/pages/dashboard/DashboardSponsors';
+import { DashboardLeads } from '@/pages/dashboard/DashboardLeads';
+import { DashboardPackages } from '@/pages/dashboard/DashboardPackages';
+import { DashboardSettings } from '@/pages/dashboard/DashboardSettings';
+import { SponsorDetailPage } from '@/pages/dashboard/SponsorDetailPage';
+import { SponsorDealWizard } from '@/pages/dashboard/SponsorDealWizard';
+import { EventOpportunitiesPage } from '@/pages/dashboard/EventOpportunitiesPage';
+import { DashboardContracts, DashboardActivations, DashboardMedia } from '@/pages/dashboard/OperationsPages';
+import { ActivationDetailPage } from '@/pages/dashboard/ActivationDetailPage';
+import { DashboardROI } from '@/pages/dashboard/AnalyticsPages';
+import { SponsorPortal } from '@/pages/dashboard/SponsorPortal';
+import { EventWizard } from '@/components/events/EventWizard';
+import { DeliveryPortal } from '@/pages/dashboard/DeliveryPortal';
+import { VisualQAPage } from '@/pages/dashboard/VisualQAPage';
+import { BrandProfilePage } from '@/pages/dashboard/BrandProfilePage';
+import { SystemHealth } from '@/pages/dashboard/SystemHealth';
+import { DashboardInvoices } from '@/pages/dashboard/DashboardInvoices';
+import { DashboardMessages } from '@/pages/dashboard/DashboardMessages';
 
 const App: React.FC = () => {
   return (
