@@ -46,7 +46,6 @@ export const DashboardLayout: React.FC = () => {
 
   return (
     // h-[100dvh] locks the layout to the dynamic viewport height on mobile (avoiding scroll bounce)
-    // This replaces h-screen which fails on mobile browsers with address bars
     <div className="flex h-[100dvh] w-full bg-[#F8F9FB] font-sans overflow-hidden">
        
        {/* Desktop Sidebar */}
@@ -109,8 +108,8 @@ export const DashboardLayout: React.FC = () => {
 
        {/* Main Content Wrapper */}
        <div className="flex-1 lg:ml-64 flex flex-col min-w-0 h-full relative">
-          {/* Header */}
-          <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center flex-shrink-0 sticky top-0 z-20">
+          {/* Header - Not sticky to avoid conflicts, it just sits at top of flex col */}
+          <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center flex-shrink-0 z-20">
              <div className="flex items-center gap-4 flex-1">
                 <button className="lg:hidden p-2 -ml-2 hover:bg-gray-100 rounded-lg" onClick={() => setIsMobileMenuOpen(true)}>
                     <Menu className="text-gray-600" size={24} />
@@ -140,7 +139,7 @@ export const DashboardLayout: React.FC = () => {
           </header>
 
           {/* Main Content Scroll Area */}
-          <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-200">
+          <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-200 relative">
              <div className="max-w-7xl mx-auto pb-12">
                 <Outlet />
              </div>

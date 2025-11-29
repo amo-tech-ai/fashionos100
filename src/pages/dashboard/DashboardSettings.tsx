@@ -125,7 +125,7 @@ export const DashboardSettings: React.FC = () => {
         
         {/* Sidebar Navigation */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden sticky top-24">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden sticky top-0 z-20">
             <nav className="flex flex-col p-2">
               {[
                 { id: 'profile', label: 'Profile', icon: User },

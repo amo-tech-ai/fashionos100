@@ -127,7 +127,8 @@ export const DashboardCalendar = () => {
         ))}
       </div>
 
-      <div className="flex flex-col xl:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm sticky top-[72px] z-30">
+      {/* Sticky Header - fixed top-0 for container scrolling */}
+      <div className="flex flex-col xl:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm sticky top-0 z-30">
          <h2 className="text-xl font-serif font-bold w-40 shrink-0">
             {currentDate.toLocaleString('default', { month: 'long' })} {currentYear}
          </h2>

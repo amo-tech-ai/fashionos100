@@ -218,7 +218,8 @@ export const DashboardGallery: React.FC = () => {
       )}
 
       {/* 3. Filter & Search Bar */}
-      <div className="sticky top-20 z-30 bg-[#F8F9FB]/95 backdrop-blur-md py-2">
+      {/* Corrected sticky top-0 for container scroll compatibility */}
+      <div className="sticky top-0 z-30 bg-[#F8F9FB]/95 backdrop-blur-md py-2">
          <div className="bg-white p-2 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center flex-1 w-full">
                <Search className="text-gray-400 ml-4 shrink-0" size={20} />
