@@ -7,6 +7,7 @@ import {
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
 import { useInvoices } from '../../hooks/useInvoices';
+import { formatCurrency } from '../../utils/format';
 
 // --- Components ---
 
@@ -73,7 +74,7 @@ const TransactionRow: React.FC<TransactionRowProps> = ({ date, title, type, amou
       </div>
     </td>
     <td className={`px-6 py-4 font-bold text-sm ${amount > 0 ? 'text-green-600' : 'text-[#1A1D2D]'}`}>
-      ${Math.abs(amount).toLocaleString()}
+      {formatCurrency(Math.abs(amount))}
     </td>
     <td className="px-6 py-4 text-sm text-gray-500">
       {amount > 0 ? 'Payment' : 'Refund/Exp'}
@@ -201,7 +202,7 @@ export const DashboardFinancials: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <KPICard 
           title="Total Revenue" 
-          amount={`$${stats.totalRevenue.toLocaleString()}`} 
+          amount={formatCurrency(stats.totalRevenue)} 
           trend="up" 
           trendValue="12.5%" 
           icon={Wallet} 
@@ -209,7 +210,7 @@ export const DashboardFinancials: React.FC = () => {
         />
         <KPICard 
           title="Pending Payments" 
-          amount={`$${stats.pendingRevenue.toLocaleString()}`} 
+          amount={formatCurrency(stats.pendingRevenue)} 
           trend="up" 
           trendValue="5 Active" 
           icon={TrendingUp} 
@@ -269,14 +270,14 @@ export const DashboardFinancials: React.FC = () => {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total</span>
-                 <span className="text-2xl font-serif font-bold text-[#1A1D2D]">${stats.totalRevenue.toLocaleString()}</span>
+                 <span className="text-2xl font-serif font-bold text-[#1A1D2D]">{formatCurrency(stats.totalRevenue)}</span>
               </div>
            </div>
 
            <div className="space-y-1">
-              <PieChartSegment color="bg-indigo-500" percent={45} label="Shoots" value={`$${(stats.totalRevenue * 0.45).toLocaleString()}`} />
-              <PieChartSegment color="bg-pink-500" percent={35} label="Events" value={`$${(stats.totalRevenue * 0.35).toLocaleString()}`} />
-              <PieChartSegment color="bg-purple-500" percent={20} label="Retouching" value={`$${(stats.totalRevenue * 0.20).toLocaleString()}`} />
+              <PieChartSegment color="bg-indigo-500" percent={45} label="Shoots" value={formatCurrency(stats.totalRevenue * 0.45)} />
+              <PieChartSegment color="bg-pink-500" percent={35} label="Events" value={formatCurrency(stats.totalRevenue * 0.35)} />
+              <PieChartSegment color="bg-purple-500" percent={20} label="Retouching" value={formatCurrency(stats.totalRevenue * 0.20)} />
            </div>
         </div>
       </div>

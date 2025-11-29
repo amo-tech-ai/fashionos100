@@ -5,6 +5,7 @@ import { ChevronRight, Crown, CreditCard, Lock, Sparkles } from 'lucide-react';
 import { Button } from '../Button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { WIZARD_DATA } from '../../data/wizardData';
+import { formatCurrency } from '../../utils/format';
 
 export const BookingSidebar: React.FC = () => {
   const { state, totals } = useBooking();
@@ -77,27 +78,27 @@ export const BookingSidebar: React.FC = () => {
           <div className="space-y-2">
              <div className="flex justify-between text-xs text-gray-500">
                <span>Base Fee</span>
-               <span>${totals.baseFee.toLocaleString()}</span>
+               <span>{formatCurrency(totals.baseFee)}</span>
              </div>
              <div className="flex justify-between text-xs text-gray-500">
                <span>Production ({state.shotCount}x)</span>
-               <span>${totals.shotFee.toLocaleString()}</span>
+               <span>{formatCurrency(totals.shotFee)}</span>
              </div>
              {totals.retouchingFee > 0 && (
                <div className="flex justify-between text-xs text-purple-600">
                  <span>Retouching (+50%)</span>
-                 <span>+${totals.retouchingFee.toLocaleString()}</span>
+                 <span>+{formatCurrency(totals.retouchingFee)}</span>
                </div>
              )}
              {totals.sizeFee > 0 && (
                <div className="flex justify-between text-xs text-gray-500">
                  <span>Handling Fee</span>
-                 <span>+${totals.sizeFee.toLocaleString()}</span>
+                 <span>+{formatCurrency(totals.sizeFee)}</span>
                </div>
              )}
              <div className="flex justify-between text-xs text-gray-400 pt-2 border-t border-gray-50">
                 <span>Tax (Est.)</span>
-                <span>${totals.tax.toFixed(2)}</span>
+                <span>{formatCurrency(totals.tax)}</span>
              </div>
           </div>
         </div>
@@ -125,7 +126,7 @@ export const BookingSidebar: React.FC = () => {
         <div className="p-6 bg-gray-50 border-t border-gray-100">
             <div className="flex justify-between items-end mb-6">
                 <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Total</span>
-                <span className="text-3xl font-serif font-bold text-gray-900">${totals.total.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                <span className="text-3xl font-serif font-bold text-gray-900">{formatCurrency(totals.total)}</span>
             </div>
             
             <Button 
