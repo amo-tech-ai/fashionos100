@@ -113,19 +113,6 @@ export const BookingLayout: React.FC = () => {
                         </Link>
                     ))}
                 </nav>
-                <p className="px-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 mt-8">Management</p>
-                <nav className="space-y-1">
-                    {[
-                        { icon: FileText, label: 'Contracts', path: '#' },
-                        { icon: Mic2, label: 'Activations', path: '#' },
-                        { icon: Image, label: 'Media', path: '#' },
-                        { icon: BarChart3, label: 'ROI', path: '#' },
-                    ].map((item, i) => (
-                        <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 cursor-not-allowed">
-                             <item.icon size={18} /> {item.label}
-                        </div>
-                    ))}
-                </nav>
             </div>
           </div>
 
