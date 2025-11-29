@@ -39,6 +39,8 @@
 ### Phase 4: Shoot Booking System (✅ DONE)
 *   13-Step Wizard complete with AI Briefing.
 *   Admin Studio Dashboard connected to Supabase.
+*   Shot List Builder with image uploads added.
+*   AI Moodboard Generation added.
 
 ### Phase 5: Event Management (✅ DONE)
 *   Event Wizard with AI Draft & Image Gen complete.

@@ -23,3 +23,4 @@
 | Visual QA | AI Grading & Retouch workflow | 🟢 Completed | 100% | `VisualQAPage.tsx` | — | None |
 | Delivery Portal | Client Asset Review | 🟢 Completed | 100% | `DeliveryPortal.tsx` | — | None |
 | Booking Wizard | 13-Step Booking Flow | 🟢 Completed | 100% | `StartProjectPage.tsx` | — | None |
+| AI Moodboard Gen | Generate style refs via Gemini | 🟢 Completed | 100% | `generate-moodboard` func | — | None |

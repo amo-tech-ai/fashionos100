@@ -1,6 +1,13 @@
 
 # Changelog
 
+## [1.3.0] - 2025-03-03
+### 🚀 Booking System Enhancements
+- **AI Moodboard Generator:** Added a new tab in `StepReferences` allowing users to generate visual concepts using Gemini 2.5 Flash Image.
+- **Shot List Builder:** Enhanced `StepShotListBuilder` to support reference image uploads per shot item.
+- **Validation:** Added robust validation to `StepSchedule` ensuring date/time selection before proceeding.
+- **Backend:** Deployed `generate-moodboard` Edge Function.
+
 ## [1.2.0] - 2025-03-03
 ### 🚀 MVP Feature Complete
 - **Settings Module:** Added `DashboardSettings` with Profile, Notifications, Team management, and Billing portal mock.
