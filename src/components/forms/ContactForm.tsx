@@ -1,4 +1,6 @@
+
 import React, { useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { Button } from '../Button';
 import { Input } from './Input';
 import { Select } from './Select';
@@ -12,32 +14,36 @@ interface ContactFormProps {
   className?: string;
 }
 
+interface FormInputs {
+  name: string;
+  email: string;
+  company: string;
+  budget: string;
+  message: string;
+}
+
 export const ContactForm: React.FC<ContactFormProps> = ({ 
   title = "Get in Touch", 
   subtitle = "Tell us about your project.", 
   serviceType = "General",
   className = ""
 }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    company: '',
-    budget: '',
-    message: ''
-  });
+  
+  const { 
+    register, 
+    handleSubmit, 
+    formState: { errors, isSubmitting },
+    reset 
+  } = useForm<FormInputs>();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
+  const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    console.log('Form Submitted:', { ...formData, serviceType });
-    setIsSubmitting(false);
+    console.log('Form Submitted:', { ...data, serviceType });
     setIsSuccess(true);
+    reset();
   };
 
   if (isSuccess) {
@@ -64,24 +70,28 @@ export const ContactForm: React.FC<ContactFormProps> = ({
         <p className="text-gray-500">{subtitle}</p>
       </div>
       
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Input 
             label="Name" 
-            placeholder="Your Name" 
-            required
-            value={formData.name}
-            onChange={e => setFormData({...formData, name: e.target.value})}
-            className="bg-white" 
+            placeholder="Your Name"
+            className="bg-white"
+            error={errors.name?.message}
+            {...register('name', { required: 'Name is required' })}
           />
           <Input 
             label="Email" 
             type="email" 
             placeholder="name@company.com" 
-            required
-            value={formData.email}
-            onChange={e => setFormData({...formData, email: e.target.value})}
-            className="bg-white" 
+            className="bg-white"
+            error={errors.email?.message}
+            {...register('email', { 
+              required: 'Email is required',
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: "Invalid email format"
+              }
+            })}
           />
         </div>
 
@@ -89,31 +99,30 @@ export const ContactForm: React.FC<ContactFormProps> = ({
           <Input 
             label="Company" 
             placeholder="Brand Name" 
-            value={formData.company}
-            onChange={e => setFormData({...formData, company: e.target.value})}
-            className="bg-white" 
+            className="bg-white"
+            {...register('company')}
           />
           <Select 
             label="Budget Range" 
             options={["$1k - $5k", "$5k - $10k", "$10k - $25k", "$25k+", "Not sure yet"]}
-            value={formData.budget}
-            onChange={e => setFormData({...formData, budget: e.target.value as string})}
             className="bg-white"
-            required
+            defaultValue=""
+            error={errors.budget?.message}
+            {...register('budget', { required: 'Please select a budget range' })}
           />
         </div>
 
         <Textarea 
           label="Project Details"
           placeholder="Tell us about your vision, timeline, and requirements..."
-          required
-          value={formData.message}
-          onChange={e => setFormData({...formData, message: e.target.value})}
-          className="bg-white h-32" 
+          className="bg-white h-32"
+          error={errors.message?.message}
+          {...register('message', { required: 'Project details are required' })}
         />
         
         <div className="pt-4">
           <Button 
+            type="submit"
             variant="primary" 
             className="w-full md:w-auto px-12 py-4 rounded-xl uppercase tracking-widest font-bold"
             disabled={isSubmitting}

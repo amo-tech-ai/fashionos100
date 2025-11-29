@@ -318,7 +318,7 @@ export const BrandProfilePage: React.FC = () => {
                                 <span className="text-xs font-bold uppercase text-white bg-blue-400 px-2 py-0.5 rounded">{platform}</span>
                             </div>
                             <ul className="space-y-2">
-                               {ideas.slice(0,2).map((idea, i) => (
+                               {(ideas as string[]).slice(0,2).map((idea, i) => (
                                    <li key={i} className="text-sm text-blue-800 flex items-start gap-2 bg-white/60 p-2 rounded-lg">
                                        <span className="text-blue-400 mt-1">•</span> {idea}
                                    </li>

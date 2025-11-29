@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { 
   Wallet, TrendingUp, CreditCard, Search, Filter, 
@@ -9,20 +10,22 @@ import { useInvoices } from '../../hooks/useInvoices';
 
 // --- Components ---
 
-const KPICard = ({ 
+interface KPICardProps {
+  title: string;
+  amount: string;
+  trend: 'up' | 'down';
+  trendValue: string;
+  icon: any;
+  colorClass: string;
+}
+
+const KPICard: React.FC<KPICardProps> = ({ 
   title, 
   amount, 
   trend, 
   trendValue, 
   icon: Icon, 
   colorClass 
-}: { 
-  title: string, 
-  amount: string, 
-  trend: 'up' | 'down', 
-  trendValue: string, 
-  icon: any, 
-  colorClass: string 
 }) => (
   <div className="bg-white p-6 rounded-[20px] border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
     <div className="flex justify-between items-start mb-4 relative z-10">
@@ -47,7 +50,15 @@ const KPICard = ({
   </div>
 );
 
-const TransactionRow = ({ date, title, type, amount, status }: any) => (
+interface TransactionRowProps {
+  date: string;
+  title: string;
+  type: string;
+  amount: number;
+  status: string;
+}
+
+const TransactionRow: React.FC<TransactionRowProps> = ({ date, title, type, amount, status }) => (
   <tr className="hover:bg-gray-50/80 transition-colors group">
     <td className="px-6 py-4 text-sm text-gray-500 font-medium">{date}</td>
     <td className="px-6 py-4">
@@ -78,7 +89,13 @@ const TransactionRow = ({ date, title, type, amount, status }: any) => (
   </tr>
 );
 
-const CashflowBar = ({ heightIncome, heightExpense, month }: { heightIncome: string, heightExpense: string, month: string }) => (
+interface CashflowBarProps {
+  heightIncome: string;
+  heightExpense: string;
+  month: string;
+}
+
+const CashflowBar: React.FC<CashflowBarProps> = ({ heightIncome, heightExpense, month }) => (
   <div className="flex flex-col items-center gap-2 flex-1 group cursor-pointer">
     <div className="relative w-full h-48 flex items-end justify-center gap-1.5 px-1">
       <div className="w-full bg-[#F4B7D3] rounded-t-md opacity-80 group-hover:opacity-100 transition-all duration-300 relative" style={{ height: heightIncome }}>
@@ -90,7 +107,14 @@ const CashflowBar = ({ heightIncome, heightExpense, month }: { heightIncome: str
   </div>
 );
 
-const PieChartSegment = ({ color, percent, label, value }: { color: string, percent: number, label: string, value: string }) => (
+interface PieChartSegmentProps {
+  color: string;
+  percent: number;
+  label: string;
+  value: string;
+}
+
+const PieChartSegment: React.FC<PieChartSegmentProps> = ({ color, percent, label, value }) => (
   <div className="flex items-center justify-between text-sm mb-3 last:mb-0 group cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
     <div className="flex items-center gap-3">
       <div className={`w-3 h-3 rounded-full ${color}`} />
@@ -105,7 +129,7 @@ const PieChartSegment = ({ color, percent, label, value }: { color: string, perc
 
 // --- Main Page ---
 
-export const DashboardFinancials = () => {
+export const DashboardFinancials: React.FC = () => {
   const { invoices, stats, loading } = useInvoices();
 
   // Calculate chart data from real invoices
