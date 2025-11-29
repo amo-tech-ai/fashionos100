@@ -142,6 +142,17 @@ serve(async (req) => {
         - Format: Plain text.
       `;
       responseMimeType = 'text/plain';
+
+    } else if (action === 'generate-brand-story') {
+      systemInstruction = "You are a Brand Storyteller for high-fashion clients.";
+      prompt = `
+        Brand: ${sponsorName}
+        Industry: ${sponsorIndustry}
+        
+        Task: Write a short, engaging brand story (max 100 words) that highlights their mission and potential synergy with a fashion event.
+        Tone: Professional, aspirational, luxury.
+      `;
+      responseMimeType = 'text/plain';
     }
 
     const response = await ai.models.generateContent({

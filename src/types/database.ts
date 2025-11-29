@@ -475,6 +475,8 @@ export interface Database {
           contact_phone: string | null
           owner_id: string | null
           created_at: string
+          brand_story: string | null
+          social_links: string[] | null
         }
         Insert: {
           id?: string
@@ -488,6 +490,8 @@ export interface Database {
           contact_phone?: string | null
           owner_id?: string | null
           created_at?: string
+          brand_story?: string | null
+          social_links?: string[] | null
         }
         Update: {
           id?: string
@@ -501,6 +505,8 @@ export interface Database {
           contact_phone?: string | null
           owner_id?: string | null
           created_at?: string
+          brand_story?: string | null
+          social_links?: string[] | null
         }
       }
       event_sponsors: {

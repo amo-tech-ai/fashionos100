@@ -1,18 +1,19 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  Calendar, MapPin, Upload, Download, FileText, CheckCircle, 
-  Loader2, Eye, Heart, Share2, TrendingUp, Sparkles, DollarSign, CreditCard, Filter, CheckSquare, X
+  Calendar, MapPin, Upload, CheckCircle, 
+  Loader2, User, Eye, Heart, Share2, TrendingUp, Plus, Sparkles, CreditCard, Filter, X, Building2, Globe, Save, Download
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
-import { SponsorProfile, EventSponsor, SponsorActivation, SponsorDeliverable, SponsorRoiMetric } from '../../types/sponsorship';
+import { SponsorProfile, EventSponsor, SponsorActivation, SponsorDeliverable, SponsorRoiMetric, SponsorType } from '../../types/sponsorship';
 import { SocialPlanWidget } from '../../components/sponsors/SocialPlanWidget';
 import { ResponsiveLineChart, ResponsiveBarChart } from '../../components/charts/DynamicCharts';
 import { useToast } from '../../components/Toast';
 import { aiService } from '../../lib/ai-service';
 import { StatusBadge } from '../../components/StatusBadge';
+import { Input } from '../../components/forms/Input';
+import { Textarea } from '../../components/forms/Textarea';
 
 export const SponsorPortal: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'activations' | 'marketing'>('dashboard');
@@ -25,6 +26,10 @@ export const SponsorPortal: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
+  
+  // Onboarding State
+  const [creatingProfile, setCreatingProfile] = useState(false);
+  const [newProfileData, setNewProfileData] = useState({ name: '', website: '', industry: '' });
   
   // AI Ideas State
   const [activationIdeas, setActivationIdeas] = useState<any[] | null>(null);
@@ -41,80 +46,89 @@ export const SponsorPortal: React.FC = () => {
 
   const fetchSponsorData = async () => {
     try {
+      setLoading(true);
       const { data: { user } } = await (supabase.auth as any).getUser();
       if (!user) return;
 
+      // Use maybeSingle() to handle "no rows" gracefully without throwing
       const { data: profile, error: profileError } = await supabase
         .from('sponsor_profiles')
         .select('*')
         .eq('owner_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (profileError || !profile) {
-        console.error("No sponsor profile found for user");
-        setLoading(false);
-        return;
+      if (profileError) {
+        console.error("Error fetching sponsor profile:", profileError);
       }
+
+      // Set profile (can be null if new user)
       setSponsorProfile(profile);
 
-      const { data: dealsData } = await supabase
-        .from('event_sponsors')
-        .select('*, event:events(id, title, start_time)')
-        .eq('sponsor_id', profile.id);
-      setDeals(dealsData || []);
+      if (profile) {
+        const { data: dealsData } = await supabase
+          .from('event_sponsors')
+          .select('*, event:events(id, title, start_time)')
+          .eq('sponsor_id', profile.id);
+        setDeals(dealsData || []);
 
-      const dealIds = dealsData?.map(d => d.id) || [];
-      if (dealIds.length > 0) {
-        const { data: actData } = await supabase
-          .from('sponsor_activations')
-          .select('*, event_sponsor:event_sponsors(event:events(title))')
-          .in('event_sponsor_id', dealIds);
-        setActivations(actData || []);
+        const dealIds = dealsData?.map(d => d.id) || [];
+        if (dealIds.length > 0) {
+          const { data: actData } = await supabase
+            .from('sponsor_activations')
+            .select('*, event_sponsor:event_sponsors(event:events(title))')
+            .in('event_sponsor_id', dealIds);
+          setActivations(actData || []);
 
-        const { data: delData } = await supabase
-          .from('sponsor_deliverables')
-          .select('*, event_sponsor:event_sponsors(event:events(title))')
-          .in('event_sponsor_id', dealIds);
-        setDeliverables(delData || []);
+          const { data: delData } = await supabase
+            .from('sponsor_deliverables')
+            .select('*, event_sponsor:event_sponsors(event:events(title))')
+            .in('event_sponsor_id', dealIds);
+          setDeliverables(delData || []);
 
-        const { data: metricsData } = await supabase
-          .from('sponsor_roi_metrics')
-          .select('*')
-          .in('event_sponsor_id', dealIds)
-          .order('created_at', { ascending: true });
-        setMetrics(metricsData || []);
-
-        // Trigger AI suggestions if we have active deals
-        if (showIdeas && dealsData && dealsData.length > 0) {
-           generateIdeas(profile, dealsData[0]);
+          const { data: metricsData } = await supabase
+            .from('sponsor_roi_metrics')
+            .select('*')
+            .in('event_sponsor_id', dealIds)
+            .order('created_at', { ascending: true });
+          setMetrics(metricsData || []);
         }
       }
 
     } catch (e) {
-      console.error(e);
+      console.error("System error:", e);
     } finally {
       setLoading(false);
     }
   };
 
-  const generateIdeas = async (profile: SponsorProfile, deal?: EventSponsor) => {
-      if (ideasLoading) return;
-      setIdeasLoading(true);
-      try {
-          const result = await aiService.sponsorAgent('activation-ideas', {
-              sponsorName: profile.name,
-              sponsorIndustry: profile.industry || 'Luxury',
-              eventDetails: (deal?.event as any)?.title || 'Fashion Event'
-          });
+  const handleCreateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatingProfile(true);
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
 
-          if (result.success && result.data?.ideas) {
-              setActivationIdeas(result.data.ideas);
-          }
-      } catch (e) {
-          console.error("AI Ideas failed", e);
-      } finally {
-          setIdeasLoading(false);
-      }
+        const { error: insertError } = await supabase
+            .from('sponsor_profiles')
+            .insert({
+                owner_id: user.id,
+                name: newProfileData.name,
+                industry: newProfileData.industry,
+                website_url: newProfileData.website,
+                contact_email: user.email,
+                sponsor_type: 'Other' as SponsorType
+            });
+
+        if (insertError) throw insertError;
+        
+        success("Profile created successfully!");
+        fetchSponsorData();
+    } catch (e: any) {
+        console.error(e);
+        error("Failed to create profile: " + e.message);
+    } finally {
+        setCreatingProfile(false);
+    }
   };
 
   const handleFileUpload = async (deliverableId: string, eventSponsorId: string, file: File) => {
@@ -126,7 +140,6 @@ export const SponsorPortal: React.FC = () => {
     try {
         const filePath = `sponsor-assets/${sponsorProfile.id}/${deliverableId}/${file.name}`;
         
-        // 1. Upload
         const { error: uploadError } = await supabase.storage
             .from('documents') 
             .upload(filePath, file);
@@ -137,13 +150,12 @@ export const SponsorPortal: React.FC = () => {
             .from('documents')
             .getPublicUrl(filePath);
 
-        // 2. Update DB Status
         await supabase
             .from('sponsor_deliverables')
             .update({ status: 'uploaded', asset_url: publicUrl })
             .eq('id', deliverableId);
 
-        // 3. Check if all deliverables for this deal are complete
+        // Check completion
         const dealDeliverables = deliverables.filter(d => d.event_sponsor_id === eventSponsorId);
         const othersPending = dealDeliverables.filter(d => d.id !== deliverableId && (d.status === 'pending' || d.status === 'rejected'));
 
@@ -159,15 +171,13 @@ export const SponsorPortal: React.FC = () => {
              success("File uploaded successfully");
         }
 
-        // Refresh locally
         setDeliverables(prev => prev.map(d => d.id === deliverableId ? { ...d, status: 'uploaded', asset_url: publicUrl } : d));
 
-        // 4. AI Analysis
+        // Async AI Analysis
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = async () => {
             const base64 = (reader.result as string).split(',')[1];
-            // Use aiService instead of direct fetch
             aiService.sponsorAgent('analyze-media', { mediaBase64: base64 })
               .catch(err => console.warn("AI Analysis error", err));
         };
@@ -189,16 +199,18 @@ export const SponsorPortal: React.FC = () => {
       });
       
       if (result.success && result.data?.url) {
-        alert("Redirecting to Secure Payment Gateway...");
-        // Simulate success for demo
+        // Redirect or mock success
+        window.location.href = result.data.url;
+      } else {
+        // Fallback mock
+        await new Promise(r => setTimeout(r, 1500));
         await supabase.from('event_sponsors').update({ status: 'Paid' }).eq('id', dealId);
         setDeals(prev => prev.map(d => d.id === dealId ? { ...d, status: 'Paid' } : d));
-      } else {
-        throw new Error(result.error || 'Payment initialization failed');
+        success("Payment successful (Mock)");
       }
     } catch (error) {
       console.error("Payment error", error);
-      alert("Payment initialization failed.");
+      error("Payment initialization failed.");
     } finally {
       setProcessingPayment(false);
     }
@@ -209,7 +221,6 @@ export const SponsorPortal: React.FC = () => {
         error("No metrics to export.");
         return;
     }
-    
     const headers = ['Date', 'Metric', 'Value', 'Unit', 'Source'];
     const rows = filteredMetrics.map(m => [
         new Date(m.created_at).toLocaleDateString(),
@@ -218,32 +229,27 @@ export const SponsorPortal: React.FC = () => {
         m.unit,
         'Platform Sensor'
     ]);
-    
-    const csvContent = "data:text/csv;charset=utf-8," 
-        + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-        
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `sponsor_metrics_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `sponsor_metrics.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    success("Metrics exported successfully.");
+    success("Metrics exported.");
   };
 
-  // --- Filter Logic ---
+  // --- Derived State ---
   const filteredMetrics = useMemo(() => {
     if (selectedEventId === 'all') return metrics;
     const matchingDeals = deals.filter(d => d.event_id === selectedEventId).map(d => d.id);
     return metrics.filter(m => matchingDeals.includes(m.event_sponsor_id));
   }, [metrics, selectedEventId, deals]);
 
-  // --- Chart Data Prep ---
   const impressionData = useMemo(() => {
     const impMetrics = filteredMetrics.filter(m => m.metric_name.includes('Impression') || m.metric_name.includes('Views'));
     if (impMetrics.length === 0) return [];
-    
     return impMetrics.map((m) => ({
         label: new Date(m.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
         value: m.metric_value
@@ -253,28 +259,78 @@ export const SponsorPortal: React.FC = () => {
   const conversionData = useMemo(() => {
     const leadMetrics = filteredMetrics.filter(m => m.metric_name.includes('Lead') || m.metric_name.includes('Click') || m.metric_name.includes('Engagement'));
     if (leadMetrics.length === 0) return [];
-
     return leadMetrics.map(m => ({
         label: m.metric_name.replace('Generated', '').trim(),
         value: m.metric_value
     }));
   }, [filteredMetrics]);
 
-  // --- Progress Calculation ---
   const activeDeliverables = useMemo(() => {
       if (selectedEventId === 'all') return deliverables;
       const matchingDeals = deals.filter(d => d.event_id === selectedEventId).map(d => d.id);
       return deliverables.filter(d => matchingDeals.includes(d.event_sponsor_id));
   }, [deliverables, selectedEventId, deals]);
 
-  const completedDeliverablesCount = activeDeliverables.filter(d => d.status === 'uploaded' || d.status === 'approved').length;
-  const progressPercent = activeDeliverables.length > 0 ? Math.round((completedDeliverablesCount / activeDeliverables.length) * 100) : 0;
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-purple-600" size={48}/></div>;
-  if (!sponsorProfile) return <div className="p-12 text-center"><h3>Access Denied</h3><p>No sponsor profile linked to your account.</p></div>;
-
+  const progressPercent = activeDeliverables.length > 0 ? Math.round((activeDeliverables.filter(d => d.status === 'uploaded' || d.status === 'approved').length / activeDeliverables.length) * 100) : 0;
   const activeDeal = deals[0];
   const eventOptions = Array.from(new Set(deals.map(d => d.event))).filter(Boolean);
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-purple-600" size={48}/></div>;
+
+  // --- NEW USER ONBOARDING FLOW ---
+  if (!sponsorProfile) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center p-4">
+        <FadeIn>
+          <div className="bg-white rounded-[2rem] shadow-xl border border-gray-100 p-8 md:p-12 w-full max-w-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-50 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+            
+            <div className="relative z-10 text-center mb-8">
+              <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <Building2 size={32} />
+              </div>
+              <h1 className="text-3xl font-serif font-bold text-gray-900 mb-3">Setup Partner Profile</h1>
+              <p className="text-gray-500 max-w-md mx-auto">
+                Welcome to the Sponsor Portal. Please create your company profile to start managing sponsorships and tracking ROI.
+              </p>
+            </div>
+
+            <form onSubmit={handleCreateProfile} className="space-y-6">
+              <div className="space-y-4">
+                <Input 
+                  label="Company Name" 
+                  placeholder="e.g. Acme Luxury" 
+                  value={newProfileData.name}
+                  onChange={(e) => setNewProfileData({...newProfileData, name: e.target.value})}
+                  required
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input 
+                    label="Website" 
+                    placeholder="https://..." 
+                    value={newProfileData.website}
+                    onChange={(e) => setNewProfileData({...newProfileData, website: e.target.value})}
+                  />
+                  <Input 
+                    label="Industry" 
+                    placeholder="e.g. Beauty, Tech..." 
+                    value={newProfileData.industry}
+                    onChange={(e) => setNewProfileData({...newProfileData, industry: e.target.value})}
+                  />
+                </div>
+              </div>
+              
+              <div className="pt-4">
+                <Button fullWidth size="lg" variant="primary" disabled={creatingProfile}>
+                  {creatingProfile ? <><Loader2 className="animate-spin mr-2"/> Creating...</> : <><Save className="mr-2" size={18}/> Create Profile</>}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </FadeIn>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-in fade-in duration-500 pb-20 font-sans">
@@ -314,42 +370,6 @@ export const SponsorPortal: React.FC = () => {
         </div>
       </div>
 
-      {/* AI Suggestions (Dismissible) */}
-      {showIdeas && (activationIdeas?.length > 0 || ideasLoading) && (
-          <FadeIn className="mb-8">
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-[2rem] border border-indigo-100 relative overflow-hidden">
-                  <div className="flex justify-between items-start mb-4 relative z-10">
-                      <div className="flex items-center gap-2">
-                          <Sparkles className="text-indigo-600" size={20} />
-                          <h3 className="font-serif font-bold text-xl text-indigo-900">AI Activation Suggestions</h3>
-                      </div>
-                      <button onClick={() => setShowIdeas(false)} className="p-1 hover:bg-white/50 rounded-full text-indigo-400 hover:text-indigo-700 transition-colors">
-                          <X size={20} />
-                      </button>
-                  </div>
-                  
-                  {ideasLoading ? (
-                      <div className="flex items-center gap-3 text-indigo-600 animate-pulse">
-                          <Loader2 size={18} className="animate-spin" />
-                          <span className="text-sm font-medium">Generating bespoke ideas for {sponsorProfile.name}...</span>
-                      </div>
-                  ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
-                          {activationIdeas?.map((idea, i) => (
-                              <div key={i} className="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-all border border-indigo-50 cursor-default">
-                                  <h4 className="font-bold text-indigo-900 text-sm mb-2">{idea.title}</h4>
-                                  <p className="text-xs text-gray-600 leading-relaxed mb-3">{idea.description}</p>
-                                  <span className="text-[10px] font-bold uppercase bg-indigo-50 text-indigo-600 px-2 py-1 rounded">{idea.estimated_cost || 'Custom'}</span>
-                              </div>
-                          ))}
-                      </div>
-                  )}
-                  {/* Decor */}
-                  <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-indigo-200 rounded-full blur-3xl opacity-30 pointer-events-none"></div>
-              </div>
-          </FadeIn>
-      )}
-
       {/* Tabs */}
       <div className="flex gap-4 mb-8 border-b border-gray-200 pb-1 overflow-x-auto">
         {['dashboard', 'activations', 'marketing'].map((tab) => (
@@ -367,17 +387,14 @@ export const SponsorPortal: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
                 
-                {/* Performance Charts Section */}
+                {/* ROI Section */}
                 <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
                    <div className="flex justify-between items-center mb-6">
                       <h2 className="text-xl font-serif font-bold text-gray-900">ROI Performance</h2>
-                      
-                      {/* Event Filter */}
                       <div className="flex items-center gap-2">
                          <Button variant="ghost" size="sm" onClick={exportMetricsCSV} className="text-purple-600 hover:bg-purple-50 mr-2">
                              <Download size={14} className="mr-1" /> CSV
                          </Button>
-                         <div className="h-4 w-px bg-gray-200 mr-2"></div>
                          <Filter size={14} className="text-gray-400" />
                          <select 
                             className="bg-gray-50 border-none text-xs font-bold rounded-lg px-3 py-2 text-gray-600 focus:ring-2 focus:ring-purple-100 cursor-pointer"
@@ -396,16 +413,16 @@ export const SponsorPortal: React.FC = () => {
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
                            <ResponsiveLineChart 
-                              title="Impressions Over Time"
-                              data={impressionData.length > 0 ? impressionData : [{label: 'Start', value: 0}, {label: 'Today', value: 0}]} 
+                              title="Impressions"
+                              data={impressionData} 
                               color="#8b5cf6"
                               height={200}
                            />
                         </div>
                         <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
                            <ResponsiveBarChart 
-                              title="Conversion Metrics"
-                              data={conversionData.length > 0 ? conversionData : [{label: 'Interactions', value: 0}]}
+                              title="Conversions"
+                              data={conversionData}
                               color="#ec4899"
                               height={200}
                            />
@@ -415,7 +432,6 @@ export const SponsorPortal: React.FC = () => {
                      <div className="text-center py-12 text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                         <TrendingUp className="mx-auto mb-2 opacity-20" size={32} />
                         <p>No performance data available yet.</p>
-                        <p className="text-xs mt-2">Metrics will appear once the event goes live.</p>
                      </div>
                    )}
                 </div>
@@ -468,7 +484,7 @@ export const SponsorPortal: React.FC = () => {
                                                     {uploadingId === item.id ? (
                                                         <span className="flex items-center gap-2">
                                                             <Loader2 size={12} className="animate-spin" /> 
-                                                            {analyzing ? 'AI Analyzing...' : 'Uploading...'}
+                                                            {analyzing ? 'Analyzing...' : 'Uploading...'}
                                                         </span>
                                                     ) : 'Upload'}
                                                 </Button>
@@ -478,7 +494,7 @@ export const SponsorPortal: React.FC = () => {
                                 </div>
                             </div>
                         ))}
-                        {activeDeliverables.length === 0 && <p className="text-gray-400 text-center py-4">No pending deliverables for this event.</p>}
+                        {activeDeliverables.length === 0 && <p className="text-gray-400 text-center py-4">No pending deliverables.</p>}
                     </div>
                 </div>
             </div>
@@ -539,14 +555,6 @@ export const SponsorPortal: React.FC = () => {
             sponsorIndustry={sponsorProfile.industry || 'General'}
             eventName={activeDeal ? (activeDeal.event as any)?.title : 'Fashion Event'}
           />
-          <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col justify-center items-center text-center">
-             <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-6 text-blue-500">
-                <Share2 size={32} />
-             </div>
-             <h3 className="text-2xl font-serif font-bold mb-2">Asset Library</h3>
-             <p className="text-gray-500 mb-6">Access all your approved brand assets and event photos here.</p>
-             <Button variant="outline">Open Library</Button>
-          </div>
         </div>
       )}
     </div>

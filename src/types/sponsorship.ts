@@ -31,6 +31,8 @@ export interface SponsorProfile {
   contact_phone?: string;
   owner_id?: string;
   created_at: string;
+  brand_story?: string;
+  social_links?: string[];
 }
 
 export interface SponsorshipPackage {

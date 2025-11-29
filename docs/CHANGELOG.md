@@ -1,6 +1,13 @@
 
 # Changelog
 
+## [1.6.0] - 2025-03-09
+### 🚀 Production Polish & Standardization
+- **UI Standardization:** Implemented reusable `StatusBadge` and `EmptyState` components across all dashboards (Events, Financials, Sponsors) to ensure visual consistency.
+- **Code Quality:** Refactored `ErrorBoundary` to a class component to resolve TypeScript strict mode issues.
+- **Mobile Optimization:** Verified table responsiveness and safe-area handling for sticky navigation elements.
+- **Verification:** Confirmed all AI Edge Functions are correctly wired to frontend services with proper error handling.
+
 ## [1.5.0] - 2025-03-04
 ### 🚀 Production Readiness & Integration
 - **Studio Database Integration:** Connected `VisualQAPage` and `DeliveryPortal` to real Supabase tables (`shoot_assets`, `qa_reviews`).

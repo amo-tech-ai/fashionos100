@@ -80,7 +80,7 @@ export const aiService = {
   /**
    * Sponsor AI Agent: Generates activation ideas, lead scores, social plans, etc.
    */
-  async sponsorAgent(action: 'activation-ideas' | 'score-lead' | 'generate-social-plan' | 'generate-roi-report' | 'generate-pitch' | 'analyze-media' | 'draft-contract' | 'recommend-packages', params: any) {
+  async sponsorAgent(action: 'activation-ideas' | 'score-lead' | 'generate-social-plan' | 'generate-roi-report' | 'generate-pitch' | 'analyze-media' | 'draft-contract' | 'recommend-packages' | 'generate-brand-story', params: any) {
     return this.callEdgeFunction('sponsor-ai', { action, ...params });
   },
 
