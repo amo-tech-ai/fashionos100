@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, ArrowUpDown, SlidersHorizontal } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, SlidersHorizontal, ChevronDown, Check } from 'lucide-react';
 import { EventSponsor } from '../../types/sponsorship';
 import { SponsorCard } from './SponsorCard';
 import { FadeIn } from '../FadeIn';
@@ -21,6 +21,7 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
   const [sortBy, setSortBy] = useState<SortOption>('Name (A-Z)');
   const [showFilters, setShowFilters] = useState(false);
 
+  // Generate unique filter options based on current data
   const uniqueTiers = useMemo(() => {
     const tiers = new Set(sponsors.map(s => s.level));
     return ['All Tiers', ...Array.from(tiers).filter(Boolean)];
@@ -128,46 +129,54 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
       {/* Expandable Filters */}
       {showFilters && (
         <FadeIn className="bg-gray-50 p-6 rounded-2xl border border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Tier Filter */}
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 block">Sponsor Tier</label>
-            <div className="flex flex-wrap gap-2">
-              {uniqueTiers.map(tier => (
-                <button
-                  key={tier}
-                  onClick={() => setFilterTier(tier || 'Unknown')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${filterTier === (tier || 'Unknown') ? 'bg-black text-white border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
+            <div className="relative">
+                <select 
+                    value={filterTier} 
+                    onChange={(e) => setFilterTier(e.target.value)}
+                    className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-purple-500 appearance-none cursor-pointer"
                 >
-                  {tier || 'Unknown'}
-                </button>
-              ))}
+                    {uniqueTiers.map(tier => (
+                        <option key={tier} value={tier || 'Unknown'}>{tier || 'Unknown'}</option>
+                    ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
             </div>
           </div>
+
+          {/* Status Filter */}
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 block">Deal Status</label>
-            <div className="flex flex-wrap gap-2">
-              {uniqueStatuses.map(status => (
-                <button
-                  key={status}
-                  onClick={() => setFilterStatus(status)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${filterStatus === status ? 'bg-black text-white border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
+            <div className="relative">
+                <select 
+                    value={filterStatus} 
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-purple-500 appearance-none cursor-pointer"
                 >
-                  {status}
-                </button>
-              ))}
+                    {uniqueStatuses.map(status => (
+                        <option key={status} value={status}>{status}</option>
+                    ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
             </div>
           </div>
+
+          {/* Type Filter */}
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 block">Category Type</label>
-            <div className="flex flex-wrap gap-2">
-              {uniqueTypes.map(type => (
-                <button
-                  key={type}
-                  onClick={() => setFilterType(type as string)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${filterType === type ? 'bg-black text-white border-black' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 block">Industry Type</label>
+            <div className="relative">
+                <select 
+                    value={filterType} 
+                    onChange={(e) => setFilterType(e.target.value)}
+                    className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-purple-500 appearance-none cursor-pointer"
                 >
-                  {type as string}
-                </button>
-              ))}
+                    {uniqueTypes.map(type => (
+                        <option key={type} value={type as string}>{type as string}</option>
+                    ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
             </div>
           </div>
         </FadeIn>

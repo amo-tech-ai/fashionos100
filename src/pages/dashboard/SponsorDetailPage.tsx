@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   ArrowLeft, Building2, Mail, Phone, Globe, 
-  Loader2, Send, Lock, Sparkles, Copy, Check, X
+  Loader2, Send, Lock, Sparkles, Copy, Check, X,
+  TrendingUp, Eye, MousePointerClick, Target, DollarSign, MapPin, User
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
@@ -11,7 +11,8 @@ import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { SponsorProfile, EventSponsor, SponsorActivation, SponsorRoiMetric, SponsorDeliverable } from '../../types/sponsorship';
 import { Input } from '../../components/forms/Input';
 import { SponsorForm } from '../../components/sponsors/SponsorForm';
-import { aiService } from '../../lib/ai-service'; // Import AI Service
+import { aiService } from '../../lib/ai-service';
+import { StatCard } from '../../components/dashboard/Shared';
 
 export const SponsorDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -161,34 +162,6 @@ export const SponsorDetailPage: React.FC = () => {
     }
   };
 
-  const handleFileUpload = async (deliverableId: string, file: File) => {
-      setUploadingId(deliverableId);
-      try {
-          const filePath = `sponsor-assets/${id}/${deliverableId}/${file.name}`;
-          const { error: uploadError } = await supabase.storage.from('documents').upload(filePath, file);
-          if (uploadError) throw uploadError;
-
-          const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(filePath);
-
-          await supabase
-            .from('sponsor_deliverables')
-            .update({ status: 'uploaded', asset_url: publicUrl })
-            .eq('id', deliverableId);
-          
-          fetchData();
-      } catch (e) {
-          console.error(e);
-          alert("Upload failed");
-      } finally {
-          setUploadingId(null);
-      }
-  };
-
-  const handleUpdateStatus = async (deliverableId: string, status: string) => {
-      await supabase.from('sponsor_deliverables').update({ status }).eq('id', deliverableId);
-      fetchData();
-  };
-
   if (loading) {
     return (
         <div className="min-h-screen flex items-center justify-center">
@@ -209,6 +182,20 @@ export const SponsorDetailPage: React.FC = () => {
   const totalSpent = deals.reduce((acc, deal) => acc + (deal.cash_value || 0), 0);
   const activeDealsCount = deals.filter(d => d.status === 'Signed' || d.status === 'Paid').length;
   const lastDeal = deals[0]; 
+
+  // Calculate ROI Metrics
+  const totalImpressions = metrics
+    .filter(m => m.metric_name.toLowerCase().includes('impression'))
+    .reduce((acc, curr) => acc + Number(curr.metric_value), 0);
+
+  const totalLeads = metrics
+    .filter(m => m.metric_name.toLowerCase().includes('lead'))
+    .reduce((acc, curr) => acc + Number(curr.metric_value), 0);
+
+  const engagementMetrics = metrics.filter(m => m.metric_name.toLowerCase().includes('engagement'));
+  const avgEngagement = engagementMetrics.length > 0 
+    ? (engagementMetrics.reduce((acc, curr) => acc + Number(curr.metric_value), 0) / engagementMetrics.length)
+    : 0;
 
   return (
     <div className="animate-in fade-in duration-500 pb-20 font-sans">
@@ -312,22 +299,146 @@ export const SponsorDetailPage: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-purple-100 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+            <div className="bg-white p-4 rounded-xl border border-purple-100 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed font-medium">
               {pitchDraft}
             </div>
           </div>
         </FadeIn>
       )}
 
-      {/* Rest of UI (Tabs) - Kept simple for brevity, reuse logic from original */}
+      {/* Tabs */}
+      <div className="flex gap-1 bg-white p-1.5 rounded-xl border border-gray-200 w-fit mb-6">
+        {['overview', 'deliverables', 'activations'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab as any)}
+            className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+              activeTab === tab ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          {/* Tab Logic would go here - reused structure */}
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm min-h-[200px] flex items-center justify-center text-gray-400">
-             <p>Detailed metrics and deliverables view loaded...</p>
-          </div>
+          <FadeIn key={activeTab} className="bg-white rounded-3xl border border-gray-100 shadow-sm min-h-[400px] p-6">
+            {activeTab === 'overview' && (
+              <div className="space-y-8">
+                {/* ROI KPI Section */}
+                <div>
+                    <h3 className="font-serif font-bold text-xl mb-4 flex items-center gap-2">
+                        <TrendingUp size={20} className="text-purple-600" /> Performance Metrics
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border border-purple-100">
+                        <div className="text-center sm:text-left">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                                <Eye size={16} className="text-purple-600" />
+                                <span className="text-xs font-bold text-purple-700 uppercase tracking-wider">Total Impressions</span>
+                            </div>
+                            <p className="text-2xl font-bold text-gray-900">{totalImpressions > 0 ? `${(totalImpressions / 1000).toFixed(1)}k` : '--'}</p>
+                        </div>
+                        <div className="text-center sm:text-left">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                                <MousePointerClick size={16} className="text-pink-600" />
+                                <span className="text-xs font-bold text-pink-700 uppercase tracking-wider">Avg Engagement</span>
+                            </div>
+                            <p className="text-2xl font-bold text-gray-900">{avgEngagement > 0 ? `${avgEngagement.toFixed(1)}%` : '--'}</p>
+                        </div>
+                        <div className="text-center sm:text-left">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                                <Target size={16} className="text-green-600" />
+                                <span className="text-xs font-bold text-green-700 uppercase tracking-wider">Leads Generated</span>
+                            </div>
+                            <p className="text-2xl font-bold text-gray-900">{totalLeads > 0 ? totalLeads : '--'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Deals List */}
+                <div>
+                  <h3 className="font-serif font-bold text-xl mb-4 flex items-center gap-2">
+                      <DollarSign size={20} /> Deal History
+                  </h3>
+                  {deals.length > 0 ? (
+                      <div className="space-y-4">
+                        {deals.map((deal) => (
+                        <div key={deal.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                    <span className="text-xs font-bold text-gray-500">{deal.level ? deal.level[0] : 'S'}</span>
+                                </div>
+                                <div>
+                                    <p className="font-bold text-gray-900 text-sm">{deal.event?.title || 'Untitled Event'}</p>
+                                    <p className="text-xs text-gray-500">{new Date(deal.created_at).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase ${
+                                    deal.status === 'Signed' ? 'bg-green-100 text-green-700' : 
+                                    deal.status === 'Negotiating' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
+                                }`}>{deal.status}</span>
+                                <p className="text-xs font-bold text-gray-900 mt-1">${deal.cash_value.toLocaleString()}</p>
+                            </div>
+                        </div>
+                        ))}
+                    </div>
+                  ) : (
+                      <div className="text-center text-gray-400 py-8 border-2 border-dashed border-gray-100 rounded-xl">No activity recorded.</div>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {activeTab === 'deliverables' && (
+                 <div className="space-y-4">
+                     <h3 className="font-serif font-bold text-xl mb-4">Asset Requirements</h3>
+                     {deliverables.length > 0 ? (
+                         deliverables.map(item => (
+                             <div key={item.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
+                                 <div>
+                                     <p className="font-bold text-sm">{item.title}</p>
+                                     <p className="text-xs text-gray-500">Due: {new Date(item.due_date).toLocaleDateString()}</p>
+                                 </div>
+                                 <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${
+                                     item.status === 'approved' ? 'bg-green-100 text-green-700' :
+                                     item.status === 'uploaded' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                                 }`}>
+                                     {item.status}
+                                 </span>
+                             </div>
+                         ))
+                     ) : (
+                         <div className="text-center text-gray-400 py-12">No deliverables assigned.</div>
+                     )}
+                 </div>
+            )}
+            
+            {activeTab === 'activations' && (
+                 <div className="space-y-4">
+                    <h3 className="font-serif font-bold text-xl mb-4">On-Site Activations</h3>
+                    {activations.length > 0 ? (
+                        activations.map(act => (
+                            <div key={act.id} className="p-4 border border-gray-100 rounded-xl">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h4 className="font-bold text-gray-900">{act.title}</h4>
+                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">{act.status}</span>
+                                </div>
+                                <p className="text-sm text-gray-600">{act.description}</p>
+                                <div className="mt-3 text-xs text-gray-500 flex items-center gap-2">
+                                    <MapPin size={12} /> {act.location_in_venue || 'Location TBD'}
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="text-center text-gray-400 py-12">No activations planned.</div>
+                    )}
+                 </div>
+            )}
+          </FadeIn>
         </div>
-        
+
         {/* Sidebar: Contact & Access */}
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
@@ -348,40 +459,3 @@ export const SponsorDetailPage: React.FC = () => {
             {!sponsor.owner_id && (
                 <div className="pt-2">
                     {!showInvite ? (
-                        <Button variant="primary" size="sm" fullWidth onClick={() => setShowInvite(true)}>
-                            <Send size={14} className="mr-2" /> Invite to Portal
-                        </Button>
-                    ) : (
-                        <div className="space-y-2 bg-purple-50 p-3 rounded-xl animate-in fade-in">
-                            <p className="text-xs font-bold text-purple-700 mb-1">Send Invite To:</p>
-                            <Input 
-                              value={inviteEmail} 
-                              onChange={(e) => setInviteEmail(e.target.value)} 
-                              className="bg-white text-xs"
-                              placeholder="Enter email"
-                            />
-                            <div className="flex gap-2 mt-2">
-                                <Button size="sm" variant="primary" fullWidth onClick={handleInvite} disabled={inviting}>
-                                    {inviting ? 'Sending...' : 'Send'}
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={() => setShowInvite(false)}>Cancel</Button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Edit Modal */}
-      {showEditForm && (
-        <SponsorForm 
-          sponsor={sponsor}
-          onClose={() => setShowEditForm(false)}
-          onSave={fetchData}
-        />
-      )}
-    </div>
-  );
-};
