@@ -27,20 +27,32 @@ serve(async (req) => {
       - High aesthetic quality
     `.trim();
 
-    const response = await ai.models.generateImages({
-      model: 'gemini-2.5-flash-image',
-      prompt: finalPrompt,
-      config: {
-        numberOfImages: 3,
-        aspectRatio: '1:1',
-        outputMimeType: 'image/png'
-      }
-    });
+    // Use generateContent for gemini-2.5-flash-image (Nano Banana)
+    // We generate 3 images by calling it 3 times in parallel since generateContent usually returns one candidate
+    const generateSingleImage = async () => {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: [{ role: 'user', parts: [{ text: finalPrompt }] }],
+        });
+        
+        if (response.candidates && response.candidates[0].content.parts) {
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    return {
+                        base64: part.inlineData.data,
+                        mimeType: part.inlineData.mimeType || 'image/png'
+                    };
+                }
+            }
+        }
+        return null;
+    };
 
-    const images = response.generatedImages.map((img: any) => ({
-        base64: img.image.imageBytes,
-        mimeType: 'image/png'
-    }));
+    const promises = [1, 2, 3].map(() => generateSingleImage());
+    const results = await Promise.all(promises);
+    const images = results.filter(img => img !== null);
+
+    if (images.length === 0) throw new Error("Failed to generate images");
 
     return new Response(JSON.stringify({ images }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

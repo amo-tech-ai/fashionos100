@@ -188,6 +188,7 @@ export const EventWizard: React.FC = () => {
         let newStartDate = new Date();
         if (data.date) {
            const parsedDate = new Date(data.date);
+           // Safe Date Parsing Check
            if (!isNaN(parsedDate.getTime())) {
              newStartDate = parsedDate;
            }

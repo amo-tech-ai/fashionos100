@@ -126,7 +126,7 @@ export const DashboardGallery: React.FC = () => {
     setIsUploading(true);
     try {
         const uploads = files.map(async (file) => {
-            // Sanitize filename to prevent S3/Storage issues
+            // Sanitize filename to prevent S3/Storage issues (alphanumeric + dots/dashes only)
             const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
             const fileName = `gallery/${Date.now()}-${sanitizedName}`;
             
@@ -221,7 +221,6 @@ export const DashboardGallery: React.FC = () => {
       )}
 
       {/* 3. Filter & Search Bar */}
-      {/* Corrected sticky top-0 for container scroll compatibility */}
       <div className="sticky top-0 z-30 bg-[#F8F9FB]/95 backdrop-blur-md py-2">
          <div className="bg-white p-2 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center flex-1 w-full">
