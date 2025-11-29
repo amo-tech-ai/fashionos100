@@ -126,7 +126,10 @@ export const DashboardGallery: React.FC = () => {
     setIsUploading(true);
     try {
         const uploads = files.map(async (file) => {
-            const fileName = `gallery/${Date.now()}-${file.name}`;
+            // Sanitize filename to prevent S3/Storage issues
+            const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+            const fileName = `gallery/${Date.now()}-${sanitizedName}`;
+            
             const { error: uploadError } = await supabase.storage
                 .from('production-assets') // Reusing existing bucket
                 .upload(fileName, file);

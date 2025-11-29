@@ -17,7 +17,7 @@ serve(async (req) => {
     const { eventDescription, moodTags, brandUrls, imageType } = await req.json()
     const ai = new GoogleGenAI({ apiKey })
 
-    // 1. Extract Style from URLs (if provided) using Gemini 2.5 Flash Text
+    // 1. Extract Style from URLs (if provided)
     let brandStyleContext = "";
     if (brandUrls && brandUrls.length > 0) {
         const analysisPrompt = `
@@ -33,15 +33,9 @@ serve(async (req) => {
             Keep it under 50 words.
         `;
         
-        // Note: Ideally we use the 'urlContext' tool, but plain prompt with URL works for general knowledge/scraping in 2.5 Flash
-        // or we assume the client sends the URL text content. 
-        // For this implementation, we rely on the model's ability to browse if tools enabled, or latent knowledge/inference.
-        // We will assume simple inference for MVP speed.
-        
         const analysisResp = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: [{ role: 'user', parts: [{ text: analysisPrompt }] }],
-            // config: { tools: [{ googleSearch: {} }] } // Optional: Enable if we want real-time scraping
         });
         brandStyleContext = analysisResp.text || "";
     }
@@ -63,31 +57,44 @@ serve(async (req) => {
     `.trim();
 
     // 3. Generate Images using Nano Banana (gemini-2.5-flash-image)
-    // Note: The SDK method for image generation might differ slightly based on latest release. 
-    // Using standard generateContent with specific model behavior for images or dedicated endpoint if available.
-    // Assuming 'generateImages' or 'generateContent' returns base64.
-    // Since @google/genai might not fully type 'generateImages' yet, we use a fallback or specific call structure.
+    // CORRECTION: Use generateContent for Nano models, not generateImages.
     
-    // *Implementation Note*: As of current SDK, we might need to use the REST API structure if the helper isn't there, 
-    // but let's try the standard 'generateContent' which returns images for this model, OR the 'generateImages' helper.
-    // We will use `generateContent` and look for inlineData in parts as per "Nano Banana" specs in documentation usually.
-    // However, standard Imagen uses `generateImages`. Let's assume `generateImages` is the correct method for image models.
+    // Since generateContent typically returns one candidate, we might need to make multiple requests 
+    // or use the 'sampleCount' / 'candidateCount' config if supported, 
+    // but for Nano/Flash Image, standard practice is single gen per request usually.
+    // We will loop to generate 4 previews concurrently for speed.
 
-    const imageResp = await ai.models.generateImages({
-        model: 'gemini-2.5-flash-image', 
-        prompt: finalPrompt,
-        config: {
-            numberOfImages: 4,
-            aspectRatio: '1:1', // Default square for versatility
-            outputMimeType: 'image/png'
+    const generateSingleImage = async () => {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: [{ role: 'user', parts: [{ text: finalPrompt }] }],
+            config: {
+                // aspect ratio logic implies we might need specific config or prompt tuning
+                // Nano models usually take prompt cues for aspect ratio or return square by default.
+            }
+        });
+        
+        // Extract image from parts
+        if (response.candidates && response.candidates[0].content.parts) {
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    return {
+                        base64: part.inlineData.data,
+                        mimeType: part.inlineData.mimeType || 'image/png'
+                    };
+                }
+            }
         }
-    });
+        return null;
+    };
 
-    // Extract Base64
-    const images = imageResp.generatedImages.map((img: any) => ({
-        base64: img.image.imageBytes,
-        mimeType: 'image/png'
-    }));
+    const imagePromises = [1, 2, 3, 4].map(() => generateSingleImage());
+    const results = await Promise.all(imagePromises);
+    const images = results.filter(img => img !== null);
+
+    if (images.length === 0) {
+        throw new Error("Failed to generate any valid images.");
+    }
 
     return new Response(JSON.stringify({ 
         images, 

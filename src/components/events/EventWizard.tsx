@@ -1,12 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, CheckCircle2, X, ImageIcon, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, X, ImageIcon, AlertTriangle, Save } from 'lucide-react';
 import { Button } from '../Button';
 import { FadeIn } from '../FadeIn';
 import { supabase, supabaseUrl, supabaseAnonKey, isConfigured } from '../../lib/supabase';
 import { slugify } from '../../lib/utils';
 import { LoadingSpinner } from '../LoadingSpinner';
+import { useToast } from '../../components/Toast';
 
 // Sub-components
 import { WizardIntro } from './wizard/WizardIntro';
@@ -20,8 +21,35 @@ import { WizardReview } from './wizard/WizardReview';
 import { WizardState, Step, MOCK_PREVIEW_IMAGE, CATEGORIES } from './wizard/types';
 import { WizardSuccess } from './wizard/WizardSuccess';
 
+const STORAGE_KEY = 'fashionos_event_wizard_draft_v1';
+
+const INITIAL_STATE: WizardState = {
+  title: '',
+  description: '',
+  category: 'Runway',
+  targetAudience: '',
+  location: '',
+  venueAddress: '',
+  venueCapacity: '',
+  venueContactName: '',
+  venueContactEmail: '',
+  venueContactPhone: '',
+  startDate: null,
+  endDate: null,
+  tickets: [
+    { name: 'Standard Entry', price: 45, quantity: 150 },
+    { name: 'VIP Access', price: 125, quantity: 50 }
+  ],
+  schedule: [{ time: '19:00', activity: 'Doors Open' }],
+  image: MOCK_PREVIEW_IMAGE,
+  brandUrls: [],
+  brandMoods: [],
+  generatedPreviews: []
+};
+
 export const EventWizard: React.FC = () => {
   const navigate = useNavigate();
+  const { success, toast } = useToast();
   const [currentStep, setCurrentStep] = useState<Step>(Step.INTRO);
   
   // AI Input State
@@ -32,30 +60,60 @@ export const EventWizard: React.FC = () => {
   const [aiAudiences, setAiAudiences] = useState<string[]>([]);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  const [state, setState] = useState<WizardState>({
-    title: '',
-    description: '',
-    category: 'Runway',
-    targetAudience: '',
-    location: '',
-    venueAddress: '',
-    venueCapacity: '',
-    venueContactName: '',
-    venueContactEmail: '',
-    venueContactPhone: '',
-    startDate: null,
-    endDate: null,
-    tickets: [
-      { name: 'Standard Entry', price: 45, quantity: 150 },
-      { name: 'VIP Access', price: 125, quantity: 50 }
-    ],
-    schedule: [{ time: '19:00', activity: 'Doors Open' }],
-    image: MOCK_PREVIEW_IMAGE,
-    brandUrls: [],
-    brandMoods: [],
-    generatedPreviews: []
-  });
+  const [state, setState] = useState<WizardState>(INITIAL_STATE);
+
+  // 1. Load from LocalStorage on Mount
+  useEffect(() => {
+    const loadDraft = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          // Restore Dates
+          if (parsed.state.startDate) parsed.state.startDate = new Date(parsed.state.startDate);
+          if (parsed.state.endDate) parsed.state.endDate = new Date(parsed.state.endDate);
+          
+          setState(parsed.state);
+          // Only restore step if it's not success/intro to avoid confusion, otherwise default to INTRO
+          if (parsed.step > Step.INTRO && parsed.step < Step.SUCCESS) {
+            setCurrentStep(parsed.step);
+            toast("Draft restored from previous session", "info");
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load draft", e);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+    loadDraft();
+  }, []);
+
+  // 2. Save to LocalStorage on Change
+  useEffect(() => {
+    if (!isLoaded) return;
+    
+    const saveDraft = setTimeout(() => {
+      // Don't save on Success step (cleared) or Intro (too early)
+      if (currentStep !== Step.SUCCESS && currentStep !== Step.INTRO) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          step: currentStep,
+          state: state,
+          lastSaved: new Date().toISOString()
+        }));
+      }
+    }, 1000); // Debounce 1s
+
+    return () => clearTimeout(saveDraft);
+  }, [state, currentStep, isLoaded]);
+
+  const clearDraft = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setState(INITIAL_STATE);
+    setCurrentStep(Step.INTRO);
+  };
 
   const updateData = (updates: Partial<WizardState>) => {
     setState(prev => ({ ...prev, ...updates }));
@@ -317,6 +375,9 @@ export const EventWizard: React.FC = () => {
         if (scheduleError) throw scheduleError;
       }
 
+      // Clear draft upon successful publish
+      clearDraft();
+      success("Event published successfully!");
       setCurrentStep(Step.SUCCESS);
 
     } catch (error) {
@@ -329,6 +390,8 @@ export const EventWizard: React.FC = () => {
 
   // Helper for the step progress
   const totalSteps = 7; // Adjusted for Draft Preview step
+
+  if (!isLoaded) return null;
 
   return (
     <div className="min-h-screen bg-[#F8F9FB] pb-24">
@@ -365,9 +428,18 @@ export const EventWizard: React.FC = () => {
                 </div>
               </div>
 
-              <button onClick={() => navigate('/dashboard/events')} className="p-2 hover:bg-gray-50 rounded-full text-gray-400 transition-colors">
-                <X size={20} />
-              </button>
+              <div className="flex items-center gap-2">
+                 <button 
+                    onClick={clearDraft}
+                    className="text-[10px] font-bold uppercase text-red-400 hover:text-red-600 hidden sm:block"
+                    title="Clear Draft"
+                 >
+                    Clear
+                 </button>
+                 <button onClick={() => navigate('/dashboard/events')} className="p-2 hover:bg-gray-50 rounded-full text-gray-400 transition-colors">
+                   <X size={20} />
+                 </button>
+              </div>
             </div>
           </div>
         </div>
@@ -439,7 +511,7 @@ export const EventWizard: React.FC = () => {
 
       {/* Bottom Action Bar (Conditionally rendered) */}
       {currentStep > Step.DRAFT_PREVIEW && currentStep !== Step.SUCCESS && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-40 lg:pl-64 pb-safe">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-40 lg:pl-64 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
           <div className="container mx-auto px-6 max-w-4xl flex justify-between items-center">
             <Button variant="ghost" onClick={prevStep}>Back</Button>
             

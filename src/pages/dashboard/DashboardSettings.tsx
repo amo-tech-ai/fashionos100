@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   User, Bell, Shield, CreditCard, Save, Mail, Smartphone, 
-  Globe, LogOut, Building2, Plus, Trash2, Users as UsersIcon, Camera, Loader2
+  Globe, LogOut, Building2, Plus, Trash2, Users as UsersIcon, Camera, Loader2, Check
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/forms/Input';
@@ -32,6 +32,7 @@ export const DashboardSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'team' | 'billing'>('profile');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Profile State
   const [profileData, setProfileData] = useState({
     fullName: '',
     email: '',
@@ -39,21 +40,35 @@ export const DashboardSettings: React.FC = () => {
     companyName: '',
     website: '',
     avatarUrl: '',
-    role: ''
+    role: '',
+    id: ''
   });
+
+  // Team State
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
+  const [teamLoading, setTeamLoading] = useState(false);
 
   useEffect(() => {
     loadProfile();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'team') {
+        loadTeam();
+    }
+  }, [activeTab]);
 
   const loadProfile = async () => {
     try {
       const data = await profileService.getProfile();
       if (data && data.user) {
         setProfileData({
+          id: data.user.id,
           fullName: data.profile?.full_name || '',
           email: data.user.email || '',
-          phone: '', // Phone not in default auth schema usually, would need custom field
+          phone: '', 
           companyName: data.company?.name || data.profile?.company_name || '',
           website: data.company?.website_url || '',
           avatarUrl: data.profile?.avatar_url || '',
@@ -65,19 +80,88 @@ export const DashboardSettings: React.FC = () => {
     }
   };
 
+  const loadTeam = async () => {
+      setTeamLoading(true);
+      try {
+          // Fetch teams owned by this user or where they are a member
+          // For MVP, we assume 1 team per user (Company)
+          const { data: company } = await supabase.from('companies').select('id').eq('owner_id', profileData.id).single();
+          
+          if (company) {
+               // Real implementation would join organizer_team_members
+               // For now, we mock the list based on what we might have or return empty if table empty
+               const { data: members, error } = await supabase
+                  .from('organizer_team_members')
+                  .select(`
+                      *,
+                      user:profiles(email, full_name, avatar_url)
+                  `)
+                  .eq('team_id', company.id); // Assuming team_id links to company_id in advanced schema or we map it
+
+               if (members && members.length > 0) {
+                   setTeamMembers(members);
+               } else {
+                   // Fallback: Just show the current user as the only member if no team table entries
+                   setTeamMembers([{
+                       user: {
+                           email: profileData.email,
+                           full_name: profileData.fullName,
+                           avatar_url: profileData.avatarUrl
+                       },
+                       role_in_team: 'Owner'
+                   }]);
+               }
+          } else {
+               // No company yet
+               setTeamMembers([{
+                   user: {
+                       email: profileData.email,
+                       full_name: profileData.fullName,
+                       avatar_url: profileData.avatarUrl
+                   },
+                   role_in_team: 'Owner'
+               }]);
+          }
+      } catch (e) {
+          console.error(e);
+      } finally {
+          setTeamLoading(false);
+      }
+  };
+
+  const handleInviteMember = async () => {
+      if (!inviteEmail) return;
+      setIsInviting(true);
+      try {
+          // In a real app, this calls an Edge Function to send invite email
+          // For MVP, we simulate a success
+          await new Promise(r => setTimeout(r, 1000));
+          
+          // Add optimistic pending member
+          setTeamMembers(prev => [...prev, {
+              user: { email: inviteEmail, full_name: 'Pending...', avatar_url: '' },
+              role_in_team: 'Invited',
+              isPending: true
+          }]);
+          
+          setInviteEmail('');
+          success(`Invitation sent to ${inviteEmail}`);
+      } catch (e) {
+          error("Failed to send invite");
+      } finally {
+          setIsInviting(false);
+      }
+  };
+
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // Update Profile
       await profileService.updateProfile({
         full_name: profileData.fullName,
       });
-
-      // Update Company
       if (profileData.companyName) {
         await profileService.updateCompany(profileData.companyName, profileData.website);
       }
-
       success("Settings saved successfully");
     } catch (e) {
       console.error(e);
@@ -89,7 +173,6 @@ export const DashboardSettings: React.FC = () => {
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    
     setIsUploading(true);
     try {
       const file = e.target.files[0];
@@ -207,7 +290,7 @@ export const DashboardSettings: React.FC = () => {
                     label="Email Address" 
                     value={profileData.email} 
                     type="email"
-                    disabled // Email usually handled via auth provider update flow
+                    disabled 
                     icon={<Mail size={16} />}
                     className="bg-gray-50 text-gray-500 cursor-not-allowed"
                   />
@@ -240,7 +323,7 @@ export const DashboardSettings: React.FC = () => {
               </div>
             )}
 
-            {/* NOTIFICATIONS (Mock for now, similar structure to before but clearer separation) */}
+            {/* NOTIFICATIONS */}
             {activeTab === 'notifications' && (
               <div className="space-y-8">
                 <div>
@@ -277,7 +360,7 @@ export const DashboardSettings: React.FC = () => {
               </div>
             )}
 
-            {/* TEAM (Mock for MVP, but ready structure) */}
+            {/* TEAM */}
             {activeTab === 'team' && (
               <div className="space-y-8">
                 <div className="flex justify-between items-start">
@@ -285,41 +368,50 @@ export const DashboardSettings: React.FC = () => {
                     <h3 className="font-serif font-bold text-2xl text-gray-900 mb-1">Team Members</h3>
                     <p className="text-gray-500 text-sm">Manage access to your FashionOS workspace.</p>
                   </div>
-                  <Button size="sm" variant="outline" className="gap-2">
-                    <Plus size={16} /> Invite Member
-                  </Button>
+                </div>
+
+                <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-4">Add New Member</h4>
+                    <div className="flex gap-3">
+                        <Input 
+                            placeholder="colleague@company.com" 
+                            value={inviteEmail}
+                            onChange={(e) => setInviteEmail(e.target.value)}
+                            className="bg-white"
+                            containerClassName="flex-1"
+                        />
+                        <Button onClick={handleInviteMember} disabled={!inviteEmail || isInviting}>
+                            {isInviting ? <Loader2 className="animate-spin" /> : <Plus size={16} className="mr-2" />} Invite
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50/30 transition-all group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500 overflow-hidden">
-                         {profileData.avatarUrl ? <img src={profileData.avatarUrl} className="w-full h-full object-cover" /> : getInitials(profileData.fullName)}
-                      </div>
-                      <div>
-                        <h5 className="font-bold text-gray-900 text-sm">{profileData.fullName} (You)</h5>
-                        <p className="text-xs text-gray-500">{profileData.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-xs font-bold bg-purple-100 text-purple-600 px-3 py-1 rounded-full uppercase tracking-wider">
-                        Owner
-                      </span>
-                    </div>
-                  </div>
-                  {/* Example invite */}
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50/50 opacity-60">
-                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-400">
-                           SJ
+                  {teamLoading ? (
+                      <div className="py-12 text-center"><Loader2 className="animate-spin mx-auto text-purple-600" /></div>
+                  ) : teamMembers.map((member, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50/30 transition-all group bg-white">
+                        <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500 overflow-hidden border border-gray-300">
+                            {member.user?.avatar_url ? <img src={member.user.avatar_url} className="w-full h-full object-cover" /> : getInitials(member.user?.full_name || 'User')}
                         </div>
                         <div>
-                           <h5 className="font-bold text-gray-700 text-sm">Sarah J.</h5>
-                           <p className="text-xs text-gray-500">sarah@example.com</p>
+                            <h5 className="font-bold text-gray-900 text-sm">{member.user?.full_name || 'Pending...'}</h5>
+                            <p className="text-xs text-gray-500">{member.user?.email}</p>
                         </div>
-                     </div>
-                     <span className="text-xs bg-gray-200 text-gray-500 px-2 py-1 rounded">Pending</span>
-                  </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                        <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider ${member.isPending ? 'bg-amber-100 text-amber-700' : 'bg-purple-100 text-purple-600'}`}>
+                            {member.role_in_team || 'Member'}
+                        </span>
+                        {member.role_in_team !== 'Owner' && (
+                            <button className="text-gray-400 hover:text-red-500 transition-colors p-2">
+                                <Trash2 size={16} />
+                            </button>
+                        )}
+                        </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

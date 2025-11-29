@@ -76,12 +76,12 @@ serve(async (req: Request) => {
     `
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash', // High reasoning capability model
+      model: 'gemini-2.5-flash', // Updated from 2.0-flash to stable 2.5
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
         responseSchema: schema,
-        temperature: 0.2 // Low temperature for logic/scheduling
+        temperature: 0.2
       }
     });
 
