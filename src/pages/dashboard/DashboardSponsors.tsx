@@ -1,8 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
-  Plus, Sparkles, Download, 
-  ArrowRight, X, SlidersHorizontal
+  Plus, Sparkles, X, SlidersHorizontal
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
@@ -11,20 +10,18 @@ import { SponsorCard } from '../../components/sponsors/SponsorCard';
 import { SponsorList } from '../../components/sponsors/SponsorList';
 import { SponsorKPIWidget } from '../../components/sponsors/SponsorKPIWidget';
 import { SponsorCardSkeleton, KPICardSkeleton } from '../../components/sponsors/SponsorSkeleton';
-import { EventSponsor, SponsorStatus } from '../../types/sponsorship';
-import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
+import { SponsorStatus } from '../../types/sponsorship';
 import { Input } from '../../components/forms/Input';
 import { Textarea } from '../../components/forms/Textarea';
-import { useToast } from '../../components/Toast';
+import { useSponsors } from '../../hooks/useSponsors';
 
 const PIPELINE_STAGES: SponsorStatus[] = ['Lead', 'Contacted', 'Negotiating', 'Signed', 'Activation Ready', 'Paid'];
 
 export const DashboardSponsors: React.FC = () => {
   const navigate = useNavigate();
-  const { success, error: toastError } = useToast();
+  const { sponsors, loading, updateSponsorStatus, generateAiInsights } = useSponsors();
+  
   const [view, setView] = useState<'Pipeline' | 'List'>('Pipeline');
-  const [sponsors, setSponsors] = useState<EventSponsor[]>([]);
-  const [loading, setLoading] = useState(true);
   
   // AI State
   const [aiLoading, setAiLoading] = useState(false);
@@ -40,72 +37,29 @@ export const DashboardSponsors: React.FC = () => {
   // DnD State
   const [draggedSponsorId, setDraggedSponsorId] = useState<string | null>(null);
 
-  // Fetch Data from Supabase
-  useEffect(() => {
-    fetchSponsors();
-  }, []);
-
-  const fetchSponsors = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('event_sponsors')
-        .select(`
-          *,
-          sponsor:sponsor_profiles(*)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setSponsors(data || []);
-    } catch (error) {
-      console.error('Error fetching sponsors:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // AI Agent: Ideation or Scoring
+  // AI Agent Handler
   const handleAiAction = async () => {
     if (!aiParams.sponsorName) return;
     
     setAiLoading(true);
     setAiIdeas(null);
 
-    try {
-      const actionType = aiMode === 'scoring' ? 'score-lead' : 'activation-ideas';
-      const response = await fetch(`${supabaseUrl}/functions/v1/sponsor-ai`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`
-        },
-        body: JSON.stringify({
-          action: actionType,
-          sponsorName: aiParams.sponsorName,
-          sponsorIndustry: aiParams.industry,
-          eventDetails: aiParams.eventDetails || 'Upcoming Fashion Event'
-        })
-      });
-      const data = await response.json();
-      
-      if (aiMode === 'scoring') {
-        setAiIdeas([{ 
-            title: `Lead Score: ${data.score}/100`, 
-            description: data.reasoning, 
-            category: data.category,
-            estimated_cost: 'Score' 
-        }]);
-      } else {
-        setAiIdeas(data.ideas);
-      }
-      setShowAiModal(false);
-    } catch (err) {
-      console.error(err);
-      alert("AI Service Unavailable. Please ensure Edge Functions are deployed.");
-    } finally {
-      setAiLoading(false);
+    const data = await generateAiInsights(aiMode, aiParams);
+    
+    if (data) {
+        if (aiMode === 'scoring') {
+            setAiIdeas([{ 
+                title: `Lead Score: ${data.score}/100`, 
+                description: data.reasoning, 
+                category: data.category,
+                estimated_cost: 'Score' 
+            }]);
+        } else {
+            setAiIdeas(data.ideas);
+        }
+        setShowAiModal(false);
     }
+    setAiLoading(false);
   };
 
   const openAiModal = (mode: 'activation' | 'scoring', sponsor?: any) => {
@@ -126,7 +80,6 @@ export const DashboardSponsors: React.FC = () => {
   const handleDragStart = (e: React.DragEvent, sponsorId: string) => {
     setDraggedSponsorId(sponsorId);
     e.dataTransfer.effectAllowed = 'move';
-    // Optional: set drag image
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -137,30 +90,13 @@ export const DashboardSponsors: React.FC = () => {
   const handleDrop = async (e: React.DragEvent, targetStatus: SponsorStatus) => {
     e.preventDefault();
     if (!draggedSponsorId) return;
-
+    
+    // Don't update if dropping in same column
     const sponsor = sponsors.find(s => s.id === draggedSponsorId);
-    if (!sponsor || sponsor.status === targetStatus) return;
-
-    // Optimistic Update
-    const updatedSponsors = sponsors.map(s => 
-      s.id === draggedSponsorId ? { ...s, status: targetStatus } : s
-    );
-    setSponsors(updatedSponsors);
-    setDraggedSponsorId(null);
-
-    try {
-      const { error } = await supabase
-        .from('event_sponsors')
-        .update({ status: targetStatus })
-        .eq('id', draggedSponsorId);
-
-      if (error) throw error;
-      success(`Moved deal to ${targetStatus}`);
-    } catch (err) {
-      console.error("Failed to update status", err);
-      toastError("Failed to move deal");
-      fetchSponsors(); // Revert
+    if (sponsor && sponsor.status !== targetStatus) {
+        updateSponsorStatus(draggedSponsorId, targetStatus);
     }
+    setDraggedSponsorId(null);
   };
 
   return (
@@ -327,7 +263,6 @@ export const DashboardSponsors: React.FC = () => {
                                 onDragStart={(e) => handleDragStart(e, sponsor.id)}
                                 className="cursor-move"
                             >
-                                {/* Only clickable if not dragging? For now link wraps card */}
                                 <div onClick={(e) => { if(!draggedSponsorId) navigate(`/dashboard/sponsors/${sponsor.sponsor_id}`); }}>
                                     <SponsorCard sponsor={sponsor} />
                                 </div>
