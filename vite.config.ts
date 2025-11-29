@@ -1,9 +1,8 @@
-
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-// Fix for __dirname in ES modules if needed, or use process.cwd()
+// Fix for __dirname in ES modules
 const __dirname = path.resolve();
 
 export default defineConfig({
@@ -21,6 +20,6 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
-    host: true 
+    host: true
   }
 });
