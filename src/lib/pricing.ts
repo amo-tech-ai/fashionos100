@@ -6,6 +6,7 @@ export interface ShotListItem {
   id: string;
   name: string;
   instructions: string;
+  referenceImage?: string;
 }
 
 export interface BookingState {

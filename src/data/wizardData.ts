@@ -7,35 +7,35 @@ export const WIZARD_DATA = {
       id: 'fashion', 
       label: 'Fashion Apparel', 
       icon: ShoppingBag, 
-      image: 'https://images.unsplash.com/photo-1537832816519-689ad163238b?q=80&w=600&auto=format&fit=crop', 
+      image: 'https://res.cloudinary.com/dzqy2ixl0/image/upload/v1764398514/5-fashionos_wc2p1c.jpg', 
       desc: 'Runway, Ghost Mannequin, Model' 
     },
     { 
       id: 'beauty', 
-      label: 'Beauty', 
+      label: 'Beauty & Cosmetics', 
       icon: Sparkles, 
-      image: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?q=80&w=600&auto=format&fit=crop', 
-      desc: 'Skincare, Cosmetics, Texture' 
+      image: 'https://res.cloudinary.com/dzqy2ixl0/image/upload/v1764398689/95-fashionos_fcp8nf.jpg', 
+      desc: 'Skincare, Makeup, Texture' 
     },
     { 
       id: 'jewelry', 
       label: 'Jewelry', 
       icon: Watch, 
-      image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=600&auto=format&fit=crop', 
+      image: 'https://res.cloudinary.com/dzqy2ixl0/image/upload/v1764398625/104-fashionos_jwzopk.jpg', 
       desc: 'Rings, Necklaces, Macro' 
     },
     { 
       id: 'footwear', 
       label: 'Footwear', 
       icon: Footprints, 
-      image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=600&auto=format&fit=crop', 
+      image: 'https://res.cloudinary.com/dzqy2ixl0/image/upload/v1764398827/48-fashionos_qj0z9e.jpg', 
       desc: 'Sneakers, Heels, Boots' 
     },
     { 
       id: 'eyewear', 
       label: 'Eyewear', 
       icon: Glasses, 
-      image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=600&auto=format&fit=crop', 
+      image: 'https://res.cloudinary.com/dzqy2ixl0/image/upload/v1764398887/110-fashionos_k98ocv.jpg', 
       desc: 'Sunglasses, Optical, Detail' 
     },
     { 
