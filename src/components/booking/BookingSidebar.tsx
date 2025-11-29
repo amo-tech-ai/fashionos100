@@ -16,13 +16,16 @@ export const BookingSidebar: React.FC = () => {
   let nextPath = '/start-project/style';
   let isNextDisabled = !state.category;
   
-  // Simple routing logic for the "Next" button based on current page
+  // Routing logic for the "Next" button based on current page
   if (currentPath.includes('category')) {
      nextPath = '/start-project/style';
      isNextDisabled = !state.category;
   } else if (currentPath.includes('style')) {
      nextPath = '/start-project/size';
      isNextDisabled = !state.style;
+  } else if (currentPath.includes('schedule')) {
+     nextPath = '/start-project/review';
+     isNextDisabled = !state.date || !state.time;
   }
 
   const selectedCategoryLabel = WIZARD_DATA.categories.find(c => c.id === state.category)?.label || '-';
@@ -56,6 +59,15 @@ export const BookingSidebar: React.FC = () => {
             <div className="flex justify-between text-sm animate-in fade-in slide-in-from-left-1">
                 <span className="text-purple-600 flex items-center gap-1"><Sparkles size={12}/> Retouching</span>
                 <span className="font-bold text-purple-700">High-End</span>
+            </div>
+          )}
+          {state.date && (
+            <div className="flex justify-between text-sm animate-in fade-in slide-in-from-left-1">
+                <span className="text-gray-500">Schedule</span>
+                <div className="text-right">
+                   <span className="font-bold text-gray-900 block">{state.date.toLocaleDateString()}</span>
+                   {state.time && <span className="text-xs text-purple-600 font-bold">{state.time}</span>}
+                </div>
             </div>
           )}
           

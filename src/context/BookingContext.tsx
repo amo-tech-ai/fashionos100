@@ -35,8 +35,17 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
     const saved = localStorage.getItem('fashionos_booking_v3');
     // Basic migration check: if saved state doesn't have new fields, merge with initial
     if (saved) {
-      const parsed = JSON.parse(saved);
-      return { ...INITIAL_STATE, ...parsed };
+      try {
+        const parsed = JSON.parse(saved);
+        // Restore Date object from ISO string if present
+        if (parsed.date) {
+          parsed.date = new Date(parsed.date);
+        }
+        return { ...INITIAL_STATE, ...parsed };
+      } catch (e) {
+        console.error("Failed to parse booking state", e);
+        return INITIAL_STATE;
+      }
     }
     return INITIAL_STATE;
   });

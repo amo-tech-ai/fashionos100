@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Check, RefreshCw, AlertTriangle, X } from 'lucide-react';
 import { QAImage } from '../../types/qa';
@@ -21,7 +20,7 @@ const getGradeColor = (grade: string) => {
   return 'text-red-600 bg-red-50 border-red-200';
 };
 
-const MetricBar = ({ label, value }: { label: string; value: number }) => (
+const MetricBar: React.FC<{ label: string; value: number }> = ({ label, value }) => (
   <div className="flex items-center gap-2 text-xs mb-1.5">
     <span className="w-20 text-gray-500 capitalize">{label.replace('_', ' ')}</span>
     <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
