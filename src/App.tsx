@@ -30,6 +30,7 @@ import { ContactPage } from './pages/public/ContactPage';
 import { AboutPage } from './pages/public/AboutPage';
 import { PricingPage } from './pages/public/PricingPage';
 import { AmazonServicesPage } from './pages/public/AmazonServicesPage';
+import { InstagramPage } from './pages/public/InstagramPage';
 
 // Booking Wizard Pages
 import { StepCategory } from './pages/public/booking/StepCategory';
@@ -73,6 +74,9 @@ import { EventWizard } from './components/events/EventWizard';
 import { DeliveryPortal } from './pages/dashboard/DeliveryPortal';
 import { VisualQAPage } from './pages/dashboard/VisualQAPage';
 import { BrandProfilePage } from './pages/dashboard/BrandProfilePage';
+import { SystemHealth } from './pages/dashboard/SystemHealth';
+import { DashboardInvoices } from './pages/dashboard/DashboardInvoices';
+import { DashboardMessages } from './pages/dashboard/DashboardMessages';
 
 const App: React.FC = () => {
   return (
@@ -119,6 +123,7 @@ const App: React.FC = () => {
         <Route path="/services/social" element={<SocialPage />} />
         <Route path="/services/ecommerce" element={<EcommercePage />} />
         <Route path="/services/amazon" element={<AmazonServicesPage />} />
+        <Route path="/services/instagram" element={<InstagramPage />} />
         
         {/* Main Pages */}
         <Route path="/about" element={<AboutPage />} />
@@ -155,6 +160,7 @@ const App: React.FC = () => {
         <Route path="delivery" element={<DeliveryPortal />} /> 
         <Route path="qa" element={<VisualQAPage />} /> 
         <Route path="calendar" element={<DashboardCalendar />} />
+        <Route path="system" element={<SystemHealth />} />
         
         {/* Brand Profile */}
         <Route path="brand-profile" element={<BrandProfilePage />} />
@@ -189,8 +195,8 @@ const App: React.FC = () => {
         <Route path="settings" element={<DashboardSettings />} />
 
         {/* Misc */}
-        <Route path="invoices" element={<DashboardPlaceholder title="Invoices & Billing" />} />
-        <Route path="messages" element={<DashboardPlaceholder title="Messages & Inbox" />} />
+        <Route path="invoices" element={<DashboardInvoices />} />
+        <Route path="messages" element={<DashboardMessages />} />
         <Route path="feedback" element={<DashboardPlaceholder title="Client Feedback" />} />
       </Route>
 

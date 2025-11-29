@@ -3,12 +3,14 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Download, Filter, Heart, CheckCircle2, AlertCircle, 
   MoreHorizontal, ChevronDown, Sparkles, X, MessageSquare,
-  Grid, List, Check, Image as ImageIcon, Search, ArrowRight, Loader2
+  Grid, List, Check, Image as ImageIcon, Search, ArrowRight, Loader2,
+  Upload, File
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
 import { supabase } from '../../lib/supabase';
-import { ShootAsset } from '../../types/studio';
+import { FileUploader } from '../../components/FileUploader';
+import { useToast } from '../../components/Toast';
 
 // --- Types ---
 interface Asset {
@@ -35,6 +37,7 @@ export const DeliveryPortal: React.FC = () => {
   // Filters
   const [filterAngle, setFilterAngle] = useState('All');
   const [showFavorites, setShowFavorites] = useState(false);
+  const { success, error } = useToast();
 
   useEffect(() => {
     fetchAssets();
@@ -112,6 +115,7 @@ export const DeliveryPortal: React.FC = () => {
     
     // DB
     await supabase.from('shoot_assets').update({ status: 'final' }).in('id', ids);
+    success("Assets approved successfully");
   };
 
   const submitRevision = async (note: string) => {
@@ -122,9 +126,63 @@ export const DeliveryPortal: React.FC = () => {
       // DB
       await supabase.from('shoot_assets').update({ status: 'revision_requested' }).eq('id', activeRevision.id);
       
-      // Could also insert note into a feedback table here
-      
+      success("Revision request sent");
       setActiveRevision(null);
+    }
+  };
+
+  const handleBulkUpload = async (files: File[]) => {
+    // In a real scenario, we'd link these to a specific shoot ID.
+    // For this demo, we'll upload to a 'general' folder and create asset records linked to a dummy shoot if needed,
+    // or just to the assets table with a null shoot_id if allowed.
+    
+    try {
+        const { data: { user } } = await (supabase.auth as any).getUser();
+        if (!user) throw new Error("User not authenticated");
+
+        const uploads = files.map(async (file) => {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `uploads/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+            // 1. Upload to Storage
+            const { error: uploadError } = await supabase.storage
+                .from('production-assets')
+                .upload(fileName, file);
+            
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('production-assets')
+                .getPublicUrl(fileName);
+
+            // 2. Create Record
+            // Note: We need a valid shoot_id. In a real app, this page would likely be /dashboard/shoots/:id/delivery
+            // We will fetch the most recent shoot for the user to attach to, or leave null if schema allows.
+            
+            // Temporary fetch for demo context
+            const { data: recentShoot } = await supabase.from('shoots').select('id').limit(1).single();
+            const shootId = recentShoot?.id; 
+
+            if (shootId) {
+                await supabase.from('shoot_assets').insert({
+                    shoot_id: shootId,
+                    url: publicUrl,
+                    filename: file.name,
+                    file_type: file.type.split('/')[1] || 'unknown',
+                    status: 'review',
+                    metadata: { angle: 'Uploaded', background: 'Custom' }
+                });
+            }
+            
+            return publicUrl;
+        });
+
+        await Promise.all(uploads);
+        success(`Successfully uploaded ${files.length} files`);
+        fetchAssets(); // Refresh grid
+    } catch (e: any) {
+        console.error("Upload error:", e);
+        error("Failed to upload files. " + e.message);
     }
   };
 
@@ -251,6 +309,18 @@ export const DeliveryPortal: React.FC = () => {
                 <p>No assets found.</p>
             </div>
         )}
+
+        {/* Upload Area - Replaced with robust uploader */}
+        <div className="mt-8 pt-8 border-t border-gray-100">
+          <h3 className="font-serif font-bold text-lg mb-4">Add New Assets</h3>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-1">
+             <FileUploader 
+                onUpload={handleBulkUpload} 
+                accept="image/*,video/*" 
+                multiple 
+             />
+          </div>
+        </div>
 
       </div>
 

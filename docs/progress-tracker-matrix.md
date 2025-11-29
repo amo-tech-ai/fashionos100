@@ -11,7 +11,7 @@
 | Leads & Scoring | AI Lead Scoring & Categorization | 🟢 Completed | 100% | `Sponsor-AI Edge Function` | — | None |
 | Packages & Inventory | Sales tools & Opportunities | 🟢 Completed | 100% | `DashboardPackages.tsx` | — | None |
 | Automation | Workflow triggers for Signed deals | 🟢 Completed | 100% | `automation-workflow` | — | None |
-| Contracts | Deliverables & Status | 🟢 Completed | 100% | `DashboardContracts` | — | Connect PDF Gen to real lib |
+| Contracts | Deliverables & Status | 🟢 Completed | 100% | `DashboardContracts.tsx` | — | None |
 | Activations | Activation Cards & Progress | 🟢 Completed | 100% | `DashboardActivations` | — | None |
 | ROI Analytics | Charts, Trends & Breakdown | 🟢 Completed | 100% | `DashboardROI` | — | None |
 | Sponsor Portal | External view | 🟢 Completed | 100% | `SponsorPortal` | — | None |
@@ -24,5 +24,7 @@
 | Visual QA | AI Grading & Retouch workflow | 🟢 Completed | 100% | `VisualQAPage.tsx` | — | None |
 | Delivery Portal | Client Asset Review | 🟢 Completed | 100% | `DeliveryPortal.tsx` | — | None |
 | Booking Wizard | 13-Step Booking Flow | 🟢 Completed | 100% | `StartProjectPage.tsx` | — | None |
+| Invoices & Payments | Billing History | 🟢 Completed | 100% | `DashboardInvoices.tsx` | — | None |
+| Messaging | Team Chat | 🟢 Completed | 100% | `DashboardMessages.tsx` | — | None |
 | AI Moodboard Gen | Generate style refs via Gemini | 🟢 Completed | 100% | `generate-moodboard` func | — | None |
 | Event Wizard | AI Event Creation | 🟢 Completed | 100% | `EventWizard.tsx` | — | None |

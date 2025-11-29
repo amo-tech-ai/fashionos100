@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { 
   LayoutDashboard, Calendar, Ticket, Wallet, Settings, LogOut, Menu, Search, 
   FileText, Image, MessageSquare, Heart, Target, Users, TrendingUp, Package, 
-  Mic2, BarChart3, Globe, Camera, Truck, Plus, BookOpen
+  Mic2, BarChart3, Globe, Camera, Truck, Plus, BookOpen, Activity
 } from 'lucide-react';
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
 import { NotificationsMenu } from '../components/dashboard/NotificationsMenu';
@@ -32,6 +32,7 @@ export const DashboardLayout: React.FC = () => {
     { icon: BarChart3, label: 'ROI & Reports', path: '/dashboard/roi' },
     { icon: Globe, label: 'Sponsor Portal', path: '/dashboard/portal' },
     { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
+    { icon: Activity, label: 'System Health', path: '/dashboard/system' },
   ];
 
   const handleSignOut = async () => {

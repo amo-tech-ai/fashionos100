@@ -57,7 +57,7 @@ serve(async (req) => {
       })
     }
 
-    // ACTION: UPDATE STATUS (With Notification Logic stub)
+    // ACTION: UPDATE STATUS
     if (action === 'update-status') {
        const { status } = await req.json()
        
@@ -65,12 +65,21 @@ serve(async (req) => {
          .from('event_sponsors')
          .update({ status })
          .eq('id', sponsorId)
-         .select()
+         .select('*, sponsor:sponsor_profiles(name)')
          .single()
          
        if (error) throw error
        
-       // (Future: Trigger email notification via Resend/SendGrid)
+       // Notification Logic
+       const { data: user } = await supabase.auth.getUser()
+       if (user?.user) {
+           await supabase.from('notifications').insert({
+               user_id: user.user.id,
+               type: 'info',
+               title: 'Sponsor Status Updated',
+               message: `${data.sponsor?.name} is now ${status}.`
+           })
+       }
        
        return new Response(JSON.stringify({ success: true, data }), {
          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
