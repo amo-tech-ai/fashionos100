@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, Calendar, Ticket, Wallet, Settings, LogOut, Menu, Search, 
@@ -45,7 +44,8 @@ export const DashboardLayout: React.FC = () => {
   const initials = user?.email ? user.email.substring(0, 2).toUpperCase() : 'U';
 
   return (
-    <div className="flex h-screen bg-[#F8F9FB] font-sans overflow-hidden">
+    // Fix: Use h-[100dvh] for better mobile viewport support
+    <div className="flex h-[100dvh] bg-[#F8F9FB] font-sans overflow-hidden">
        {/* Desktop Sidebar */}
        <aside className="w-64 bg-white border-r border-gray-100 hidden lg:flex flex-col fixed h-full z-30 top-0 left-0">
           <div className="p-8 flex-shrink-0">
