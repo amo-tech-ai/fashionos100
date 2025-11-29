@@ -1,20 +1,105 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
 
-# Run and deploy your AI Studio app
+# FashionOS - Fashion Event & Production Platform
 
-This contains everything you need to run your app locally.
+FashionOS is a comprehensive operating system for the fashion industry, streamlining shoot bookings, event planning, sponsorship management, and asset delivery using AI.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1YA7_nuPZtPlUuSyvdJRWZm4bGSUQx7kI
+## 🚀 Features
 
-## Run Locally
+*   **Studio Booking Wizard:** 13-step flow for booking photography/video shoots with AI brief polishing.
+*   **Event Management:** AI-powered event creation from text/URL, including schedule optimization and Veo trailer generation.
+*   **Sponsorship CRM:** Manage leads, contracts (PDF gen), and deliverables.
+*   **Studio Operations:** Visual QA, Delivery Portal, and Asset Gallery.
+*   **Brand Intelligence:** AI analysis of brand DNA (visuals, tone) from URL.
 
-**Prerequisites:**  Node.js
+## 🛠️ Tech Stack
 
+*   **Frontend:** React, Vite, Tailwind CSS
+*   **Backend:** Supabase (PostgreSQL, Auth, Storage, Realtime)
+*   **Edge Logic:** Supabase Edge Functions (Deno)
+*   **AI:** Google Gemini 1.5 Pro, Gemini 2.5 Flash, Veo 3.1
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🏗️ Getting Started
+
+### 1. Prerequisites
+
+*   Node.js 18+
+*   Supabase CLI
+*   Docker (for local Supabase development)
+
+### 2. Installation
+
+```bash
+npm install
+```
+
+### 3. Environment Variables
+
+Create a `.env` file based on `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Fill in your Supabase URL and Anon Key.
+
+### 4. Database Setup
+
+This project uses a consolidated migration file to set up the complete schema.
+
+1.  **Local Development:**
+    ```bash
+    supabase start
+    # The migration in supabase/migrations/ should run automatically.
+    # If not:
+    supabase db reset
+    ```
+
+2.  **Production Deployment:**
+    Go to your Supabase Dashboard -> SQL Editor and paste the content of `supabase/migrations/20250309_complete_schema.sql` to initialize the database.
+
+### 5. Edge Functions
+
+Deploy the backend logic to Supabase:
+
+```bash
+# Login
+supabase login
+
+# Set Secrets (Required for AI features)
+supabase secrets set GEMINI_API_KEY=your_gemini_key
+supabase secrets set STRIPE_SECRET_KEY=your_stripe_key
+supabase secrets set RESEND_API_KEY=your_resend_key
+
+# Deploy
+supabase functions deploy
+```
+
+### 6. Run Application
+
+```bash
+npm run dev
+```
+
+Visit `http://localhost:3000`.
+
+## 🧪 Verification
+
+Navigate to `/dashboard/system` within the app to run a health check on the database connection, storage buckets, and AI services.
+
+## 📦 Storage Buckets
+
+Ensure these buckets exist in your Supabase Storage:
+*   `event-media` (Public)
+*   `avatars` (Public)
+*   `documents` (Private)
+*   `production-assets` (Private)
+*   `brand-assets` (Private)
+
+## 📡 Realtime
+
+Ensure Realtime is enabled for the following tables in Supabase Dashboard -> Database -> Replication:
+*   `shoots`
+*   `events`
+*   `notifications`
+*   `chat_messages`
+*   `payments`

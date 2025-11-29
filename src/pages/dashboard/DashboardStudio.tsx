@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Calendar, Camera, CheckCircle, Clock, MoreHorizontal, 
-  Filter, Search, Download, Eye, AlertCircle, Loader2 
+  Filter, Search, Download, Eye, AlertCircle, Loader2, Plus 
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { PageHeader, StatCard } from '../../components/dashboard/Shared';
@@ -10,55 +10,69 @@ import { Button } from '../../components/Button';
 import { AICopilotWidget } from '../../components/dashboard/Widgets';
 import { supabase } from '../../lib/supabase';
 import { Link, useNavigate } from 'react-router-dom';
+import { useRealtime } from '../../hooks/useRealtime';
+import { useToast } from '../../components/Toast';
 
 const StatusBadge = ({ status }: { status: string }) => {
   const styles: Record<string, string> = {
     requested: "bg-amber-50 text-amber-700 border-amber-200",
     confirmed: "bg-blue-50 text-blue-700 border-blue-200",
-    shooting: "bg-purple-50 text-purple-700 border-purple-200 animate-pulse",
-    editing: "bg-pink-50 text-pink-700 border-pink-200",
+    production: "bg-purple-50 text-purple-700 border-purple-200 animate-pulse",
+    post_production: "bg-pink-50 text-pink-700 border-pink-200",
+    review: "bg-indigo-50 text-indigo-700 border-indigo-200",
     completed: "bg-green-50 text-green-700 border-green-200",
+    cancelled: "bg-red-50 text-red-700 border-red-200",
+    draft: "bg-gray-100 text-gray-600 border-gray-200"
   };
-  const normalized = status?.toLowerCase() || 'requested';
+  const normalized = status?.toLowerCase() || 'draft';
+  
+  // Map for display labels if needed, otherwise just capitalize
+  const label = normalized.replace('_', ' ');
+
   return (
     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${styles[normalized] || 'bg-gray-100'}`}>
-      {status}
+      {label}
     </span>
   );
 };
 
 export const DashboardStudio: React.FC = () => {
   const navigate = useNavigate();
+  const { error: toastError } = useToast();
   const [filter, setFilter] = useState('All');
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchBookings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('shoots')
+        .select('*')
+        .neq('status', 'draft') // Typically studio doesn't see drafts until requested
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setBookings(data || []);
+    } catch (error: any) {
+      console.error('Error fetching bookings:', error);
+      toastError('Failed to load studio bookings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchBookings = async () => {
-      setLoading(true);
-      try {
-        // Fetch shoots with optional profile expansion
-        // Note: In a real app, you'd join on 'profiles' if designer_id exists
-        const { data, error } = await supabase
-          .from('shoots')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        setBookings(data || []);
-      } catch (error) {
-        console.error('Error fetching bookings:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchBookings();
   }, []);
 
+  // Realtime updates
+  useRealtime('shoots', () => {
+    fetchBookings();
+  });
+
   // KPI Calculations
   const pendingCount = bookings.filter(b => b.status === 'requested').length;
-  const activeCount = bookings.filter(b => ['confirmed', 'shooting', 'editing'].includes(b.status)).length;
+  const activeCount = bookings.filter(b => ['confirmed', 'production', 'post_production', 'review'].includes(b.status)).length;
   const weeklyRevenue = bookings
     .filter(b => {
       const date = new Date(b.created_at);
@@ -71,7 +85,7 @@ export const DashboardStudio: React.FC = () => {
   const filteredBookings = bookings.filter(b => {
     if (filter === 'All') return true;
     if (filter === 'Requested') return b.status === 'requested';
-    if (filter === 'Production') return ['confirmed', 'shooting', 'editing'].includes(b.status);
+    if (filter === 'Production') return ['confirmed', 'production', 'post_production', 'review'].includes(b.status);
     if (filter === 'Completed') return b.status === 'completed';
     return true;
   });
@@ -125,6 +139,11 @@ export const DashboardStudio: React.FC = () => {
               <div className="flex flex-col items-center justify-center h-64 text-gray-400">
                 <Camera size={48} className="mb-4 opacity-20" />
                 <p>No bookings found.</p>
+                <Link to="/start-project" className="mt-4">
+                    <Button variant="outline" size="sm" className="gap-2">
+                        <Plus size={14} /> Create Manual Booking
+                    </Button>
+                </Link>
               </div>
             ) : (
               <table className="w-full text-left text-sm">
@@ -138,9 +157,9 @@ export const DashboardStudio: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {filteredBookings.map((booking) => {
-                    // Fallback for client name if profile is missing or guest checkout
+                    // Fallback for client name
                     const clientName = booking.brief_data?.contact?.company || 
-                                      `${booking.brief_data?.contact?.firstName || 'Guest'} ${booking.brief_data?.contact?.lastName || 'User'}`;
+                                      (booking.brief_data?.contact?.firstName ? `${booking.brief_data.contact.firstName} ${booking.brief_data.contact.lastName}` : 'Guest Client');
                     
                     return (
                       <tr key={booking.id} className="hover:bg-gray-50/50 transition-colors group cursor-pointer">

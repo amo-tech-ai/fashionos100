@@ -15,10 +15,11 @@ interface CheckResult {
 
 export const SystemHealth: React.FC = () => {
   const [checks, setChecks] = useState<CheckResult[]>([
-    { name: 'Core Tables (Profiles)', status: 'loading' },
+    { name: 'Core Auth (Profiles)', status: 'loading' },
     { name: 'Brand Schema (Companies)', status: 'loading' },
+    { name: 'Studio (Shoots & Assets)', status: 'loading' },
     { name: 'Sponsor Schema', status: 'loading' },
-    { name: 'Chat Schema', status: 'loading' },
+    { name: 'Commerce (Payments)', status: 'loading' },
     { name: 'Storage Buckets', status: 'loading' },
     { name: 'Edge Functions', status: 'loading' },
     { name: 'AI Service', status: 'loading' }
@@ -34,19 +35,26 @@ export const SystemHealth: React.FC = () => {
     };
 
     // 1. Database Schema Checks
-    await checkTable('profiles', 'Core Tables (Profiles)');
+    await checkTable('profiles', 'Core Auth (Profiles)');
     await checkTable('companies', 'Brand Schema (Companies)');
     await checkTable('sponsor_profiles', 'Sponsor Schema');
-    await checkTable('chat_rooms', 'Chat Schema');
+    
+    // Combined checks
+    const startStudio = performance.now();
+    const { error: shootsErr } = await supabase.from('shoots').select('id').limit(1);
+    const { error: assetsErr } = await supabase.from('shoot_assets').select('id').limit(1);
+    updateCheck('Studio (Shoots & Assets)', !shootsErr && !assetsErr, performance.now() - startStudio, shootsErr || assetsErr ? 'Missing tables' : 'Active');
+    
+    await checkTable('payments', 'Commerce (Payments)');
 
     // 2. Storage Check
     const startStore = performance.now();
     const { data: buckets, error: storeError } = await supabase.storage.listBuckets();
-    const requiredBuckets = ['event-media', 'avatars', 'documents'];
+    const requiredBuckets = ['event-media', 'avatars', 'documents', 'production-assets', 'brand-assets'];
     const missingBuckets = requiredBuckets.filter(b => !buckets?.find(x => x.name === b));
     
     updateCheck(
-        'Storage Access', 
+        'Storage Buckets', 
         !storeError && missingBuckets.length === 0, 
         performance.now() - startStore, 
         storeError ? storeError.message : (missingBuckets.length > 0 ? `Missing: ${missingBuckets.join(', ')}` : `${buckets?.length} buckets verified`)
@@ -111,7 +119,7 @@ export const SystemHealth: React.FC = () => {
                   check.status === 'error' ? 'bg-red-100 text-red-600' : 
                   'bg-gray-100 text-gray-500'
                 }`}>
-                  {check.name.includes('Schema') || check.name.includes('Table') ? <Database size={24} /> : 
+                  {check.name.includes('Schema') || check.name.includes('Table') || check.name.includes('Core') || check.name.includes('Studio') || check.name.includes('Commerce') ? <Database size={24} /> : 
                    check.name.includes('Storage') ? <HardDrive size={24} /> :
                    check.name.includes('AI') ? <Sparkles size={24} /> : <Server size={24} />}
                 </div>
@@ -145,7 +153,8 @@ export const SystemHealth: React.FC = () => {
             <p>1. Run the SQL Migration found in <code className="text-white">supabase/migrations/20250309_complete_schema.sql</code>.</p>
             <p>2. Set your secrets: <code className="text-white">supabase secrets set GEMINI_API_KEY=...</code>.</p>
             <p>3. Deploy Edge Functions: <code className="text-white">supabase functions deploy</code>.</p>
-            <p>4. Verify all checks above are green.</p>
+            <p>4. Create required Storage Buckets: <code className="text-white">event-media, avatars, documents, production-assets, brand-assets</code>.</p>
+            <p>5. Verify all checks above are green.</p>
          </div>
       </div>
     </div>

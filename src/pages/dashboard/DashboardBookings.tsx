@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Calendar, CheckCircle, Clock, Star, X, Plus, ArrowUpRight, ArrowDownRight, Loader2, Camera, Search, Filter, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -11,14 +12,19 @@ const StatusBadge = ({ status }: { status: string }) => {
   const styles: Record<string, string> = {
     requested: "bg-amber-50 text-amber-700 border-amber-200",
     confirmed: "bg-blue-50 text-blue-700 border-blue-200",
-    shooting: "bg-purple-50 text-purple-700 border-purple-200 animate-pulse",
+    production: "bg-purple-50 text-purple-700 border-purple-200 animate-pulse",
+    post_production: "bg-pink-50 text-pink-700 border-pink-200",
+    review: "bg-indigo-50 text-indigo-700 border-indigo-200",
     completed: "bg-green-50 text-green-700 border-green-200",
     cancelled: "bg-red-50 text-red-700 border-red-200",
+    draft: "bg-gray-100 text-gray-600 border-gray-200"
   };
   const normalized = status?.toLowerCase() || 'requested';
+  const label = normalized.replace('_', ' ');
+
   return (
     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${styles[normalized] || 'bg-gray-100'}`}>
-      {status}
+      {label}
     </span>
   );
 };
@@ -156,7 +162,7 @@ export const DashboardBookings = () => {
                          <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                                 <StatusBadge status={booking.status} />
-                                {/* Quick Action Mock for Optimistic Update Demo */}
+                                {/* Quick Action */}
                                 {booking.status === 'requested' && (
                                     <button 
                                         onClick={() => updateStatus(booking.id, 'confirmed')}

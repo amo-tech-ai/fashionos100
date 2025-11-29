@@ -7,12 +7,13 @@ import {
 } from 'lucide-react';
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
 import { NotificationsMenu } from '../components/dashboard/NotificationsMenu';
-import { supabase } from '../lib/supabase';
 import { Button } from '../components/Button';
+import { useAuth } from '../context/AuthContext';
 
 export const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { signOut, user } = useAuth();
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
@@ -36,9 +37,12 @@ export const DashboardLayout: React.FC = () => {
   ];
 
   const handleSignOut = async () => {
-    await (supabase.auth as any).signOut();
+    await signOut();
     navigate('/login');
   };
+
+  // Get Initials
+  const initials = user?.email ? user.email.substring(0, 2).toUpperCase() : 'U';
 
   return (
     <div className="flex h-screen bg-[#F8F9FB] font-sans overflow-hidden">
@@ -114,8 +118,10 @@ export const DashboardLayout: React.FC = () => {
              <div className="flex items-center gap-4">
                 <NotificationsMenu />
                 <div className="flex items-center gap-3 pl-4 border-l border-gray-100">
-                   <div className="text-right hidden sm:block"><p className="text-sm font-bold leading-none">Orlando L.</p><p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Admin</p></div>
-                   <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden"><img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" alt="User" /></div>
+                   <div className="text-right hidden sm:block"><p className="text-sm font-bold leading-none truncate max-w-[120px]">{user?.email || 'User'}</p><p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Admin</p></div>
+                   <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500 overflow-hidden">
+                      {initials}
+                   </div>
                 </div>
              </div>
           </header>
