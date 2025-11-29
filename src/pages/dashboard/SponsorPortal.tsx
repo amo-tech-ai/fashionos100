@@ -167,6 +167,7 @@ export const SponsorPortal: React.FC = () => {
         reader.readAsDataURL(file);
         reader.onload = async () => {
             const base64 = (reader.result as string).split(',')[1];
+            // Use aiService instead of direct fetch
             aiService.sponsorAgent('analyze-media', { mediaBase64: base64 })
               .catch(err => console.warn("AI Analysis error", err));
         };

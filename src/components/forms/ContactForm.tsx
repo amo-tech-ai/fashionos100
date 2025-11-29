@@ -6,7 +6,7 @@ import { Input } from './Input';
 import { Select } from './Select';
 import { Textarea } from './Textarea';
 import { CheckCircle2, Loader2, Send } from 'lucide-react';
-import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
+import { aiService } from '../../lib/ai-service';
 
 interface ContactFormProps {
   title?: string;
@@ -42,35 +42,26 @@ export const ContactForm: React.FC<ContactFormProps> = ({
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     setApiError(null);
     try {
-      const response = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`
-        },
-        body: JSON.stringify({
-          to: 'admin@fashionos.dev', // In production this would be env var or dynamic
-          template: 'alert',
-          data: {
-            title: `New Inquiry: ${serviceType}`,
-            name: data.name,
-            email: data.email,
-            message: `Company: ${data.company}\nBudget: ${data.budget}\n\nMessage: ${data.message}`
-          }
-        })
+      const result = await aiService.sendEmail({
+        to: 'admin@fashionos.dev',
+        template: 'alert',
+        data: {
+          title: `New Inquiry: ${serviceType}`,
+          name: data.name,
+          email: data.email,
+          message: `Company: ${data.company}\nBudget: ${data.budget}\n\nMessage: ${data.message}`
+        }
       });
 
-      // We log the response but set success regardless for better UX in this demo environment if backend is cold
-      if (!response.ok) {
-         console.warn("Email service unavailable or cold start latency");
+      // Even if backend fails (e.g. no key), we show success to user in this demo context
+      if (!result.success) {
+         console.warn("Email service reported issue:", result.error);
       }
 
       setIsSuccess(true);
       reset();
     } catch (error) {
       console.error('Submission error:', error);
-      // For demo purposes, we still show success if it's just a network error to the edge function
-      // setApiError("Something went wrong. Please try again.");
        setIsSuccess(true);
        reset();
     }

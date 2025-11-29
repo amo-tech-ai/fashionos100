@@ -38,6 +38,46 @@ export const aiService = {
   },
 
   /**
+   * Generic blob wrapper for binary responses (PDFs, Videos)
+   */
+  async callEdgeFunctionBlob(functionName: string, body: any): Promise<{ success: boolean; data?: Blob; error?: string }> {
+    try {
+      // We use the raw invoke but need to handle response type manually if the SDK doesn't support blob inference well
+      // The Supabase JS SDK invoke method returns parsed JSON by default. 
+      // For binary, we often need to use the global fetch with the session token, 
+      // OR rely on the function returning a signed URL (preferred for large files).
+      // However, for PDF generation which is small, we can try to use the raw response if supported, 
+      // or simply fallback to fetch if SDK limits us.
+      
+      // Let's use standard fetch with Supabase Auth headers for Blob support
+      const { data: { session } } = await supabase.auth.getSession();
+      // @ts-ignore
+      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${functionName}`;
+      
+      const response = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText);
+      }
+
+      const blob = await response.blob();
+      return { success: true, data: blob };
+
+    } catch (error: any) {
+      console.error(`Failed to call ${functionName} (Blob):`, error);
+      return { success: false, error: error.message || 'Unknown error occurred' };
+    }
+  },
+
+  /**
    * Sponsor AI Agent: Generates activation ideas, lead scores, social plans, etc.
    */
   async sponsorAgent(action: 'activation-ideas' | 'score-lead' | 'generate-social-plan' | 'generate-roi-report' | 'generate-pitch' | 'analyze-media' | 'draft-contract' | 'recommend-packages', params: any) {
@@ -83,10 +123,9 @@ export const aiService = {
    * Veo AI: Video Generation wrapper
    */
   async generateMedia(params: { action: 'start' | 'poll' | 'download'; prompt?: string; imageBase64?: string; imageType?: string; operationName?: string; downloadUri?: string }) {
-    // Note: For download action, we might receive a binary stream. 
-    // The invoke method parses JSON by default. 
-    // For binary downloads, we might still need raw fetch or handle responseType in invoke if supported.
-    // For now, we'll use this for control signals (start/poll).
+    if (params.action === 'download') {
+       return this.callEdgeFunctionBlob('generate-media', params);
+    }
     return this.callEdgeFunction('generate-media', params);
   },
 
@@ -102,5 +141,19 @@ export const aiService = {
    */
   async createCheckout(params: { amount: number; title: string; successUrl?: string; cancelUrl?: string }) {
     return this.callEdgeFunction('create-checkout', params);
+  },
+
+  /**
+   * Legal: Generate PDF Contract
+   */
+  async generateContract(params: { sponsorName: string; terms: string; value: number; date: string; eventName: string }) {
+    return this.callEdgeFunctionBlob('generate-contract', params);
+  },
+
+  /**
+   * Email: Send transactional emails
+   */
+  async sendEmail(params: { to: string; template: 'booking_confirmation' | 'welcome' | 'alert'; data: any }) {
+    return this.callEdgeFunction('send-transactional-email', params);
   }
 };
