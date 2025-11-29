@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import { BookingSidebar } from '../components/booking/BookingSidebar';
 import { WizardProgressBar } from '../components/booking/ui/WizardProgressBar';
-import { ChevronLeft, LayoutDashboard, Target, Users, Package, FileText, Mic2, Image, BarChart3, Globe, Camera } from 'lucide-react';
+import { ChevronLeft, LayoutDashboard, Target, Users, Package, FileText, Mic2, Image, BarChart3, Camera } from 'lucide-react';
 import { Button } from '../components/Button';
 import { useBooking } from '../context/BookingContext';
 

@@ -13,19 +13,20 @@ interface ErrorBoundaryState {
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  public state: ErrorBoundaryState = {
-    hasError: false,
-    error: null,
-  };
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: null
+    };
+  }
 
   public static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    // Update state so the next render will show the fallback UI.
     return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error:', error, errorInfo);
-    // In a real production app, you would log this to a service like Sentry
   }
 
   private handleReset = () => {
@@ -39,7 +40,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         return this.props.fallback;
       }
 
-      // Use type assertion for import.meta to access env property safely
       // @ts-ignore
       const isDev = import.meta.env?.DEV;
 
@@ -58,7 +58,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             Please try refreshing the page.
           </p>
 
-          {/* Environment check for dev mode error display */}
           {isDev && this.state.error && (
             <div className="w-full max-w-2xl bg-gray-50 p-4 rounded-xl border border-gray-200 text-left mb-8 overflow-auto max-h-40">
               <p className="text-xs font-mono text-red-600 whitespace-pre-wrap">
