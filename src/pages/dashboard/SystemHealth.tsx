@@ -15,32 +15,48 @@ interface CheckResult {
 
 export const SystemHealth: React.FC = () => {
   const [checks, setChecks] = useState<CheckResult[]>([
-    { name: 'Database Connection', status: 'loading' },
+    { name: 'Core Tables (Profiles)', status: 'loading' },
+    { name: 'Brand Schema (Companies)', status: 'loading' },
+    { name: 'Sponsor Schema', status: 'loading' },
+    { name: 'Chat Schema', status: 'loading' },
+    { name: 'Storage Buckets', status: 'loading' },
     { name: 'Edge Functions', status: 'loading' },
-    { name: 'Storage Access', status: 'loading' },
     { name: 'AI Service', status: 'loading' }
   ]);
 
   const runChecks = async () => {
     setChecks(c => c.map(check => ({ ...check, status: 'loading', message: undefined, latency: undefined })));
 
-    // 1. Database Check
-    const startDb = performance.now();
-    const { error: dbError } = await supabase.from('profiles').select('count').limit(1).single();
-    updateCheck('Database Connection', !dbError, performance.now() - startDb, dbError?.message);
+    const checkTable = async (tableName: string, label: string) => {
+        const start = performance.now();
+        const { error } = await supabase.from(tableName).select('id').limit(1);
+        updateCheck(label, !error, performance.now() - start, error ? `Missing table: ${tableName}` : 'Active');
+    };
 
-    // 2. Storage Check (List buckets)
+    // 1. Database Schema Checks
+    await checkTable('profiles', 'Core Tables (Profiles)');
+    await checkTable('companies', 'Brand Schema (Companies)');
+    await checkTable('sponsor_profiles', 'Sponsor Schema');
+    await checkTable('chat_rooms', 'Chat Schema');
+
+    // 2. Storage Check
     const startStore = performance.now();
     const { data: buckets, error: storeError } = await supabase.storage.listBuckets();
-    const bucketCount = buckets?.length || 0;
-    updateCheck('Storage Access', !storeError, performance.now() - startStore, storeError?.message || `${bucketCount} buckets found`);
+    const requiredBuckets = ['event-media', 'avatars', 'documents'];
+    const missingBuckets = requiredBuckets.filter(b => !buckets?.find(x => x.name === b));
+    
+    updateCheck(
+        'Storage Access', 
+        !storeError && missingBuckets.length === 0, 
+        performance.now() - startStore, 
+        storeError ? storeError.message : (missingBuckets.length > 0 ? `Missing: ${missingBuckets.join(', ')}` : `${buckets?.length} buckets verified`)
+    );
 
     // 3. Edge Function Check (Ping)
     const startEdge = performance.now();
     try {
-      // We'll use the email function as a ping since it has a mock mode
       const res = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-        method: 'OPTIONS', // CORS preflight usually fast
+        method: 'OPTIONS', 
         headers: { 'Authorization': `Bearer ${supabaseAnonKey}` }
       });
       updateCheck('Edge Functions', res.ok, performance.now() - startEdge, res.statusText);
@@ -48,7 +64,7 @@ export const SystemHealth: React.FC = () => {
       updateCheck('Edge Functions', false, 0, e.message);
     }
 
-    // 4. AI Service Check (Mock call or simple prompt)
+    // 4. AI Service Check
     const startAi = performance.now();
     try {
        const aiRes = await fetch(`${supabaseUrl}/functions/v1/ai-copilot`, {
@@ -95,10 +111,9 @@ export const SystemHealth: React.FC = () => {
                   check.status === 'error' ? 'bg-red-100 text-red-600' : 
                   'bg-gray-100 text-gray-500'
                 }`}>
-                  {check.name.includes('Database') && <Database size={24} />}
-                  {check.name.includes('Storage') && <HardDrive size={24} />}
-                  {check.name.includes('Edge') && <Server size={24} />}
-                  {check.name.includes('AI') && <Sparkles size={24} />}
+                  {check.name.includes('Schema') || check.name.includes('Table') ? <Database size={24} /> : 
+                   check.name.includes('Storage') ? <HardDrive size={24} /> :
+                   check.name.includes('AI') ? <Sparkles size={24} /> : <Server size={24} />}
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900">{check.name}</h3>
@@ -125,20 +140,12 @@ export const SystemHealth: React.FC = () => {
       </div>
 
       <div className="mt-12 bg-gray-900 text-white p-8 rounded-3xl">
-         <h3 className="text-xl font-serif font-bold mb-4">Deployment Checklist</h3>
+         <h3 className="text-xl font-serif font-bold mb-4">Deployment Instructions</h3>
          <div className="space-y-4 text-sm text-gray-400">
-            <div className="flex items-center gap-3">
-               <div className={`w-3 h-3 rounded-full ${checks.find(c => c.name === 'Database Connection')?.status === 'ok' ? 'bg-green-500' : 'bg-red-500'}`} />
-               <span>Database Migrations Applied</span>
-            </div>
-            <div className="flex items-center gap-3">
-               <div className={`w-3 h-3 rounded-full ${checks.find(c => c.name === 'Storage Access')?.status === 'ok' ? 'bg-green-500' : 'bg-red-500'}`} />
-               <span>Storage Buckets Created (avatars, assets)</span>
-            </div>
-            <div className="flex items-center gap-3">
-               <div className={`w-3 h-3 rounded-full ${checks.find(c => c.name === 'AI Service')?.status === 'ok' ? 'bg-green-500' : 'bg-yellow-500'}`} />
-               <span>Gemini API Key Configured</span>
-            </div>
+            <p>1. Run the SQL Migration found in <code className="text-white">supabase/migrations/20250309_complete_schema.sql</code>.</p>
+            <p>2. Set your secrets: <code className="text-white">supabase secrets set GEMINI_API_KEY=...</code>.</p>
+            <p>3. Deploy Edge Functions: <code className="text-white">supabase functions deploy</code>.</p>
+            <p>4. Verify all checks above are green.</p>
          </div>
       </div>
     </div>
