@@ -185,7 +185,7 @@ export const BrandProfilePage: React.FC = () => {
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Tone of Voice</p>
                 <div className="flex flex-wrap gap-2">
-                  {identity?.tone_of_voice.map((tone, i) => (
+                  {identity?.tone_of_voice?.map((tone, i) => (
                     <span key={i} className="bg-gray-50 px-3 py-1 rounded-full text-xs font-medium text-gray-600 border border-gray-200">
                       {tone}
                     </span>
@@ -196,7 +196,7 @@ export const BrandProfilePage: React.FC = () => {
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Target Audience</p>
                 <ul className="space-y-2">
-                  {identity?.target_audience.map((aud, i) => (
+                  {identity?.target_audience?.map((aud, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
                       <Target size={14} className="mt-0.5 text-purple-500 shrink-0" /> {aud}
                     </li>
@@ -217,7 +217,7 @@ export const BrandProfilePage: React.FC = () => {
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-3">Color Palette</p>
                 <div className="flex flex-wrap gap-3">
-                  {visuals?.colors.map((color, i) => (
+                  {visuals?.colors?.map((color, i) => (
                     <div key={i} className="group relative flex flex-col items-center gap-1">
                       <div 
                         className="w-12 h-12 rounded-full border border-gray-100 shadow-sm transition-transform group-hover:scale-110" 
@@ -239,7 +239,7 @@ export const BrandProfilePage: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Mood</p>
-                  <p className="text-sm font-medium text-gray-800 truncate">{visuals?.moods[0]}</p>
+                  <p className="text-sm font-medium text-gray-800 truncate">{visuals?.moods?.[0]}</p>
                 </div>
               </div>
             </div>

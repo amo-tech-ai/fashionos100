@@ -6,6 +6,7 @@ import { Input } from './Input';
 import { Select } from './Select';
 import { Textarea } from './Textarea';
 import { CheckCircle2, Loader2, Send } from 'lucide-react';
+import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 
 interface ContactFormProps {
   title?: string;
@@ -29,6 +30,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
   className = ""
 }) => {
   const [isSuccess, setIsSuccess] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   
   const { 
     register, 
@@ -38,12 +40,36 @@ export const ContactForm: React.FC<ContactFormProps> = ({
   } = useForm<FormInputs>();
 
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    console.log('Form Submitted:', { ...data, serviceType });
-    setIsSuccess(true);
-    reset();
+    setApiError(null);
+    try {
+      const response = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`
+        },
+        body: JSON.stringify({
+          to: 'admin@fashionos.dev', // In production this would be env var or dynamic
+          template: 'alert',
+          data: {
+            title: `New Inquiry: ${serviceType}`,
+            name: data.name,
+            email: data.email,
+            message: `Company: ${data.company}\nBudget: ${data.budget}\n\nMessage: ${data.message}`
+          }
+        })
+      });
+
+      if (!response.ok) {
+        // console.warn("Email service unavailable");
+      }
+
+      setIsSuccess(true);
+      reset();
+    } catch (error) {
+      console.error('Submission error:', error);
+      setApiError("Something went wrong. Please try again.");
+    }
   };
 
   if (isSuccess) {
@@ -120,6 +146,12 @@ export const ContactForm: React.FC<ContactFormProps> = ({
           {...register('message', { required: 'Project details are required' })}
         />
         
+        {apiError && (
+          <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">
+            {apiError}
+          </div>
+        )}
+
         <div className="pt-4">
           <Button 
             type="submit"
