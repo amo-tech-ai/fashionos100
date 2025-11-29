@@ -12,6 +12,7 @@ export interface Shoot {
   looks_count: number;
   fulfillment_type?: 'virtual' | 'location';
   scheduled_date?: string;
+  scheduled_time?: string;
   status: ShootStatus;
   estimated_quote: number;
   created_at: string;

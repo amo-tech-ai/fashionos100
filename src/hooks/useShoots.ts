@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { shootService } from '../lib/shoot-service';
-import { Shoot } from '../types/studio';
+import { shootService, Shoot } from '../lib/shoot-service';
 import { useAuth } from '../context/AuthContext';
 
 export const useShoots = () => {
@@ -14,7 +13,6 @@ export const useShoots = () => {
     if (!user) return;
     try {
       setLoading(true);
-      // Pass user.id to filter by owner (RLS will also enforce this, but good for explicit filtering logic)
       const data = await shootService.getShoots(user.id);
       setShoots(data);
       setError(null);

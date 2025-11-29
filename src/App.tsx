@@ -26,11 +26,11 @@ import { DesignerProfilePage } from './pages/public/DesignerProfilePage';
 import { EventsPage } from './pages/public/EventsPage';
 import { SocialPage } from './pages/public/SocialPage';
 import { EcommercePage } from './pages/public/EcommercePage';
+import { AmazonServicesPage } from './pages/public/AmazonServicesPage';
+import { InstagramPage } from './pages/public/InstagramPage';
 import { ContactPage } from './pages/public/ContactPage';
 import { AboutPage } from './pages/public/AboutPage';
 import { PricingPage } from './pages/public/PricingPage';
-import { AmazonServicesPage } from './pages/public/AmazonServicesPage';
-import { InstagramPage } from './pages/public/InstagramPage';
 
 // Booking Wizard Pages
 import { StepCategory } from './pages/public/booking/StepCategory';
@@ -207,3 +207,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+    

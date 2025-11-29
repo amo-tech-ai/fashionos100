@@ -1,6 +1,8 @@
 
 import { supabase } from './supabase';
-import { Shoot } from '../types/studio';
+import { Database } from '../types/database';
+
+export type Shoot = Database['public']['Tables']['shoots']['Row'];
 
 export const shootService = {
   /**
@@ -22,27 +24,23 @@ export const shootService = {
   },
 
   /**
-   * Get single shoot details with assets
+   * Get single shoot details
    */
   async getShootById(id: string) {
     const { data, error } = await supabase
       .from('shoots')
-      .select(`
-        *,
-        shoot_assets(*),
-        shoot_items(*)
-      `)
+      .select('*')
       .eq('id', id)
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Shoot;
   },
 
   /**
    * Create a new shoot booking
    */
-  async createShoot(shootData: Partial<Shoot>) {
+  async createShoot(shootData: Database['public']['Tables']['shoots']['Insert']) {
     const { data, error } = await supabase
       .from('shoots')
       .insert([shootData])
@@ -56,7 +54,7 @@ export const shootService = {
   /**
    * Update shoot status or details
    */
-  async updateShoot(id: string, updates: Partial<Shoot>) {
+  async updateShoot(id: string, updates: Database['public']['Tables']['shoots']['Update']) {
     const { data, error } = await supabase
       .from('shoots')
       .update(updates)

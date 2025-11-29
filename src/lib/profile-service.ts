@@ -1,62 +1,44 @@
 
 import { supabase } from './supabase';
-import { Company } from '../types/brand';
+import { Database } from '../types/database';
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  full_name?: string;
-  avatar_url?: string;
-  role?: string;
-  company_name?: string; // Legacy field, moving to companies table
-  updated_at?: string;
-}
-
-export interface TeamMember {
-  id: string;
-  user_id: string;
-  role: 'admin' | 'editor' | 'viewer';
-  status: 'active' | 'invited';
-  email: string;
-}
+export type Profile = Database['public']['Tables']['profiles']['Row'];
 
 export const profileService = {
   /**
-   * Get current user profile and associated company
+   * Get current user profile
    */
   async getProfile() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    // Fetch Profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single();
 
-    if (profileError) console.error('Error fetching profile:', profileError);
-
-    // Fetch Company (owned by user)
-    const { data: company, error: companyError } = await supabase
+    const { data: company } = await supabase
       .from('companies')
       .select('*')
       .eq('owner_id', user.id)
       .maybeSingle();
 
-    if (companyError) console.error('Error fetching company:', companyError);
+    if (error && error.code !== 'PGRST116') {
+       console.error('Error fetching profile:', error);
+    }
 
     return {
-      user: user,
-      profile: profile as UserProfile | null,
-      company: company as Company | null
+      user,
+      profile: profile as Profile | null,
+      company: company as { name: string; website_url?: string } | null
     };
   },
 
   /**
    * Update user profile details
    */
-  async updateProfile(updates: Partial<UserProfile>) {
+  async updateProfile(updates: Database['public']['Tables']['profiles']['Update']) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
@@ -72,39 +54,26 @@ export const profileService = {
   },
 
   /**
-   * Update or Create company details
+   * Update company details
    */
   async updateCompany(name: string, website?: string) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
-    // Check if exists
-    const { data: existing } = await supabase
+    const { data, error } = await supabase
       .from('companies')
-      .select('id')
-      .eq('owner_id', user.id)
-      .maybeSingle();
+      .upsert({ 
+        owner_id: user.id,
+        name, 
+        website_url: website 
+      }, { onConflict: 'owner_id' })
+      .select()
+      .single();
 
-    if (existing) {
-      const { data, error } = await supabase
-        .from('companies')
-        .update({ name, website_url: website })
-        .eq('id', existing.id)
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    } else {
-      const { data, error } = await supabase
-        .from('companies')
-        .insert({ owner_id: user.id, name, website_url: website })
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    }
+    if (error) throw error;
+    return data;
   },
-
+  
   /**
    * Upload Avatar
    */
@@ -117,7 +86,7 @@ export const profileService = {
     const filePath = `avatars/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
-      .from('avatars') // Ensure this bucket exists in Supabase
+      .from('avatars')
       .upload(filePath, file);
 
     if (uploadError) throw uploadError;

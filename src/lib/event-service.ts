@@ -1,27 +1,11 @@
 
 import { supabase } from './supabase';
-import { Database } from '../types/supabase'; // Assuming you might generate types later, but using 'any' or explicit interfaces for now is fine if types aren't generated yet.
+import { Database } from '../types/database';
 
-// Define shape based on Schema
-export interface Event {
-  id: string;
-  title: string;
-  organizer_id: string;
-  venue_id?: string;
-  description?: string;
-  short_description?: string;
-  status: 'draft' | 'published' | 'cancelled' | 'completed' | 'live';
-  is_public: boolean;
-  start_time: string;
-  end_time?: string;
-  capacity_limit?: number;
-  featured_image_url?: string;
-  created_at: string;
-  // Joins
-  venue?: { name: string; city: string };
-  ticket_tiers?: any[];
+export type Event = Database['public']['Tables']['events']['Row'] & {
+  venue?: { name: string; city: string } | null;
   registrations?: any[];
-}
+};
 
 export const eventService = {
   /**
@@ -32,9 +16,7 @@ export const eventService = {
       .from('events')
       .select(`
         *,
-        venue:venues(name, city),
-        ticket_tiers(count),
-        registrations(count)
+        venue:venues(name, city)
       `)
       .order('start_time', { ascending: true });
 
@@ -63,9 +45,7 @@ export const eventService = {
       .from('events')
       .select(`
         *,
-        venue:venues(*),
-        ticket_tiers(*),
-        event_schedules(*)
+        venue:venues(*)
       `)
       .eq('id', id)
       .single();
@@ -77,7 +57,7 @@ export const eventService = {
   /**
    * Create a new event
    */
-  async createEvent(eventData: Partial<Event>) {
+  async createEvent(eventData: Database['public']['Tables']['events']['Insert']) {
     const { data, error } = await supabase
       .from('events')
       .insert([eventData])
@@ -91,7 +71,7 @@ export const eventService = {
   /**
    * Update an existing event
    */
-  async updateEvent(id: string, updates: Partial<Event>) {
+  async updateEvent(id: string, updates: Database['public']['Tables']['events']['Update']) {
     const { data, error } = await supabase
       .from('events')
       .update(updates)
