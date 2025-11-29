@@ -3,12 +3,17 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ensure full height for dashboard layouts */
-html, body, #root {
+html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow-x: hidden; /* Prevent horizontal scroll on mobile */
+  scroll-behavior: smooth;
+  background-color: #FBF8F5; /* Fashion Cream Default */
+}
+
+#root {
+  min-height: 100%;
+  width: 100%;
 }
 
 /* Custom scrollbar for a premium feel */

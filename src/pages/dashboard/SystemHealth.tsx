@@ -4,7 +4,6 @@ import { CheckCircle2, XCircle, Loader2, Server, Database, HardDrive, Sparkles }
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { FadeIn } from '../../components/FadeIn';
 import { PageHeader } from '../../components/dashboard/Shared';
-import { Button } from '../../components/Button';
 
 interface CheckResult {
   name: string;
@@ -16,10 +15,11 @@ interface CheckResult {
 export const SystemHealth: React.FC = () => {
   const [checks, setChecks] = useState<CheckResult[]>([
     { name: 'Core Auth (Profiles)', status: 'loading' },
-    { name: 'Brand Schema (Companies)', status: 'loading' },
-    { name: 'Studio (Shoots & Assets)', status: 'loading' },
+    { name: 'Brand Schema', status: 'loading' },
+    { name: 'Studio Schema', status: 'loading' },
+    { name: 'Event Schema', status: 'loading' },
     { name: 'Sponsor Schema', status: 'loading' },
-    { name: 'Commerce (Payments)', status: 'loading' },
+    { name: 'Chat Schema', status: 'loading' },
     { name: 'Storage Buckets', status: 'loading' },
     { name: 'Edge Functions', status: 'loading' },
     { name: 'AI Service', status: 'loading' }
@@ -36,16 +36,11 @@ export const SystemHealth: React.FC = () => {
 
     // 1. Database Schema Checks
     await checkTable('profiles', 'Core Auth (Profiles)');
-    await checkTable('companies', 'Brand Schema (Companies)');
+    await checkTable('companies', 'Brand Schema');
+    await checkTable('shoots', 'Studio Schema');
+    await checkTable('events', 'Event Schema');
     await checkTable('sponsor_profiles', 'Sponsor Schema');
-    
-    // Combined checks
-    const startStudio = performance.now();
-    const { error: shootsErr } = await supabase.from('shoots').select('id').limit(1);
-    const { error: assetsErr } = await supabase.from('shoot_assets').select('id').limit(1);
-    updateCheck('Studio (Shoots & Assets)', !shootsErr && !assetsErr, performance.now() - startStudio, shootsErr || assetsErr ? 'Missing tables' : 'Active');
-    
-    await checkTable('payments', 'Commerce (Payments)');
+    await checkTable('chat_rooms', 'Chat Schema');
 
     // 2. Storage Check
     const startStore = performance.now();
@@ -63,11 +58,13 @@ export const SystemHealth: React.FC = () => {
     // 3. Edge Function Check (Ping)
     const startEdge = performance.now();
     try {
-      const res = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+      // We use a simple fetch to a known function or root if possible. 
+      // For now, we test the 'ai-copilot' endpoint availability.
+      const res = await fetch(`${supabaseUrl}/functions/v1/ai-copilot`, {
         method: 'OPTIONS', 
         headers: { 'Authorization': `Bearer ${supabaseAnonKey}` }
       });
-      updateCheck('Edge Functions', res.ok, performance.now() - startEdge, res.statusText);
+      updateCheck('Edge Functions', res.ok, performance.now() - startEdge, res.ok ? 'Ready' : `Status: ${res.status}`);
     } catch (e: any) {
       updateCheck('Edge Functions', false, 0, e.message);
     }
@@ -80,7 +77,7 @@ export const SystemHealth: React.FC = () => {
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseAnonKey}` },
           body: JSON.stringify({ prompt: "Hello", context: "health-check" })
        });
-       updateCheck('AI Service', aiRes.ok, performance.now() - startAi, aiRes.ok ? "Ready" : "Unavailable");
+       updateCheck('AI Service', aiRes.ok, performance.now() - startAi, aiRes.ok ? "Connected" : "Unavailable");
     } catch (e: any) {
        updateCheck('AI Service', false, 0, e.message);
     }
@@ -119,7 +116,7 @@ export const SystemHealth: React.FC = () => {
                   check.status === 'error' ? 'bg-red-100 text-red-600' : 
                   'bg-gray-100 text-gray-500'
                 }`}>
-                  {check.name.includes('Schema') || check.name.includes('Table') || check.name.includes('Core') || check.name.includes('Studio') || check.name.includes('Commerce') ? <Database size={24} /> : 
+                  {check.name.includes('Schema') || check.name.includes('Auth') ? <Database size={24} /> : 
                    check.name.includes('Storage') ? <HardDrive size={24} /> :
                    check.name.includes('AI') ? <Sparkles size={24} /> : <Server size={24} />}
                 </div>
@@ -136,7 +133,7 @@ export const SystemHealth: React.FC = () => {
                  ) : check.status === 'ok' ? (
                    <div className="flex flex-col items-end">
                      <CheckCircle2 className="text-green-500 mb-1" />
-                     {check.latency && <span className="text-xs font-mono text-gray-400">{check.latency}ms</span>}
+                     {check.latency !== undefined && <span className="text-xs font-mono text-gray-400">{check.latency}ms</span>}
                    </div>
                  ) : (
                    <XCircle className="text-red-500" />
@@ -153,7 +150,7 @@ export const SystemHealth: React.FC = () => {
             <p>1. Run the SQL Migration found in <code className="text-white">supabase/migrations/20250309_complete_schema.sql</code>.</p>
             <p>2. Set your secrets: <code className="text-white">supabase secrets set GEMINI_API_KEY=...</code>.</p>
             <p>3. Deploy Edge Functions: <code className="text-white">supabase functions deploy</code>.</p>
-            <p>4. Create required Storage Buckets: <code className="text-white">event-media, avatars, documents, production-assets, brand-assets</code>.</p>
+            <p>4. Create required Storage Buckets if migration fails to automate: <code className="text-white">event-media, avatars, documents, production-assets, brand-assets</code>.</p>
             <p>5. Verify all checks above are green.</p>
          </div>
       </div>

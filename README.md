@@ -10,6 +10,7 @@ FashionOS is a comprehensive operating system for the fashion industry, streamli
 *   **Sponsorship CRM:** Manage leads, contracts (PDF gen), and deliverables.
 *   **Studio Operations:** Visual QA, Delivery Portal, and Asset Gallery.
 *   **Brand Intelligence:** AI analysis of brand DNA (visuals, tone) from URL.
+*   **Real-time Communication:** Integrated chat and notification system.
 
 ## 🛠️ Tech Stack
 
@@ -40,7 +41,7 @@ Create a `.env` file based on `.env.example`:
 cp .env.example .env
 ```
 
-Fill in your Supabase URL and Anon Key.
+Fill in your Supabase URL and Anon Key from your Supabase Project Settings.
 
 ### 4. Database Setup
 
@@ -50,8 +51,6 @@ This project uses a consolidated migration file to set up the complete schema.
     ```bash
     supabase start
     # The migration in supabase/migrations/ should run automatically.
-    # If not:
-    supabase db reset
     ```
 
 2.  **Production Deployment:**
@@ -69,6 +68,7 @@ supabase login
 supabase secrets set GEMINI_API_KEY=your_gemini_key
 supabase secrets set STRIPE_SECRET_KEY=your_stripe_key
 supabase secrets set RESEND_API_KEY=your_resend_key
+supabase secrets set GOOGLE_MAPS_API_KEY=your_maps_key
 
 # Deploy
 supabase functions deploy
@@ -88,7 +88,7 @@ Navigate to `/dashboard/system` within the app to run a health check on the data
 
 ## 📦 Storage Buckets
 
-Ensure these buckets exist in your Supabase Storage:
+The migration script attempts to create these, but if they are missing, ensure they exist:
 *   `event-media` (Public)
 *   `avatars` (Public)
 *   `documents` (Private)

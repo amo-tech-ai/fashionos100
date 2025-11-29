@@ -4,12 +4,7 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
-    "./pages/**/*.{js,ts,jsx,tsx}",
-    "./layouts/**/*.{js,ts,jsx,tsx}",
-    "./App.tsx",
-    "./*.{js,ts,jsx,tsx}", // Catches files in root
-    "./**/*.{js,ts,jsx,tsx}" // Catch-all for nested structures
+    "./**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
