@@ -2,7 +2,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-// Layouts - Using explicit relative paths to prevent alias resolution issues
+// Layouts
 import { PublicLayout } from './layouts/PublicLayout';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { BookingLayout } from './layouts/BookingLayout';

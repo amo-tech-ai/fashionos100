@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { 
   LayoutDashboard, Calendar, Ticket, Wallet, Settings, LogOut, Menu, Search, 
   FileText, Image, MessageSquare, Heart, Target, Users, TrendingUp, Package, 
-  Mic2, BarChart3, Globe, Camera, Truck, Plus, BookOpen, Activity
+  Mic2, BarChart3, Globe, Camera, Truck, Plus, BookOpen, Activity, X
 } from 'lucide-react';
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
 import { NotificationsMenu } from '../components/dashboard/NotificationsMenu';
@@ -46,8 +46,8 @@ export const DashboardLayout: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-[#F8F9FB] font-sans overflow-hidden">
-       {/* Sidebar Desktop */}
-       <aside className="w-64 bg-white border-r border-gray-100 hidden lg:flex flex-col fixed h-full z-20">
+       {/* Desktop Sidebar */}
+       <aside className="w-64 bg-white border-r border-gray-100 hidden lg:flex flex-col fixed h-full z-30 top-0 left-0">
           <div className="p-8 flex-shrink-0">
              <Link to="/" className="text-2xl font-serif font-bold tracking-tighter text-black no-underline">FashionOS</Link>
              <span className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">Command Center</span>
@@ -75,14 +75,16 @@ export const DashboardLayout: React.FC = () => {
 
        {/* Mobile Sidebar Overlay */}
        {isMobileMenuOpen && (
-         <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsMobileMenuOpen(false)} />
+         <div className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
        )}
-       <aside className={`fixed inset-y-0 left-0 w-64 bg-white z-50 transform transition-transform duration-300 lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="p-6 flex justify-between items-center">
+       
+       {/* Mobile Sidebar Drawer */}
+       <aside className={`fixed inset-y-0 left-0 w-64 bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden shadow-2xl ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="p-6 flex justify-between items-center border-b border-gray-50">
             <span className="text-xl font-serif font-bold">FashionOS</span>
-            <button onClick={() => setIsMobileMenuOpen(false)}><Menu size={20} /></button>
+            <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 hover:bg-gray-100 rounded-md"><X size={20} /></button>
           </div>
-          <nav className="px-4 space-y-1 overflow-y-auto h-[calc(100vh-100px)]">
+          <nav className="px-4 py-4 space-y-1 overflow-y-auto h-[calc(100vh-80px)]">
             {menuItems.map((item) => (
                 <NavLink 
                   key={item.label} 
@@ -96,15 +98,20 @@ export const DashboardLayout: React.FC = () => {
                    <item.icon size={18} />{item.label}
                 </NavLink>
              ))}
+             <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 mt-4">
+               <LogOut size={18} /> Sign Out
+             </button>
           </nav>
        </aside>
 
        {/* Main Content Wrapper */}
-       <div className="flex-1 lg:ml-64 flex flex-col min-w-0 h-full">
-          {/* Header (Fixed at top of content area) */}
-          <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center flex-shrink-0 z-30">
+       <div className="flex-1 lg:ml-64 flex flex-col min-w-0 h-full relative">
+          {/* Header */}
+          <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center flex-shrink-0 sticky top-0 z-20">
              <div className="flex items-center gap-4 flex-1">
-                <button className="lg:hidden" onClick={() => setIsMobileMenuOpen(true)}><Menu className="text-gray-500" /></button>
+                <button className="lg:hidden p-2 -ml-2 hover:bg-gray-100 rounded-lg" onClick={() => setIsMobileMenuOpen(true)}>
+                    <Menu className="text-gray-600" size={24} />
+                </button>
                 <div className="relative w-full max-w-md hidden md:block">
                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                    <input type="text" placeholder="Search events, clients..." className="w-full bg-gray-50 border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-purple-100 transition-all" />
@@ -118,16 +125,19 @@ export const DashboardLayout: React.FC = () => {
              <div className="flex items-center gap-4">
                 <NotificationsMenu />
                 <div className="flex items-center gap-3 pl-4 border-l border-gray-100">
-                   <div className="text-right hidden sm:block"><p className="text-sm font-bold leading-none truncate max-w-[120px]">{user?.email || 'User'}</p><p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Admin</p></div>
-                   <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500 overflow-hidden">
+                   <div className="text-right hidden sm:block">
+                       <p className="text-sm font-bold leading-none truncate max-w-[120px]">{user?.email || 'User'}</p>
+                       <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Admin</p>
+                   </div>
+                   <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500 overflow-hidden border-2 border-white shadow-sm">
                       {initials}
                    </div>
                 </div>
              </div>
           </header>
 
-          {/* Scrollable Main Content Area */}
-          <main className="flex-1 p-6 md:p-8 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-200">
+          {/* Main Content Scroll Area */}
+          <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-200">
              <div className="max-w-7xl mx-auto pb-12">
                 <Outlet />
              </div>

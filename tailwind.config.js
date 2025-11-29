@@ -8,7 +8,8 @@ export default {
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./layouts/**/*.{js,ts,jsx,tsx}",
     "./App.tsx",
-    "./*.{js,ts,jsx,tsx}",
+    "./*.{js,ts,jsx,tsx}", // Catches files in root
+    "./**/*.{js,ts,jsx,tsx}" // Catch-all for nested structures
   ],
   theme: {
     extend: {
