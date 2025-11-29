@@ -59,7 +59,7 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ sponsor, onClose, onSa
 
   const handleGenerateStory = async () => {
     if (!formData.name || !formData.industry) {
-        alert("Please enter Company Name and Industry first.");
+        alert("Please enter Company Name and Industry first to generate a story.");
         return;
     }
     setGeneratingStory(true);
@@ -72,11 +72,12 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ sponsor, onClose, onSa
         if (result.success && typeof result.data === 'string') {
             setFormData(prev => ({ ...prev, brand_story: result.data }));
         } else {
-            throw new Error("Invalid AI response");
+            console.error("Invalid AI response", result);
+            alert("Failed to generate story from AI.");
         }
     } catch (e) {
         console.error(e);
-        alert("Failed to generate story.");
+        alert("Failed to generate story. Please check your connection.");
     } finally {
         setGeneratingStory(false);
     }
