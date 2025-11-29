@@ -23,6 +23,10 @@ export interface BookingState {
   // Step 7-9
   shotCount: number;
   references: string[];
+  
+  // New Step: Brief
+  brief: string;
+
   shotList: ShotListItem[];
 
   // Step 10

@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Sparkles, CheckCircle2, AlertTriangle, RefreshCw, ChevronLeft, Zap, Filter, Download, ChevronDown } from 'lucide-react';
+import { Sparkles, CheckCircle2, AlertTriangle, RefreshCw, ChevronLeft, Zap, Filter, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { FadeIn } from '../../components/FadeIn';
 import { QACard } from '../../components/studio/QACard';
@@ -92,7 +92,7 @@ export const VisualQAPage: React.FC = () => {
     const approved = items.filter(i => i.status === 'approved').length;
     const retouch = items.filter(i => i.status === 'retouch').length;
     const pending = items.filter(i => i.status === 'pending').length;
-    const avgScore = Math.round(items.reduce((acc, i) => acc + i.overall_score, 0) / total);
+    const avgScore = total > 0 ? Math.round(items.reduce((acc, i) => acc + i.overall_score, 0) / total) : 0;
     
     // AI Insight logic
     const allIssues = items.flatMap(i => i.detected_issues);
@@ -201,7 +201,7 @@ export const VisualQAPage: React.FC = () => {
                     <div>
                         <h3 className="text-sm font-bold text-purple-300 uppercase tracking-wider mb-2">Gemini Insight</h3>
                         <p className="text-gray-200 leading-relaxed text-sm">
-                            {stats.mostCommonIssue 
+                            {stats.mostCommonIssue && stats.total > 0
                                 ? (
                                     <>
                                         <strong>Alert:</strong> {Math.round(((stats.mostCommonIssue[1] as number) / stats.total) * 100)}% of images have been flagged with <strong>"{stats.mostCommonIssue[0]}"</strong>. 

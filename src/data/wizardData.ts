@@ -3,19 +3,85 @@ import { ShoppingBag, Camera, Watch, Footprints, Glasses, Utensils, Zap, User, B
 
 export const WIZARD_DATA = {
   categories: [
-    { id: 'fashion', label: 'Fashion Apparel', icon: ShoppingBag, image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500', desc: 'Clothing, Lingerie, Swimwear' },
-    { id: 'beauty', label: 'Beauty & Cosmetics', icon: Sparkles, image: 'https://images.unsplash.com/photo-1596462502278-27bfdd403348?w=500', desc: 'Skincare, Makeup, Haircare' },
-    { id: 'jewelry', label: 'Jewelry', icon: Watch, image: 'https://images.unsplash.com/photo-1599643478518-17488fbbcd75?w=500', desc: 'Rings, Necklaces, Watches' },
-    { id: 'footwear', label: 'Footwear', icon: Footprints, image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500', desc: 'Sneakers, Heels, Boots' },
-    { id: 'eyewear', label: 'Eyewear', icon: Glasses, image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500', desc: 'Sunglasses, Optical' },
-    { id: 'food', label: 'Food & Beverage', icon: Utensils, image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500', desc: 'Bottles, Packaged Goods' },
+    { 
+      id: 'fashion', 
+      label: 'Fashion Apparel', 
+      icon: ShoppingBag, 
+      image: 'https://images.unsplash.com/photo-1537832816519-689ad163238b?q=80&w=600&auto=format&fit=crop', 
+      desc: 'Runway, Ghost Mannequin, Model' 
+    },
+    { 
+      id: 'beauty', 
+      label: 'Beauty', 
+      icon: Sparkles, 
+      image: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?q=80&w=600&auto=format&fit=crop', 
+      desc: 'Skincare, Cosmetics, Texture' 
+    },
+    { 
+      id: 'jewelry', 
+      label: 'Jewelry', 
+      icon: Watch, 
+      image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=600&auto=format&fit=crop', 
+      desc: 'Rings, Necklaces, Macro' 
+    },
+    { 
+      id: 'footwear', 
+      label: 'Footwear', 
+      icon: Footprints, 
+      image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=600&auto=format&fit=crop', 
+      desc: 'Sneakers, Heels, Boots' 
+    },
+    { 
+      id: 'eyewear', 
+      label: 'Eyewear', 
+      icon: Glasses, 
+      image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=600&auto=format&fit=crop', 
+      desc: 'Sunglasses, Optical, Detail' 
+    },
+    { 
+      id: 'food', 
+      label: 'Food & Beverage', 
+      icon: Utensils, 
+      image: 'https://images.unsplash.com/photo-1563170351-be82bc888aa4?q=80&w=600&auto=format&fit=crop', 
+      desc: 'Cocktails, Bottles, Plated' 
+    },
   ],
   styles: [
-    { id: 'editorial', label: 'Editorial', desc: 'Magazine-quality storytelling.', price: 85 },
-    { id: 'high-fashion', label: 'High Fashion', desc: 'Avant-garde and artistic.', price: 120 },
-    { id: 'street', label: 'Street', desc: 'Urban, candid, raw.', price: 65 },
-    { id: 'catalog', label: 'Catalog / E-com', desc: 'Clean, crisp, sales-focused.', price: 45 },
-    { id: 'runway', label: 'Runway', desc: 'Motion and movement focused.', price: 95 },
+    { 
+      id: 'editorial', 
+      label: 'Editorial', 
+      desc: 'Magazine-quality storytelling with dramatic lighting.', 
+      price: 85,
+      image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600' 
+    },
+    { 
+      id: 'high-fashion', 
+      label: 'High Fashion', 
+      desc: 'Avant-garde and artistic composition.', 
+      price: 120, 
+      image: 'https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?auto=format&fit=crop&q=80&w=600'
+    },
+    { 
+      id: 'street', 
+      label: 'Street', 
+      desc: 'Urban, candid, and raw aesthetic.', 
+      price: 65,
+      image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=600'
+    },
+    { 
+      id: 'catalog', 
+      label: 'Catalog / E-com', 
+      desc: 'Clean, crisp, sales-focused.', 
+      price: 45,
+      image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=600'
+    },
+    { 
+      id: 'runway', 
+      label: 'Runway', 
+      desc: 'Motion and movement focused.', 
+      price: 95,
+      image: 'https://images.unsplash.com/photo-1537832816519-689ad163238b?auto=format&fit=crop&q=80&w=600'
+    },
   ],
   sizes: [
     { id: 'small', label: 'Small', desc: '< 6 inches (Jewelry, Cosmetics)', price: 0, icon: Sparkles },

@@ -46,8 +46,10 @@ export const StepCheckout: React.FC = () => {
           style_type: state.style,
           retouching_level: state.retouching,
           brief_data: { 
+            brief: state.brief,
             references: state.references,
-            contact: contact
+            contact: contact,
+            shot_list: state.shotList
           },
           status: 'requested',
           estimated_quote: totals.total,

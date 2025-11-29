@@ -9,6 +9,7 @@ import { PageHeader, StatCard } from '../../components/dashboard/Shared';
 import { Button } from '../../components/Button';
 import { AICopilotWidget } from '../../components/dashboard/Widgets';
 import { supabase } from '../../lib/supabase';
+import { Link, useNavigate } from 'react-router-dom';
 
 const StatusBadge = ({ status }: { status: string }) => {
   const styles: Record<string, string> = {
@@ -27,6 +28,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 export const DashboardStudio: React.FC = () => {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState('All');
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,6 +83,7 @@ export const DashboardStudio: React.FC = () => {
         subtitle="Manage incoming shoot requests and production pipeline."
         breadcrumbs={['Dashboard', 'Studio']}
         actionLabel="New Booking"
+        onAction={() => navigate('/start-project')}
       />
 
       {/* KPI Cards */}

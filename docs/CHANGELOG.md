@@ -1,22 +1,6 @@
 
 # Changelog
 
-## [1.2.0] - 2025-01-27
-### 🗄️ Database Schema Complete
-- **Migrations:** Created 19 separate migration files for shoot booking system
-  - Extensions & Enums (`20250127100000_extensions_enums.sql`)
-  - Core Identity Tables (profiles, organizations)
-  - Fashion Directory Tables (designer_profiles, collections, looks)
-  - Shoot Booking Tables (studios, shoots, shoot_items, payments, assets)
-  - Event Tables (venues, events, event_registrations, event_designers)
-  - Performance Indexes (`20250127100015_create_indexes.sql`)
-  - Auto-update Triggers (`20250127100016_create_triggers.sql`)
-  - Database Functions (`20250127100017_create_functions.sql`)
-  - RLS Policies (`20250127100018_create_rls_policies.sql`)
-- **Schema Management:** All migrations follow Postgres SQL style guide
-- **Documentation:** Complete schema documentation in `docs/services/03-shoot-schema.md`
-- **Status:** Migrations created, ready for production deployment
-
 ## [1.1.0] - 2025-03-03
 ### 🚀 Booking System Complete
 - **Scheduling Step:** Implemented `StepSchedule` with Calendar integration and AI-powered time slot recommendations (Best Lighting, Fastest Turnaround).

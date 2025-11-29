@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
@@ -61,7 +62,7 @@ export const PublicLayout: React.FC = () => {
             ))}
             <div className="flex items-center gap-4 ml-6 border-l border-gray-200 pl-6">
               <Link to="/dashboard" className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-500 hover:text-black">Log In</Link>
-              <Link to="/dashboard">
+              <Link to="/start-project">
                 <Button variant="primary" size="sm" className="px-6">Book a Shoot</Button>
               </Link>
             </div>
@@ -100,7 +101,7 @@ export const PublicLayout: React.FC = () => {
             ))}
             <div className="pt-8 border-t border-gray-100 flex flex-col gap-4 mt-auto">
               <Link to="/dashboard" onClick={() => setIsOpen(false)} className="text-lg font-medium text-gray-500 hover:text-black transition-colors">Log In</Link>
-              <Link to="/dashboard" onClick={() => setIsOpen(false)}><Button size="lg" className="w-full text-base">Book a Shoot</Button></Link>
+              <Link to="/start-project" onClick={() => setIsOpen(false)}><Button size="lg" className="w-full text-base">Book a Shoot</Button></Link>
             </div>
          </div>
       </div>
@@ -113,4 +114,3 @@ export const PublicLayout: React.FC = () => {
     </div>
   );
 };
-

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { 
   ArrowLeft, Calendar, MapPin, Users, DollarSign, CheckCircle, 
@@ -51,16 +51,27 @@ const StatusBadge = ({ status }: { status: string }) => {
     pending: "bg-blue-50 text-blue-600 border-blue-100",
   };
   
-  const baseClass = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border";
-  const specificClass = styles[status.toLowerCase()] || "bg-gray-100 text-gray-600";
+  const baseClass = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-colors duration-300";
+  const normalizedStatus = status.toLowerCase().replace(' ', '-');
+  const specificClass = styles[normalizedStatus] || "bg-gray-100 text-gray-600";
 
   return <span className={`${baseClass} ${specificClass}`}>{status}</span>;
 };
 
 const TaskIcon = ({ status }: { status: string }) => {
-  if (status === 'completed') return <CheckCircle className="text-green-500" size={20} />;
-  if (status === 'in-progress') return <Clock className="text-amber-500" size={20} />;
-  return <Circle className="text-blue-300" size={20} />;
+  const isCompleted = status === 'completed';
+  
+  return (
+    <div className={`transform transition-all duration-500 ${isCompleted ? 'scale-110' : 'scale-100'}`}>
+      {isCompleted ? (
+        <CheckCircle className="text-green-500 transition-colors duration-300" size={20} />
+      ) : status === 'in-progress' ? (
+        <Clock className="text-amber-500 transition-colors duration-300" size={20} />
+      ) : (
+        <Circle className="text-blue-300 transition-colors duration-300 group-hover:text-blue-400" size={20} />
+      )}
+    </div>
+  );
 };
 
 const MediaIcon = ({ type }: { type: string }) => {
@@ -73,6 +84,20 @@ export const ActivationDetailPage: React.FC = () => {
   const { id } = useParams();
   // In a real app, fetch data based on ID. For now using mock object.
   const data = ACTIVATION_DATA;
+  
+  // Local state to handle task interactivity
+  const [tasks, setTasks] = useState(data.tasks);
+
+  const toggleTaskStatus = (taskId: number) => {
+    setTasks(prevTasks => prevTasks.map(task => {
+      if (task.id === taskId) {
+        // Toggle between completed and pending (or revert to previous state in real app)
+        const newStatus = task.status === 'completed' ? 'pending' : 'completed';
+        return { ...task, status: newStatus };
+      }
+      return task;
+    }));
+  };
 
   return (
     <div className="animate-in fade-in duration-500 pb-20 font-sans">
@@ -140,19 +165,21 @@ export const ActivationDetailPage: React.FC = () => {
             <div className="mt-8 pt-8 border-t border-gray-100">
               <div className="flex justify-between items-end mb-3">
                 <h3 className="font-serif font-bold text-xl">Overall Progress</h3>
-                <span className="text-3xl font-bold text-gray-900">{data.progress}%</span>
+                <span className="text-3xl font-bold text-gray-900">
+                  {Math.round((tasks.filter(t => t.status === 'completed').length / tasks.length) * 100)}%
+                </span>
               </div>
               
               <div className="h-4 w-full bg-gray-100 rounded-full overflow-hidden mb-4">
                 <div 
                   className="h-full bg-gradient-to-r from-[#c084fc] to-[#ec4899] rounded-full transition-all duration-1000 ease-out" 
-                  style={{ width: `${data.progress}%` }}
+                  style={{ width: `${(tasks.filter(t => t.status === 'completed').length / tasks.length) * 100}%` }}
                 />
               </div>
 
               <div className="flex justify-between text-xs font-medium text-gray-500">
                 <span>Budget Spent: ${data.spent.toLocaleString()} / ${data.totalBudget.toLocaleString()}</span>
-                <span>{data.tasksCompleted} / {data.totalTasks} tasks completed</span>
+                <span>{tasks.filter(t => t.status === 'completed').length} / {tasks.length} tasks completed</span>
               </div>
             </div>
           </div>
@@ -173,24 +200,41 @@ export const ActivationDetailPage: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              {data.tasks.map((task) => (
-                <div key={task.id} className="group flex items-start gap-4 p-4 rounded-2xl border border-gray-100 hover:border-purple-200 hover:bg-purple-50/30 transition-all cursor-pointer">
-                  <div className="mt-1 shrink-0">
-                    <TaskIcon status={task.status} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start mb-1">
-                      <h4 className="font-bold text-gray-900 text-sm group-hover:text-purple-700 transition-colors">{task.name}</h4>
-                      <StatusBadge status={task.status} />
+              {tasks.map((task) => {
+                const isCompleted = task.status === 'completed';
+                return (
+                  <div 
+                    key={task.id} 
+                    onClick={() => toggleTaskStatus(task.id)}
+                    className={`group flex items-start gap-4 p-4 rounded-2xl border transition-all cursor-pointer duration-300 ${
+                      isCompleted 
+                        ? 'bg-green-50/30 border-green-100 hover:border-green-200' 
+                        : 'bg-white border-gray-100 hover:border-purple-200 hover:bg-purple-50/30'
+                    }`}
+                  >
+                    <div className="mt-1 shrink-0">
+                      <TaskIcon status={task.status} />
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
-                      <span>{task.dept}</span>
-                      <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                      <span>Due: {task.due}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className={`font-bold text-sm transition-all duration-300 ${
+                          isCompleted ? 'text-gray-400 line-through decoration-gray-300' : 'text-gray-900 group-hover:text-purple-700'
+                        }`}>
+                          {task.name}
+                        </h4>
+                        <div className="transition-opacity duration-300">
+                          <StatusBadge status={task.status} />
+                        </div>
+                      </div>
+                      <div className={`flex items-center gap-3 text-xs transition-colors duration-300 ${isCompleted ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <span>{task.dept}</span>
+                        <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                        <span>Due: {task.due}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             
             <div className="mt-6 text-center">

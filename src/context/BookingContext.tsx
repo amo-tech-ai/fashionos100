@@ -19,6 +19,7 @@ const INITIAL_STATE: BookingState = {
   subCategory: '',
   shotCount: 10,
   references: [],
+  brief: '',
   shotList: [],
   retouching: 'basic',
   fulfillmentType: 'virtual',

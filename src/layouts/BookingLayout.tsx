@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import { BookingSidebar } from '../components/booking/BookingSidebar';
 import { WizardProgressBar } from '../components/booking/ui/WizardProgressBar';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, LayoutDashboard, Target, Users, Package, FileText, Mic2, Image, BarChart3, Globe, Camera } from 'lucide-react';
 import { Button } from '../components/Button';
 import { useBooking } from '../context/BookingContext';
 
@@ -17,9 +17,10 @@ const STEPS = [
   { path: '/start-project/models', label: 'Talent' },
   { path: '/start-project/shot-list', label: 'Count' },
   { path: '/start-project/references', label: 'Refs' },
+  { path: '/start-project/brief', label: 'Brief' },
   { path: '/start-project/shot-builder', label: 'List' },
   { path: '/start-project/retouching', label: 'Retouch' },
-  { path: '/start-project/schedule', label: 'Schedule' }, // Added Schedule
+  { path: '/start-project/schedule', label: 'Schedule' }, 
   { path: '/start-project/review', label: 'Review' },
 ];
 
@@ -48,9 +49,10 @@ export const BookingLayout: React.FC = () => {
             >
               <ChevronLeft size={20} />
             </button>
-            <span className="font-serif font-bold text-xl hidden md:block">
-              Plan Your Shoot
-            </span>
+            <div className="hidden md:block">
+                <span className="font-serif font-bold text-xl block leading-none">Start New Project</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">FashionOS Studio</span>
+            </div>
           </div>
           
           {/* Progress Bar */}
@@ -69,16 +71,53 @@ export const BookingLayout: React.FC = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 md:px-6 lg:px-12 pt-12">
-        <div className="flex flex-col lg:flex-row gap-12">
+      <div className="container mx-auto px-4 md:px-6 lg:px-12 pt-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          
+          {/* Left Sidebar (Navigation Context) */}
+          <div className="hidden xl:block w-64 shrink-0">
+            <div className="sticky top-24">
+                <p className="px-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">FashionOS</p>
+                <nav className="space-y-1">
+                    {[
+                        { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+                        { icon: Camera, label: 'Studio', path: '/dashboard/studio', active: true },
+                        { icon: Target, label: 'Leads', path: '/dashboard/leads' },
+                        { icon: Users, label: 'Sponsors', path: '/dashboard/sponsors' },
+                    ].map((item, i) => (
+                        <Link 
+                            key={i} 
+                            to={item.path}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${item.active ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:bg-white/50 hover:text-black'}`}
+                        >
+                            <item.icon size={18} /> {item.label}
+                        </Link>
+                    ))}
+                </nav>
+                <p className="px-4 text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 mt-8">Management</p>
+                <nav className="space-y-1">
+                    {[
+                        { icon: FileText, label: 'Contracts', path: '#' },
+                        { icon: Mic2, label: 'Activations', path: '#' },
+                        { icon: Image, label: 'Media', path: '#' },
+                        { icon: BarChart3, label: 'ROI', path: '#' },
+                    ].map((item, i) => (
+                        <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 cursor-not-allowed">
+                             <item.icon size={18} /> {item.label}
+                        </div>
+                    ))}
+                </nav>
+            </div>
+          </div>
+
           {/* Main Content */}
           <div className="flex-1 min-w-0">
             <Outlet />
           </div>
 
-          {/* Sidebar (Desktop) - Hide on checkout */}
+          {/* Right Sidebar (Summary) - Hide on checkout */}
           {!isCheckout && (
-            <div className="hidden lg:block w-96 shrink-0">
+            <div className="hidden lg:block w-80 xl:w-96 shrink-0">
               <BookingSidebar />
             </div>
           )}

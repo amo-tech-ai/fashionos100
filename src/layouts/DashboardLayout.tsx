@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 import { 
   LayoutDashboard, Calendar, Ticket, Wallet, Settings, LogOut, Menu, Search, 
   FileText, Image, MessageSquare, Heart, Target, Users, TrendingUp, Package, 
-  Mic2, BarChart3, Globe, Camera, Truck
+  Mic2, BarChart3, Globe, Camera, Truck, Plus
 } from 'lucide-react';
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
 import { NotificationsMenu } from '../components/dashboard/NotificationsMenu';
 import { supabase } from '../lib/supabase';
+import { Button } from '../components/Button';
 
 export const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ export const DashboardLayout: React.FC = () => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Camera, label: 'Studio Command', path: '/dashboard/studio' },
-    { icon: Truck, label: 'Delivery Portal', path: '/dashboard/delivery' }, // Added
+    { icon: Truck, label: 'Delivery Portal', path: '/dashboard/delivery' },
     { icon: Target, label: 'Leads', path: '/dashboard/leads' },
     { icon: Users, label: 'Sponsors', path: '/dashboard/sponsors' }, 
     { icon: TrendingUp, label: 'Opportunities', path: '/dashboard/opportunities' },
@@ -102,6 +103,11 @@ export const DashboardLayout: React.FC = () => {
                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                    <input type="text" placeholder="Search events, clients..." className="w-full bg-gray-50 border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-purple-100 transition-all" />
                 </div>
+                <Link to="/start-project" className="hidden md:block">
+                  <Button variant="accent" size="sm" className="gap-2 rounded-full">
+                    <Plus size={16} /> Add Booking
+                  </Button>
+                </Link>
              </div>
              <div className="flex items-center gap-4">
                 <NotificationsMenu />

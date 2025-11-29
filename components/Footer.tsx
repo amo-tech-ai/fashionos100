@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Twitter, Facebook, Linkedin } from 'lucide-react';
@@ -33,11 +34,13 @@ export const Footer: React.FC = () => (
         <div>
           <h4 className="font-bold text-xs uppercase tracking-widest mb-6">Services</h4>
           <ul className="space-y-3 text-sm text-gray-500">
+            <li><Link to="/start-project" className="hover:text-black transition-colors font-medium text-fashion-purple">Book a Shoot</Link></li>
             <li><Link to="/services/photography" className="hover:text-black transition-colors">Photography</Link></li>
             <li><Link to="/services/video-production" className="hover:text-black transition-colors">Video Production</Link></li>
             <li><Link to="/services/web-design" className="hover:text-black transition-colors">Web Design</Link></li>
             <li><Link to="/services/ecommerce" className="hover:text-black transition-colors">Ecommerce</Link></li>
-            <li><Link to="/services/social" className="hover:text-black transition-colors">Social Media Marketing</Link></li>
+            <li><Link to="/services/social" className="hover:text-black transition-colors">Social Media</Link></li>
+            <li><Link to="/services/instagram" className="hover:text-black transition-colors">Instagram</Link></li>
           </ul>
         </div>
 

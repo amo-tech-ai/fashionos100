@@ -4,8 +4,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'white' | 'pill' | 'accent';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
-  // Fix: Add 'as' prop to support rendering as different elements (e.g. span, div, Link)
   as?: React.ElementType;
+  [key: string]: any;
 }
 
 export const Button: React.FC<ButtonProps> = ({ 
@@ -14,7 +14,6 @@ export const Button: React.FC<ButtonProps> = ({
   size = 'md', 
   fullWidth = false,
   className = '', 
-  // Fix: Default 'as' to 'button'
   as: Component = 'button',
   ...props 
 }) => {
@@ -37,11 +36,6 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const widthClass = fullWidth ? 'w-full' : '';
-
-  // Override for pill variant sizing if needed, but standard usually works
-  if (variant === 'pill' || variant === 'accent') {
-     // accent and pill look better with slightly more horizontal padding usually
-  }
 
   return (
     <Component 

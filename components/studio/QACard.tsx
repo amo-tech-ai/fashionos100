@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Check, RefreshCw, AlertTriangle, Maximize2, Eye, X } from 'lucide-react';
-import { QAImage, QAMetrics } from '../../types/qa';
+import { Check, RefreshCw, AlertTriangle, X } from 'lucide-react';
+import { QAImage } from '../../types/qa';
 import { Button } from '../Button';
 
 interface QACardProps {
@@ -9,33 +9,32 @@ interface QACardProps {
   onAction: (id: string, action: 'approve' | 'retouch' | 'pending') => void;
 }
 
-export const QACard: React.FC<QACardProps> = ({ item, onAction }) => {
-  
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return 'bg-green-500';
-    if (score >= 75) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
+const getScoreColor = (score: number) => {
+  if (score >= 90) return 'bg-green-500';
+  if (score >= 75) return 'bg-yellow-500';
+  return 'bg-red-500';
+};
 
-  const getGradeColor = (grade: string) => {
-    if (grade === 'A') return 'text-green-600 bg-green-50 border-green-200';
-    if (grade === 'B') return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-    return 'text-red-600 bg-red-50 border-red-200';
-  };
+const getGradeColor = (grade: string) => {
+  if (grade === 'A') return 'text-green-600 bg-green-50 border-green-200';
+  if (grade === 'B') return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+  return 'text-red-600 bg-red-50 border-red-200';
+};
 
-  const MetricBar = ({ label, value }: { label: string; value: number }) => (
-    <div className="flex items-center gap-2 text-xs mb-1.5">
-      <span className="w-20 text-gray-500 capitalize">{label.replace('_', ' ')}</span>
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <div 
-          className={`h-full rounded-full ${getScoreColor(value)}`} 
-          style={{ width: `${value}%` }}
-        />
-      </div>
-      <span className="w-6 text-right font-bold text-gray-700">{value}</span>
+const MetricBar = ({ label, value }: { label: string; value: number }) => (
+  <div className="flex items-center gap-2 text-xs mb-1.5">
+    <span className="w-20 text-gray-500 capitalize">{label.replace('_', ' ')}</span>
+    <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+      <div 
+        className={`h-full rounded-full ${getScoreColor(value)}`} 
+        style={{ width: `${value}%` }}
+      />
     </div>
-  );
+    <span className="w-6 text-right font-bold text-gray-700">{value}</span>
+  </div>
+);
 
+export const QACard: React.FC<QACardProps> = ({ item, onAction }) => {
   const isProcessed = item.status !== 'pending';
 
   return (

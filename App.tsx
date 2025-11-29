@@ -2,10 +2,13 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-// Layouts
+// Layouts - Using explicit relative paths
 import { PublicLayout } from './layouts/PublicLayout';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { BookingLayout } from './layouts/BookingLayout';
+
+// Components
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Auth
 import { RequireAuth } from './components/auth/RequireAuth';
@@ -26,6 +29,8 @@ import { EcommercePage } from './pages/public/EcommercePage';
 import { ContactPage } from './pages/public/ContactPage';
 import { AboutPage } from './pages/public/AboutPage';
 import { PricingPage } from './pages/public/PricingPage';
+import { AmazonServicesPage } from './pages/public/AmazonServicesPage';
+import { InstagramPage } from './pages/public/InstagramPage';
 
 // Booking Wizard Pages
 import { StepCategory } from './pages/public/booking/StepCategory';
@@ -37,6 +42,7 @@ import { StepSubCategory } from './pages/public/booking/StepSubCategory';
 import { StepModels } from './pages/public/booking/StepModels';
 import { StepShotList } from './pages/public/booking/StepShotList';
 import { StepReferences } from './pages/public/booking/StepReferences';
+import { StepBrief } from './pages/public/booking/StepBrief';
 import { StepShotListBuilder } from './pages/public/booking/StepShotListBuilder';
 import { StepRetouching } from './pages/public/booking/StepRetouching';
 import { StepSchedule } from './pages/public/booking/StepSchedule'; 
@@ -56,6 +62,7 @@ import { DashboardPlaceholder } from './pages/dashboard/DashboardPlaceholder';
 import { DashboardSponsors } from './pages/dashboard/DashboardSponsors';
 import { DashboardLeads } from './pages/dashboard/DashboardLeads';
 import { DashboardPackages } from './pages/dashboard/DashboardPackages';
+import { DashboardSettings } from './pages/dashboard/DashboardSettings';
 import { SponsorDetailPage } from './pages/dashboard/SponsorDetailPage';
 import { SponsorDealWizard } from './pages/dashboard/SponsorDealWizard';
 import { EventOpportunitiesPage } from './pages/dashboard/EventOpportunitiesPage';
@@ -65,7 +72,7 @@ import { DashboardROI } from './pages/dashboard/AnalyticsPages';
 import { SponsorPortal } from './pages/dashboard/SponsorPortal';
 import { EventWizard } from './components/events/EventWizard';
 import { DeliveryPortal } from './pages/dashboard/DeliveryPortal';
-import { VisualQAPage } from './pages/dashboard/VisualQAPage'; // Imported
+import { VisualQAPage } from './pages/dashboard/VisualQAPage';
 
 const App: React.FC = () => {
   return (
@@ -76,11 +83,13 @@ const App: React.FC = () => {
       {/* --- Shortcuts / Redirects --- */}
       <Route path="/new" element={<Navigate to="/dashboard/events/new" replace />} />
 
-      {/* --- Booking Wizard (Wrapped in Provider) --- */}
+      {/* --- Booking Wizard (Wrapped in Provider & ErrorBoundary) --- */}
       <Route path="/start-project" element={
-        <BookingProvider>
-          <BookingLayout />
-        </BookingProvider>
+        <ErrorBoundary>
+          <BookingProvider>
+            <BookingLayout />
+          </BookingProvider>
+        </ErrorBoundary>
       }>
         <Route index element={<Navigate to="category" replace />} />
         <Route path="category" element={<StepCategory />} />
@@ -92,6 +101,7 @@ const App: React.FC = () => {
         <Route path="models" element={<StepModels />} />
         <Route path="shot-list" element={<StepShotList />} />
         <Route path="references" element={<StepReferences />} />
+        <Route path="brief" element={<StepBrief />} />
         <Route path="shot-builder" element={<StepShotListBuilder />} />
         <Route path="retouching" element={<StepRetouching />} />
         <Route path="schedule" element={<StepSchedule />} /> 
@@ -108,6 +118,8 @@ const App: React.FC = () => {
         <Route path="/services/web-design" element={<WebDesignPage />} />
         <Route path="/services/social" element={<SocialPage />} />
         <Route path="/services/ecommerce" element={<EcommercePage />} />
+        <Route path="/services/amazon" element={<AmazonServicesPage />} />
+        <Route path="/services/instagram" element={<InstagramPage />} />
         
         {/* Main Pages */}
         <Route path="/about" element={<AboutPage />} />
@@ -131,9 +143,11 @@ const App: React.FC = () => {
       <Route 
         path="/dashboard" 
         element={
-          <RequireAuth>
-            <DashboardLayout />
-          </RequireAuth>
+          <ErrorBoundary>
+            <RequireAuth>
+              <DashboardLayout />
+            </RequireAuth>
+          </ErrorBoundary>
         }
       >
         <Route index element={<DashboardOverview />} />
@@ -168,11 +182,13 @@ const App: React.FC = () => {
         <Route path="roi" element={<DashboardROI />} />
         <Route path="portal" element={<SponsorPortal />} />
         
+        {/* Settings */}
+        <Route path="settings" element={<DashboardSettings />} />
+
         {/* Misc */}
         <Route path="invoices" element={<DashboardPlaceholder title="Invoices & Billing" />} />
         <Route path="messages" element={<DashboardPlaceholder title="Messages & Inbox" />} />
         <Route path="feedback" element={<DashboardPlaceholder title="Client Feedback" />} />
-        <Route path="settings" element={<DashboardPlaceholder title="Settings" />} />
       </Route>
 
       {/* Fallback */}
