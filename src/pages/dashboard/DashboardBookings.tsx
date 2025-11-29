@@ -1,11 +1,12 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Calendar, CheckCircle, Clock, Star, X, Plus, ArrowUpRight, ArrowDownRight, Loader2, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { DashboardKPI } from '../../types';
-import { supabase } from '../../lib/supabase';
 import { FadeIn } from '../../components/FadeIn';
+import { useShoots } from '../../hooks/useShoots';
+import { useRealtime } from '../../hooks/useRealtime';
 
 const StatusBadge = ({ status }: { status: string }) => {
   const styles: Record<string, string> = {
@@ -23,44 +24,19 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 export const DashboardBookings = () => {
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { shoots, loading, kpis, refetch } = useShoots();
 
-  useEffect(() => {
-    const fetchMyBookings = async () => {
-      try {
-        const { data: { user } } = await (supabase.auth as any).getUser();
-        // If user is not logged in, we might not show anything or show local storage/demo data
-        // For this MVP, we'll fetch all shoots to demonstrate the feature if no RLS restricts it, 
-        // or filter by user if they are logged in.
-        
-        let query = supabase.from('shoots').select('*').order('created_at', { ascending: false });
-        
-        if (user) {
-           query = query.eq('designer_id', user.id);
-        }
+  // Realtime updates for bookings
+  useRealtime('shoots', () => {
+    refetch();
+  });
 
-        const { data, error } = await query;
-        
-        if (!error && data) {
-          setBookings(data);
-        }
-      } catch (e) {
-        console.error("Error fetching bookings", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMyBookings();
-  }, []);
-
-  const kpis: DashboardKPI[] = [
-    { label: 'Total Bookings', val: bookings.length.toString(), sub: 'All-time', icon: Calendar, color: 'bg-indigo-50 text-indigo-600', trend: 'up' },
-    { label: 'In Production', val: bookings.filter(b => ['confirmed', 'shooting'].includes(b.status)).length.toString(), sub: 'Active shoots', icon: Camera, color: 'bg-pink-50 text-pink-600', trend: 'up' },
-    { label: 'Total Spend', val: `$${bookings.reduce((acc, curr) => acc + (curr.estimated_quote || 0), 0).toLocaleString()}`, sub: 'Lifetime', icon: Clock, color: 'bg-blue-50 text-blue-600', trend: 'up' },
-    { label: 'Completed', val: bookings.filter(b => b.status === 'completed').length.toString(), sub: 'Assets delivered', icon: CheckCircle, color: 'bg-green-50 text-green-600', trend: 'up' },
-    { label: 'Drafts', val: '2', sub: 'Saved projects', icon: Star, color: 'bg-amber-50 text-amber-600', trend: 'up' },
+  const kpiList: DashboardKPI[] = [
+    { label: 'Total Bookings', val: kpis.totalBookings.toString(), sub: 'All-time', icon: Calendar, color: 'bg-indigo-50 text-indigo-600', trend: 'up' },
+    { label: 'In Production', val: kpis.active.toString(), sub: 'Active shoots', icon: Camera, color: 'bg-pink-50 text-pink-600', trend: 'up' },
+    { label: 'Total Spend', val: `$${kpis.totalSpend.toLocaleString()}`, sub: 'Lifetime', icon: Clock, color: 'bg-blue-50 text-blue-600', trend: 'up' },
+    { label: 'Completed', val: kpis.completed.toString(), sub: 'Assets delivered', icon: CheckCircle, color: 'bg-green-50 text-green-600', trend: 'up' },
+    { label: 'Drafts', val: '0', sub: 'Saved projects', icon: Star, color: 'bg-amber-50 text-amber-600', trend: 'up' },
   ];
 
   return (
@@ -78,7 +54,7 @@ export const DashboardBookings = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {kpis.map((k, i) => (
+        {kpiList.map((k, i) => (
           <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
             <div className="flex justify-between items-start mb-3">
                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${k.color} group-hover:scale-110 transition-transform`}>
@@ -101,7 +77,7 @@ export const DashboardBookings = () => {
              <div className="flex items-center justify-center h-64">
                 <Loader2 className="animate-spin text-gray-300" size={32} />
              </div>
-          ) : bookings.length === 0 ? (
+          ) : shoots.length === 0 ? (
              <div className="flex flex-col items-center justify-center h-64 text-center p-8">
                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                     <Camera className="text-gray-400" size={24} />
@@ -122,7 +98,7 @@ export const DashboardBookings = () => {
                    </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                   {bookings.map((booking) => (
+                   {shoots.map((booking) => (
                       <tr key={booking.id} className="hover:bg-gray-50/50 transition-colors">
                          <td className="px-6 py-4 font-mono text-xs text-gray-500 uppercase">#{booking.id.substring(0, 8)}</td>
                          <td className="px-6 py-4">
