@@ -83,7 +83,9 @@ export const SponsorPortal: React.FC = () => {
         setMetrics(metricsData || []);
 
         // Trigger AI suggestions if we have active deals
-        if (showIdeas) generateIdeas(profile, dealsData?.[0]);
+        if (showIdeas && dealsData && dealsData.length > 0) {
+           generateIdeas(profile, dealsData[0]);
+        }
       }
 
     } catch (e) {

@@ -437,6 +437,7 @@ export const SponsorDetailPage: React.FC = () => {
                                                 className="hidden" 
                                                 id={`upload-${item.id}`}
                                                 onChange={(e) => e.target.files?.[0] && handleFileUpload(item.id, e.target.files[0])}
+                                                disabled={!!uploadingId}
                                             />
                                             <label htmlFor={`upload-${item.id}`}>
                                                 <Button as="span" size="sm" variant="white" className="cursor-pointer">

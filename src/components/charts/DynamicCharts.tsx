@@ -28,7 +28,8 @@ export const ResponsiveLineChart: React.FC<ChartProps> = ({
 
   useEffect(() => {
     // Trigger animation on mount
-    setIsLoaded(true);
+    const timer = setTimeout(() => setIsLoaded(true), 100);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!data || data.length === 0) return <div className="h-full flex items-center justify-center text-gray-400 text-sm">No data available</div>;
@@ -143,9 +144,11 @@ export const ResponsiveBarChart: React.FC<ChartProps> = ({
   title
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    setIsLoaded(true);
+    const timer = setTimeout(() => setIsLoaded(true), 100);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!data || data.length === 0) return <div className="h-full flex items-center justify-center text-gray-400 text-sm">No data available</div>;
@@ -166,7 +169,12 @@ export const ResponsiveBarChart: React.FC<ChartProps> = ({
         {data.map((d, i) => {
            const barHeight = (d.value / maxVal) * 100;
            return (
-             <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end">
+             <div 
+                key={i} 
+                className="flex-1 flex flex-col items-center group relative h-full justify-end"
+                onMouseEnter={() => setHoverIndex(i)}
+                onMouseLeave={() => setHoverIndex(null)}
+             >
                 <div 
                   className="w-full rounded-t-md transition-all duration-500 ease-out relative hover:opacity-80 cursor-pointer"
                   style={{ 
@@ -174,13 +182,13 @@ export const ResponsiveBarChart: React.FC<ChartProps> = ({
                     backgroundColor: color,
                     transitionDelay: `${i * 100}ms`
                   }}
-                >
-                   {/* Tooltip on hover */}
-                   <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 whitespace-nowrap z-10 pointer-events-none shadow-lg">
+                />
+                {hoverIndex === i && (
+                   <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded-lg z-20 shadow-lg whitespace-nowrap pointer-events-none animate-in fade-in zoom-in-95">
                       <span className="font-bold">{d.value.toLocaleString()}</span>
                       <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-gray-900"></div>
                    </div>
-                </div>
+                )}
                 <span className="text-[10px] text-gray-400 mt-2 truncate w-full text-center block">{d.label}</span>
              </div>
            );
