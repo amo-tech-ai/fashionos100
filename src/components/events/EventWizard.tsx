@@ -4,14 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, CheckCircle2, X, ImageIcon, AlertTriangle, Save } from 'lucide-react';
 import { Button } from '../Button';
 import { FadeIn } from '../FadeIn';
-import { supabase, supabaseUrl, supabaseAnonKey, isConfigured } from '../../lib/supabase';
+import { supabase, isConfigured } from '../../lib/supabase';
+import { aiService } from '../../lib/ai-service';
 import { slugify } from '../../lib/utils';
 import { LoadingSpinner } from '../LoadingSpinner';
 import { useToast } from '../../components/Toast';
 
 // Sub-components
 import { WizardIntro } from './wizard/WizardIntro';
-import { WizardDraftPreview } from './wizard/WizardDraftPreview'; // New Component
+import { WizardDraftPreview } from './wizard/WizardDraftPreview';
 import { WizardBasics } from './wizard/WizardBasics';
 import { WizardVisuals } from './wizard/WizardVisuals';
 import { WizardVenue } from './wizard/WizardVenue';
@@ -139,7 +140,6 @@ export const EventWizard: React.FC = () => {
   const handleAIGenerate = async () => {
     if (!isConfigured) {
       console.warn("Skipping AI generation: App not configured.");
-      // Just move to next step if config is missing, don't crash
       setCurrentStep(Step.BASICS);
       return;
     }
@@ -157,30 +157,18 @@ export const EventWizard: React.FC = () => {
         ${aiAudiences.length > 0 ? `\nTarget Audience: ${aiAudiences.join(', ')}.` : ''}
       `.trim();
 
-      // Get Session Token for Auth
-      const { data: { session } } = await (supabase.auth as any).getSession();
-      const token = session?.access_token || supabaseAnonKey;
-
-      // Call the backend Edge Function
-      const response = await fetch(`${supabaseUrl}/functions/v1/generate-event-draft`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          prompt: enhancedPrompt,
-          urls: aiUrls, 
-          files: processedFiles
-        })
+      // Use aiService instead of direct fetch
+      const result = await aiService.eventArchitect({
+        prompt: enhancedPrompt,
+        urls: aiUrls, 
+        files: processedFiles
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `AI Request failed: ${response.statusText}`);
+      if (!result.success || !result.data) {
+        throw new Error(result.error || "AI generation failed");
       }
 
-      const data = await response.json();
+      const data = result.data;
       console.log("AI Result:", data);
 
       // Merge AI data into state
@@ -188,7 +176,6 @@ export const EventWizard: React.FC = () => {
         let newStartDate = new Date();
         if (data.date) {
            const parsedDate = new Date(data.date);
-           // Safe Date Parsing Check
            if (!isNaN(parsedDate.getTime())) {
              newStartDate = parsedDate;
            }
@@ -216,19 +203,16 @@ export const EventWizard: React.FC = () => {
           schedule: data.scheduleItems && data.scheduleItems.length > 0 
             ? data.scheduleItems 
             : prev.schedule,
-          // Pass these forward for Visuals step
           brandUrls: aiUrls,
           brandMoods: aiMoods,
         };
       });
 
-      // Redirect to the Draft Preview screen (Screen 4) instead of BASICS
       setCurrentStep(Step.DRAFT_PREVIEW);
 
     } catch (error) {
       console.error("AI Generation failed", error);
       alert(`AI Generation failed. Please try again or fill manually.\n\n${error instanceof Error ? error.message : ''}`);
-      // Fallback to manual entry so user isn't stuck
       setCurrentStep(Step.BASICS);
     } finally {
       setIsAiLoading(false);
@@ -296,7 +280,6 @@ export const EventWizard: React.FC = () => {
     }
     if (isPublishing) return;
 
-    // Final Validation Checks
     if (!validateStep(Step.BASICS)) return;
     if (!validateStep(Step.VENUE)) return;
     if (!validateStep(Step.TICKETS)) return;
@@ -304,7 +287,7 @@ export const EventWizard: React.FC = () => {
     setIsPublishing(true);
 
     try {
-      const { data: { user } } = await (supabase.auth as any).getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       // Fallback ID for development if auth is bypassed/mocked
       const organizerId = user?.id || '00000000-0000-0000-0000-000000000000'; 
 
@@ -327,7 +310,6 @@ export const EventWizard: React.FC = () => {
           end_time: state.endDate,
           capacity_limit: capacity,
           ai_summary: aiSummary,
-          // Use the AI generated image or fallback
           featured_image_url: state.image 
         })
         .select()
@@ -376,7 +358,6 @@ export const EventWizard: React.FC = () => {
         if (scheduleError) throw scheduleError;
       }
 
-      // Clear draft upon successful publish
       clearDraft();
       success("Event published successfully!");
       setCurrentStep(Step.SUCCESS);
@@ -390,7 +371,7 @@ export const EventWizard: React.FC = () => {
   };
 
   // Helper for the step progress
-  const totalSteps = 7; // Adjusted for Draft Preview step
+  const totalSteps = 7;
 
   if (!isLoaded) return null;
 
@@ -404,7 +385,7 @@ export const EventWizard: React.FC = () => {
         </div>
       )}
 
-      {/* Top Progress Bar (Hide on Intro and Draft Preview for cleaner look) */}
+      {/* Top Progress Bar */}
       {currentStep !== Step.SUCCESS && currentStep !== Step.INTRO && currentStep !== Step.DRAFT_PREVIEW && (
         <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
           <div className="container mx-auto px-6 py-4">
@@ -510,7 +491,7 @@ export const EventWizard: React.FC = () => {
         </FadeIn>
       </div>
 
-      {/* Bottom Action Bar (Conditionally rendered) */}
+      {/* Bottom Action Bar */}
       {currentStep > Step.DRAFT_PREVIEW && currentStep !== Step.SUCCESS && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-40 lg:pl-64 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
           <div className="container mx-auto px-6 max-w-4xl flex justify-between items-center">

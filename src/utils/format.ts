@@ -26,6 +26,9 @@ export const formatCompactNumber = (num: number): string => {
  */
 export const formatDate = (date: string | Date): string => {
   const d = typeof date === 'string' ? new Date(date) : date;
+  // Handle invalid dates gracefully
+  if (isNaN(d.getTime())) return 'TBD';
+  
   return d.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',

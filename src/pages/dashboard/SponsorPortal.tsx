@@ -6,11 +6,13 @@ import {
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
-import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { SponsorProfile, EventSponsor, SponsorActivation, SponsorDeliverable, SponsorRoiMetric } from '../../types/sponsorship';
 import { SocialPlanWidget } from '../../components/sponsors/SocialPlanWidget';
 import { ResponsiveLineChart, ResponsiveBarChart } from '../../components/charts/DynamicCharts';
 import { useToast } from '../../components/Toast';
+import { aiService } from '../../lib/ai-service';
+import { formatCurrency } from '../../utils/format';
 
 export const SponsorPortal: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'activations' | 'marketing'>('dashboard');
@@ -25,7 +27,7 @@ export const SponsorPortal: React.FC = () => {
   const [processingPayment, setProcessingPayment] = useState(false);
   
   // AI Ideas State
-  const [activationIdeas, setActivationIdeas] = useState<any[]>([]);
+  const [activationIdeas, setActivationIdeas] = useState<any[] | null>(null);
   const [showIdeas, setShowIdeas] = useState(true);
   const [ideasLoading, setIdeasLoading] = useState(false);
 
@@ -99,22 +101,14 @@ export const SponsorPortal: React.FC = () => {
       if (ideasLoading) return;
       setIdeasLoading(true);
       try {
-          const response = await fetch(`${supabaseUrl}/functions/v1/sponsor-ai`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${supabaseAnonKey}`
-            },
-            body: JSON.stringify({
-              action: 'activation-ideas',
+          const result = await aiService.sponsorAgent('activation-ideas', {
               sponsorName: profile.name,
               sponsorIndustry: profile.industry || 'Luxury',
               eventDetails: (deal?.event as any)?.title || 'Fashion Event'
-            })
           });
-          const data = await response.json();
-          if (data.ideas) {
-              setActivationIdeas(data.ideas);
+
+          if (result.success && result.data?.ideas) {
+              setActivationIdeas(result.data.ideas);
           }
       } catch (e) {
           console.error("AI Ideas failed", e);
@@ -127,7 +121,7 @@ export const SponsorPortal: React.FC = () => {
     if (!sponsorProfile) return;
     
     setUploadingId(deliverableId);
-    setAnalyzing(false); 
+    setAnalyzing(true); 
     
     try {
         const filePath = `sponsor-assets/${sponsorProfile.id}/${deliverableId}/${file.name}`;
@@ -151,68 +145,55 @@ export const SponsorPortal: React.FC = () => {
 
         // 3. Check if all deliverables for this deal are complete
         const dealDeliverables = deliverables.filter(d => d.event_sponsor_id === eventSponsorId);
-        // Exclude current item from check as we just uploaded it
         const othersPending = dealDeliverables.filter(d => d.id !== deliverableId && (d.status === 'pending' || d.status === 'rejected'));
 
         if (othersPending.length === 0) {
-            // All done! Update Deal Status
             await supabase
                 .from('event_sponsors')
                 .update({ status: 'Activation Ready' })
                 .eq('id', eventSponsorId);
             
-            success("All deliverables uploaded! Contract status updated to Activation Ready.");
-            
-            // Refresh deals locally to show new status immediately
+            success("All deliverables uploaded! Contract status updated.");
             setDeals(prev => prev.map(d => d.id === eventSponsorId ? { ...d, status: 'Activation Ready' } : d));
         } else {
              success("File uploaded successfully");
         }
 
-        // Refresh deliverables state locally to update UI instantly
+        // Refresh locally
         setDeliverables(prev => prev.map(d => d.id === deliverableId ? { ...d, status: 'uploaded', asset_url: publicUrl } : d));
 
-        // 4. AI Analysis (Optional/Async)
+        // 4. AI Analysis
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = async () => {
             const base64 = (reader.result as string).split(',')[1];
-            fetch(`${supabaseUrl}/functions/v1/sponsor-ai`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseAnonKey}` },
-                body: JSON.stringify({ action: 'analyze-media', mediaBase64: base64 })
-            }).catch(err => console.warn("AI Analysis error", err));
+            aiService.sponsorAgent('analyze-media', { mediaBase64: base64 })
+              .catch(err => console.warn("AI Analysis error", err));
         };
     } catch (e: any) {
         console.error("Upload failed", e);
         error("Failed to upload file.");
     } finally {
         setUploadingId(null);
+        setAnalyzing(false);
     }
   };
 
   const handlePayment = async (dealId: string, amount: number) => {
     setProcessingPayment(true);
     try {
-      const response = await fetch(`${supabaseUrl}/functions/v1/create-checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`
-        },
-        body: JSON.stringify({
+      const result = await aiService.createCheckout({
           amount,
           title: `Sponsorship Payment: ${dealId}`
-        })
       });
       
-      const data = await response.json();
-      
-      if (data.url) {
+      if (result.success && result.data?.url) {
         alert("Redirecting to Secure Payment Gateway...");
-        // Simulate success
+        // Simulate success for demo
         await supabase.from('event_sponsors').update({ status: 'Paid' }).eq('id', dealId);
         setDeals(prev => prev.map(d => d.id === dealId ? { ...d, status: 'Paid' } : d));
+      } else {
+        throw new Error(result.error || 'Payment initialization failed');
       }
     } catch (error) {
       console.error("Payment error", error);
@@ -262,7 +243,6 @@ export const SponsorPortal: React.FC = () => {
     const impMetrics = filteredMetrics.filter(m => m.metric_name.includes('Impression') || m.metric_name.includes('Views'));
     if (impMetrics.length === 0) return [];
     
-    // Group by day to create a line chart
     return impMetrics.map((m) => ({
         label: new Date(m.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
         value: m.metric_value
@@ -336,7 +316,7 @@ export const SponsorPortal: React.FC = () => {
       </div>
 
       {/* AI Suggestions (Dismissible) */}
-      {showIdeas && (activationIdeas.length > 0 || ideasLoading) && (
+      {showIdeas && (activationIdeas?.length > 0 || ideasLoading) && (
           <FadeIn className="mb-8">
               <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-[2rem] border border-indigo-100 relative overflow-hidden">
                   <div className="flex justify-between items-start mb-4 relative z-10">
@@ -356,7 +336,7 @@ export const SponsorPortal: React.FC = () => {
                       </div>
                   ) : (
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
-                          {activationIdeas.map((idea, i) => (
+                          {activationIdeas?.map((idea, i) => (
                               <div key={i} className="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-all border border-indigo-50 cursor-default">
                                   <h4 className="font-bold text-indigo-900 text-sm mb-2">{idea.title}</h4>
                                   <p className="text-xs text-gray-600 leading-relaxed mb-3">{idea.description}</p>

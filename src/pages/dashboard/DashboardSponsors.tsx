@@ -14,12 +14,13 @@ import { SponsorStatus } from '../../types/sponsorship';
 import { Input } from '../../components/forms/Input';
 import { Textarea } from '../../components/forms/Textarea';
 import { useSponsors } from '../../hooks/useSponsors';
+import { aiService } from '../../lib/ai-service';
 
 const PIPELINE_STAGES: SponsorStatus[] = ['Lead', 'Contacted', 'Negotiating', 'Signed', 'Activation Ready', 'Paid'];
 
 export const DashboardSponsors: React.FC = () => {
   const navigate = useNavigate();
-  const { sponsors, loading, updateSponsorStatus, generateAiInsights } = useSponsors();
+  const { sponsors, loading, updateSponsorStatus } = useSponsors();
   
   const [view, setView] = useState<'Pipeline' | 'List'>('Pipeline');
   
@@ -44,22 +45,36 @@ export const DashboardSponsors: React.FC = () => {
     setAiLoading(true);
     setAiIdeas(null);
 
-    const data = await generateAiInsights(aiMode, aiParams);
-    
-    if (data) {
-        if (aiMode === 'scoring') {
-            setAiIdeas([{ 
-                title: `Lead Score: ${data.score}/100`, 
-                description: data.reasoning, 
-                category: data.category,
-                estimated_cost: 'Score' 
-            }]);
+    try {
+        const action = aiMode === 'scoring' ? 'score-lead' : 'activation-ideas';
+        const result = await aiService.sponsorAgent(action, {
+            sponsorName: aiParams.sponsorName,
+            sponsorIndustry: aiParams.industry,
+            eventDetails: aiParams.eventDetails || 'Upcoming Fashion Event'
+        });
+
+        if (result.success && result.data) {
+            if (aiMode === 'scoring') {
+                setAiIdeas([{ 
+                    title: `Lead Score: ${result.data.score}/100`, 
+                    description: result.data.reasoning, 
+                    category: result.data.category,
+                    estimated_cost: 'Score' 
+                }]);
+            } else {
+                setAiIdeas(result.data.ideas);
+            }
+            setShowAiModal(false);
         } else {
-            setAiIdeas(data.ideas);
+            console.error('AI Error:', result.error);
+            alert("AI Analysis failed. " + (result.error || ''));
         }
-        setShowAiModal(false);
+    } catch (e) {
+        console.error(e);
+        alert("AI Service Unavailable.");
+    } finally {
+        setAiLoading(false);
     }
-    setAiLoading(false);
   };
 
   const openAiModal = (mode: 'activation' | 'scoring', sponsor?: any) => {
