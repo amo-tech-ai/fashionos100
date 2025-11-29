@@ -11,13 +11,17 @@ import { SponsorCard } from '../../components/sponsors/SponsorCard';
 import { SponsorList } from '../../components/sponsors/SponsorList';
 import { SponsorKPIWidget } from '../../components/sponsors/SponsorKPIWidget';
 import { SponsorCardSkeleton, KPICardSkeleton } from '../../components/sponsors/SponsorSkeleton';
-import { EventSponsor } from '../../types/sponsorship';
+import { EventSponsor, SponsorStatus } from '../../types/sponsorship';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { Input } from '../../components/forms/Input';
 import { Textarea } from '../../components/forms/Textarea';
+import { useToast } from '../../components/Toast';
+
+const PIPELINE_STAGES: SponsorStatus[] = ['Lead', 'Contacted', 'Negotiating', 'Signed', 'Activation Ready', 'Paid'];
 
 export const DashboardSponsors: React.FC = () => {
   const navigate = useNavigate();
+  const { success, error: toastError } = useToast();
   const [view, setView] = useState<'Pipeline' | 'List'>('Pipeline');
   const [sponsors, setSponsors] = useState<EventSponsor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,30 +37,33 @@ export const DashboardSponsors: React.FC = () => {
     eventDetails: ''
   });
 
+  // DnD State
+  const [draggedSponsorId, setDraggedSponsorId] = useState<string | null>(null);
+
   // Fetch Data from Supabase
   useEffect(() => {
-    const fetchSponsors = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('event_sponsors')
-          .select(`
-            *,
-            sponsor:sponsor_profiles(*)
-          `)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        setSponsors(data || []);
-      } catch (error) {
-        console.error('Error fetching sponsors:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchSponsors();
   }, []);
+
+  const fetchSponsors = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('event_sponsors')
+        .select(`
+          *,
+          sponsor:sponsor_profiles(*)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSponsors(data || []);
+    } catch (error) {
+      console.error('Error fetching sponsors:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // AI Agent: Ideation or Scoring
   const handleAiAction = async () => {
@@ -113,6 +120,47 @@ export const DashboardSponsors: React.FC = () => {
           setAiParams({ sponsorName: '', industry: '', eventDetails: '' });
       }
       setShowAiModal(true);
+  };
+
+  // Drag and Drop Handlers
+  const handleDragStart = (e: React.DragEvent, sponsorId: string) => {
+    setDraggedSponsorId(sponsorId);
+    e.dataTransfer.effectAllowed = 'move';
+    // Optional: set drag image
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetStatus: SponsorStatus) => {
+    e.preventDefault();
+    if (!draggedSponsorId) return;
+
+    const sponsor = sponsors.find(s => s.id === draggedSponsorId);
+    if (!sponsor || sponsor.status === targetStatus) return;
+
+    // Optimistic Update
+    const updatedSponsors = sponsors.map(s => 
+      s.id === draggedSponsorId ? { ...s, status: targetStatus } : s
+    );
+    setSponsors(updatedSponsors);
+    setDraggedSponsorId(null);
+
+    try {
+      const { error } = await supabase
+        .from('event_sponsors')
+        .update({ status: targetStatus })
+        .eq('id', draggedSponsorId);
+
+      if (error) throw error;
+      success(`Moved deal to ${targetStatus}`);
+    } catch (err) {
+      console.error("Failed to update status", err);
+      toastError("Failed to move deal");
+      fetchSponsors(); // Revert
+    }
   };
 
   return (
@@ -251,16 +299,21 @@ export const DashboardSponsors: React.FC = () => {
           </div>
 
           {view === 'Pipeline' ? (
-            <div className="flex gap-4 overflow-x-auto pb-8 -mx-4 px-4 md:mx-0 md:px-0">
-              {['Lead', 'Contacted', 'Negotiating', 'Signed', 'Activation Ready', 'Paid'].map((status) => (
-                <div key={status} className="min-w-[280px] flex-1">
+            <div className="flex gap-4 overflow-x-auto pb-8 -mx-4 px-4 md:mx-0 md:px-0 min-h-[500px]">
+              {PIPELINE_STAGES.map((status) => (
+                <div 
+                  key={status} 
+                  className="min-w-[280px] flex-1"
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, status)}
+                >
                   <div className="flex justify-between items-center mb-4 px-1">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">{status}</h4>
                     <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
                       {sponsors.filter(s => s.status === status).length}
                     </span>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-3 bg-gray-50/50 p-2 rounded-xl min-h-[200px] transition-colors duration-200 hover:bg-gray-100/50">
                     {loading ? (
                         <>
                             <SponsorCardSkeleton />
@@ -268,13 +321,21 @@ export const DashboardSponsors: React.FC = () => {
                         </>
                     ) : (
                         sponsors.filter(s => s.status === status).map(sponsor => (
-                        <Link key={sponsor.id} to={`/dashboard/sponsors/${sponsor.sponsor_id}`} className="block">
-                            <SponsorCard sponsor={sponsor} />
-                        </Link>
+                            <div 
+                                key={sponsor.id} 
+                                draggable 
+                                onDragStart={(e) => handleDragStart(e, sponsor.id)}
+                                className="cursor-move"
+                            >
+                                {/* Only clickable if not dragging? For now link wraps card */}
+                                <div onClick={(e) => { if(!draggedSponsorId) navigate(`/dashboard/sponsors/${sponsor.sponsor_id}`); }}>
+                                    <SponsorCard sponsor={sponsor} />
+                                </div>
+                            </div>
                         ))
                     )}
                     <Link to="/dashboard/sponsors/new-deal">
-                      <button className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-xs font-bold hover:border-purple-300 hover:text-purple-500 transition-all flex items-center justify-center gap-2">
+                      <button className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-xs font-bold hover:border-purple-300 hover:text-purple-500 transition-all flex items-center justify-center gap-2 bg-white">
                         <Plus size={14} /> Add Deal
                       </button>
                     </Link>

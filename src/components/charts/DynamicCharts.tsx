@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // --- Types ---
 interface ChartDataPoint {
@@ -15,13 +15,6 @@ interface ChartProps {
   title?: string;
 }
 
-// --- Helper to format numbers ---
-const formatValue = (val: number) => {
-  if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
-  if (val >= 1000) return `${(val / 1000).toFixed(1)}k`;
-  return val.toString();
-};
-
 // --- Line Chart Component ---
 export const ResponsiveLineChart: React.FC<ChartProps> = ({ 
   data, 
@@ -30,6 +23,13 @@ export const ResponsiveLineChart: React.FC<ChartProps> = ({
   title
 }) => {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Trigger animation on mount
+    setIsLoaded(true);
+  }, []);
 
   if (!data || data.length === 0) return <div className="h-full flex items-center justify-center text-gray-400 text-sm">No data available</div>;
 
@@ -43,7 +43,7 @@ export const ResponsiveLineChart: React.FC<ChartProps> = ({
   const areaPath = `${points} 100,100 0,100`;
 
   return (
-    <div className="w-full flex flex-col h-full">
+    <div className="w-full flex flex-col h-full" ref={containerRef}>
       {title && <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">{title}</h4>}
       <div className="relative flex-grow" style={{ height }}>
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full overflow-visible">
@@ -59,17 +59,24 @@ export const ResponsiveLineChart: React.FC<ChartProps> = ({
               <stop offset="100%" stopColor={color} stopOpacity="0" />
             </linearGradient>
           </defs>
-          <polygon points={areaPath} fill={`url(#grad-${title?.replace(/\s/g, '') || 'chart'})`} />
+          <polygon 
+            points={areaPath} 
+            fill={`url(#grad-${title?.replace(/\s/g, '') || 'chart'})`} 
+            className={`transition-opacity duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+          />
 
           {/* Line Path */}
-          <polyline 
-            points={points} 
+          <path 
+            d={`M${points.replace(/,/g, ' ').replace(/\s/g, ' L')}`} 
             fill="none" 
             stroke={color} 
             strokeWidth="1.5" 
             strokeLinecap="round" 
             strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
+            className={`transition-all duration-1000 ease-out ${isLoaded ? 'stroke-dashoffset-0' : 'stroke-dashoffset-full'}`}
+            strokeDasharray="1000"
+            strokeDashoffset={isLoaded ? 0 : 1000}
           />
 
           {/* Interactive Points */}
@@ -78,18 +85,18 @@ export const ResponsiveLineChart: React.FC<ChartProps> = ({
               <circle 
                 cx={getX(i)} 
                 cy={getY(d.value)} 
-                r="1.5" 
+                r={hoverIndex === i ? "3" : "1.5"} 
                 fill="white" 
                 stroke={color} 
-                strokeWidth="1"
-                className="transition-all duration-200"
-                style={{ r: hoverIndex === i ? 3 : 1.5 }}
+                strokeWidth="1.5"
+                className="transition-all duration-200 cursor-pointer"
+                style={{ opacity: isLoaded ? 1 : 0, transitionDelay: `${i * 50}ms` }}
               />
               {/* Invisible hit target for easier hovering */}
               <rect 
-                x={getX(i) - 2} 
+                x={getX(i) - 5} 
                 y="0" 
-                width="4" 
+                width="10" 
                 height="100" 
                 fill="transparent" 
                 onMouseEnter={() => setHoverIndex(i)}
@@ -103,15 +110,17 @@ export const ResponsiveLineChart: React.FC<ChartProps> = ({
         {/* Tooltip */}
         {hoverIndex !== null && (
           <div 
-            className="absolute bg-gray-900 text-white text-xs py-1 px-2 rounded shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full z-10"
+            className="absolute bg-gray-900 text-white text-xs py-1.5 px-3 rounded-lg shadow-xl pointer-events-none transform -translate-x-1/2 -translate-y-full z-20 transition-all duration-75"
             style={{ 
               left: `${(hoverIndex / (data.length - 1)) * 100}%`, 
               top: `${getY(data[hoverIndex].value)}%`,
-              marginTop: '-8px'
+              marginTop: '-12px'
             }}
           >
-            <p className="font-bold">{data[hoverIndex].value.toLocaleString()}</p>
-            <p className="text-[9px] opacity-80">{data[hoverIndex].label}</p>
+            <p className="font-bold text-sm">{data[hoverIndex].value.toLocaleString()}</p>
+            <p className="text-[10px] opacity-80 uppercase tracking-wider">{data[hoverIndex].label}</p>
+            {/* Arrow */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900"></div>
           </div>
         )}
       </div>
@@ -133,6 +142,12 @@ export const ResponsiveBarChart: React.FC<ChartProps> = ({
   color = '#ec4899',
   title
 }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
+
   if (!data || data.length === 0) return <div className="h-full flex items-center justify-center text-gray-400 text-sm">No data available</div>;
 
   const maxVal = Math.max(...data.map(d => d.value)) * 1.1 || 10;
@@ -153,12 +168,17 @@ export const ResponsiveBarChart: React.FC<ChartProps> = ({
            return (
              <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end">
                 <div 
-                  className="w-full bg-opacity-20 rounded-t-md transition-all duration-300 group-hover:opacity-100 relative"
-                  style={{ height: `${barHeight}%`, backgroundColor: color }}
+                  className="w-full rounded-t-md transition-all duration-500 ease-out relative hover:opacity-80 cursor-pointer"
+                  style={{ 
+                    height: isLoaded ? `${barHeight}%` : '0%', 
+                    backgroundColor: color,
+                    transitionDelay: `${i * 100}ms`
+                  }}
                 >
                    {/* Tooltip on hover */}
-                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
-                      {d.value.toLocaleString()}
+                   <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 whitespace-nowrap z-10 pointer-events-none shadow-lg">
+                      <span className="font-bold">{d.value.toLocaleString()}</span>
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-gray-900"></div>
                    </div>
                 </div>
                 <span className="text-[10px] text-gray-400 mt-2 truncate w-full text-center block">{d.label}</span>
