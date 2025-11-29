@@ -98,12 +98,48 @@ export const WIZARD_DATA = {
     { id: 'lifestyle-living', label: 'Living Room', image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400' },
   ],
   shotTypes: [
-    { id: 'packshot', label: 'Packshot', desc: 'Standard product on white.', icon: Box },
-    { id: 'on-model', label: 'On Model', desc: 'Worn by professional talent.', icon: User },
-    { id: 'flatlay', label: 'Flat Lay', desc: 'Arranged on a surface.', icon: Layers },
-    { id: 'detail', label: 'Detail / Macro', desc: 'Close-up features.', icon: Scan },
-    { id: 'creative', label: 'Creative Splash', desc: 'Dynamic styling and props.', icon: Zap },
-    { id: 'scale', label: 'Scale Shot', desc: 'Shows size context.', icon: Box },
+    { 
+      id: 'packshot', 
+      label: 'Packshot', 
+      desc: 'Pure white background.', 
+      icon: Box,
+      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800'
+    },
+    { 
+      id: 'on-model', 
+      label: 'On Model', 
+      desc: 'Worn by professional talent.', 
+      icon: User,
+      image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800'
+    },
+    { 
+      id: 'flatlay', 
+      label: 'Flat Lay', 
+      desc: 'Styled overhead arrangement.', 
+      icon: Layers,
+      image: 'https://images.unsplash.com/photo-1550614000-4b9519e02d48?q=80&w=800'
+    },
+    { 
+      id: 'detail', 
+      label: 'Detail / Macro', 
+      desc: 'Texture and material close-ups.', 
+      icon: Scan,
+      image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800'
+    },
+    { 
+      id: 'creative', 
+      label: 'Creative Splash', 
+      desc: 'Dynamic motion and props.', 
+      icon: Zap,
+      image: 'https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=800'
+    },
+    { 
+      id: 'scale', 
+      label: 'Scale Shot', 
+      desc: 'Context and sizing reference.', 
+      icon: Box,
+      image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=800'
+    },
   ],
   subCategories: {
     fashion: ['Ready-to-wear', 'Swimwear', 'Lingerie', 'Formalwear', 'Activewear'],

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useBooking } from '../../../context/BookingContext';
 import { FadeIn } from '../../../components/FadeIn';
 import { WIZARD_DATA } from '../../../data/wizardData';
-import { CheckCircle2 } from 'lucide-react';
+import { SceneCard } from '../../../components/booking/ui/SceneCard';
 
 export const StepShotType: React.FC = () => {
   const { state, updateState } = useBooking();
@@ -17,37 +17,30 @@ export const StepShotType: React.FC = () => {
 
   return (
     <FadeIn>
-      <div className="max-w-4xl">
-        <h1 className="text-4xl font-serif font-bold mb-4">Shot Type</h1>
-        <p className="text-gray-500 text-lg mb-10">
-          What is the primary focus of these images?
-        </p>
+      <div className="max-w-6xl">
+        <div className="mb-12">
+           <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4 text-gray-900">Shot Type</h1>
+           <p className="text-gray-500 text-lg font-light max-w-2xl">
+             Select the primary visual approach for your imagery. We recommend combining Packshots with Lifestyle or Creative shots for a complete campaign.
+           </p>
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {WIZARD_DATA.shotTypes.map((type) => {
             const isSelected = state.shotType === type.id;
+            // Cast to access the image property safely
+            const image = (type as any).image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800';
+            
             return (
-              <button
+              <SceneCard
                 key={type.id}
+                id={type.id}
+                label={type.label}
+                image={image}
+                subtitle={type.desc}
+                selected={isSelected}
                 onClick={() => handleSelect(type.id)}
-                className={`group p-6 rounded-2xl border-2 text-left transition-all duration-300 h-full flex flex-col ${
-                  isSelected 
-                    ? 'border-black bg-gray-50 ring-1 ring-black/5' 
-                    : 'border-gray-100 bg-white hover:border-purple-200 hover:shadow-xl'
-                }`}
-              >
-                <div className="flex justify-between items-start w-full mb-6">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                      isSelected ? 'bg-black text-white' : 'bg-gray-50 text-gray-500 group-hover:bg-purple-50 group-hover:text-purple-600'
-                    }`}>
-                      <type.icon size={24} />
-                    </div>
-                    {isSelected && <CheckCircle2 size={20} className="text-black" />}
-                </div>
-                
-                <h3 className="text-lg font-serif font-bold mb-2 group-hover:text-purple-700 transition-colors">{type.label}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{type.desc}</p>
-              </button>
+              />
             );
           })}
         </div>
