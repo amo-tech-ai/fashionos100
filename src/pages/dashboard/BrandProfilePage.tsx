@@ -59,8 +59,9 @@ export const BrandProfilePage: React.FC = () => {
       e.preventDefault();
       setGenerating(true);
       
-      // Process social URLs (split by comma)
-      const socialUrls = formData.socialUrl
+      // Process social URLs (split by comma) - Add type check for safety
+      const socialUrlString = formData.socialUrl || '';
+      const socialUrls = socialUrlString
         .split(',')
         .map(url => url.trim())
         .filter(url => url.length > 0);

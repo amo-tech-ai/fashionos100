@@ -20,7 +20,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
           <input 
             ref={ref}
-            className={`w-full p-4 ${icon ? 'pl-11' : ''} bg-gray-50 border rounded-xl text-sm font-medium focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all placeholder:text-gray-400 ${
+            // text-base on mobile prevents iOS zoom (must be 16px)
+            // md:text-sm scales it back down for desktop elegance
+            className={`w-full p-4 ${icon ? 'pl-11' : ''} bg-gray-50 border rounded-xl text-base md:text-sm font-medium focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all placeholder:text-gray-400 ${
               error ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-200'
             } ${className}`}
             {...props}

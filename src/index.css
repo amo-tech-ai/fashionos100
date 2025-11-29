@@ -12,13 +12,18 @@ html, body {
 }
 
 #root {
-  /* 
-     Fix: Removed 'display: flex' and 'flex-direction: column'.
-     This allows DashboardLayout to handle its own h-screen/overflow logic 
-     without being constrained by a parent flex container.
-  */
   min-height: 100%;
   width: 100%;
+}
+
+/* Safe Area Utilities for Mobile */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
 }
 
 /* Custom scrollbar */

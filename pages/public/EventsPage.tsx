@@ -235,14 +235,23 @@ export const EventsPage: React.FC = () => {
                              {/* Mobile Backdrop */}
                              <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] md:hidden" onClick={() => setShowCalendar(false)} />
                              
-                             {/* Responsive Calendar Container */}
-                             <div className="absolute top-full left-0 mt-2 z-[70] md:z-50 w-full md:w-auto fixed bottom-0 left-0 right-0 md:relative md:bottom-auto">
-                                <div className="bg-white rounded-t-[2rem] md:rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.15)] md:shadow-xl p-4 md:p-0 pb-safe">
-                                  <div className="md:hidden w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6" />
-                                  <div className="flex justify-between items-center mb-4 md:hidden px-2">
-                                      <h3 className="font-serif font-bold text-xl">Select Dates</h3>
-                                      <button onClick={() => setShowCalendar(false)} className="p-2 bg-gray-100 rounded-full"><X size={18}/></button>
-                                  </div>
+                             {/* Desktop Popover */}
+                             <div className="hidden md:block absolute top-full left-0 mt-2 z-50">
+                                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                                  <CalendarPicker onClose={() => setShowCalendar(false)} onApply={handleApplyDate} initialStart={dateRange.start} initialEnd={dateRange.end} />
+                                </div>
+                             </div>
+
+                             {/* Mobile Bottom Sheet */}
+                             <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[2rem] p-4 z-[70] md:hidden animate-in slide-in-from-bottom duration-300 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-gray-100 pb-safe">
+                                <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6" />
+                                <div className="flex justify-between items-center mb-4 px-2">
+                                    <h3 className="font-serif font-bold text-xl text-gray-900">Select Dates</h3>
+                                    <button onClick={() => setShowCalendar(false)} className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-500 transition-colors">
+                                      <X size={20}/>
+                                    </button>
+                                </div>
+                                <div className="flex justify-center">
                                   <CalendarPicker onClose={() => setShowCalendar(false)} onApply={handleApplyDate} initialStart={dateRange.start} initialEnd={dateRange.end} />
                                 </div>
                              </div>

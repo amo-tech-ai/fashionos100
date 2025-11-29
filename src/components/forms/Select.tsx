@@ -21,7 +21,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <div className="relative">
           <select 
             ref={ref}
-            className={`w-full p-4 bg-gray-50 border rounded-xl text-sm font-medium focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer text-gray-700 ${
+            // text-base on mobile prevents iOS zoom
+            className={`w-full p-4 bg-gray-50 border rounded-xl text-base md:text-sm font-medium focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all appearance-none cursor-pointer text-gray-700 ${
               error ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-200'
             } ${className}`}
             {...props}

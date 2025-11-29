@@ -120,69 +120,72 @@ export const DashboardBookings = () => {
              </div>
           </div>
           
-          {loading ? (
-             <div className="flex items-center justify-center h-64">
-                <Loader2 className="animate-spin text-gray-300" size={32} />
-             </div>
-          ) : shoots.length === 0 ? (
-             <div className="flex flex-col items-center justify-center h-64 text-center p-8">
-                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                    <Camera className="text-gray-400" size={24} />
-                </div>
-                <h3 className="font-bold text-gray-900 mb-2">No bookings found</h3>
-                <p className="text-gray-500 mb-6 max-w-xs">Try adjusting your filters or start a new project.</p>
-                <Link to="/start-project"><Button variant="outline">Start Project</Button></Link>
-             </div>
-          ) : (
-             <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-50">
-                   <tr>
-                      <th className="px-6 py-4">Project ID</th>
-                      <th className="px-6 py-4">Service</th>
-                      <th className="px-6 py-4">Date</th>
-                      <th className="px-6 py-4">Amount</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4 text-right">Actions</th>
-                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                   {shoots.map((booking) => (
-                      <tr key={booking.id} className="hover:bg-gray-50/50 transition-colors group">
-                         <td className="px-6 py-4 font-mono text-xs text-gray-500 uppercase">#{booking.id.substring(0, 8)}</td>
-                         <td className="px-6 py-4">
-                            <p className="font-bold text-gray-900 capitalize">{booking.shoot_type}</p>
-                            <p className="text-xs text-gray-500 capitalize">{booking.fashion_category}</p>
-                         </td>
-                         <td className="px-6 py-4 text-gray-600">
-                            {new Date(booking.created_at).toLocaleDateString()}
-                         </td>
-                         <td className="px-6 py-4 font-medium">
-                            ${(booking.estimated_quote || 0).toLocaleString()}
-                         </td>
-                         <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                                <StatusBadge status={booking.status} />
-                                {/* Quick Action */}
-                                {booking.status === 'requested' && (
-                                    <button 
-                                        onClick={() => updateStatus(booking.id, 'confirmed')}
-                                        className="text-[10px] text-blue-600 underline hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        Confirm
-                                    </button>
-                                )}
-                            </div>
-                         </td>
-                         <td className="px-6 py-4 text-right">
-                             <button className="p-2 hover:bg-gray-200 rounded-full text-gray-400 hover:text-black transition-colors">
-                                 <MoreHorizontal size={16} />
-                             </button>
-                         </td>
-                      </tr>
-                   ))}
-                </tbody>
-             </table>
-          )}
+          {/* Responsive Table Container */}
+          <div className="overflow-x-auto">
+            {loading ? (
+               <div className="flex items-center justify-center h-64">
+                  <Loader2 className="animate-spin text-gray-300" size={32} />
+               </div>
+            ) : shoots.length === 0 ? (
+               <div className="flex flex-col items-center justify-center h-64 text-center p-8">
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                      <Camera className="text-gray-400" size={24} />
+                  </div>
+                  <h3 className="font-bold text-gray-900 mb-2">No bookings found</h3>
+                  <p className="text-gray-500 mb-6 max-w-xs">Try adjusting your filters or start a new project.</p>
+                  <Link to="/start-project"><Button variant="outline">Start Project</Button></Link>
+               </div>
+            ) : (
+               <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-50/50 text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-50">
+                     <tr>
+                        <th className="px-6 py-4 whitespace-nowrap">Project ID</th>
+                        <th className="px-6 py-4 whitespace-nowrap">Service</th>
+                        <th className="px-6 py-4 whitespace-nowrap">Date</th>
+                        <th className="px-6 py-4 whitespace-nowrap">Amount</th>
+                        <th className="px-6 py-4 whitespace-nowrap">Status</th>
+                        <th className="px-6 py-4 whitespace-nowrap text-right">Actions</th>
+                     </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                     {shoots.map((booking) => (
+                        <tr key={booking.id} className="hover:bg-gray-50/50 transition-colors group">
+                           <td className="px-6 py-4 font-mono text-xs text-gray-500 uppercase">#{booking.id.substring(0, 8)}</td>
+                           <td className="px-6 py-4">
+                              <p className="font-bold text-gray-900 capitalize">{booking.shoot_type}</p>
+                              <p className="text-xs text-gray-500 capitalize">{booking.fashion_category}</p>
+                           </td>
+                           <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
+                              {new Date(booking.created_at).toLocaleDateString()}
+                           </td>
+                           <td className="px-6 py-4 font-medium">
+                              ${(booking.estimated_quote || 0).toLocaleString()}
+                           </td>
+                           <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                  <StatusBadge status={booking.status} />
+                                  {/* Quick Action */}
+                                  {booking.status === 'requested' && (
+                                      <button 
+                                          onClick={() => updateStatus(booking.id, 'confirmed')}
+                                          className="text-[10px] text-blue-600 underline hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                          Confirm
+                                      </button>
+                                  )}
+                              </div>
+                           </td>
+                           <td className="px-6 py-4 text-right">
+                               <button className="p-2 hover:bg-gray-200 rounded-full text-gray-400 hover:text-black transition-colors">
+                                   <MoreHorizontal size={16} />
+                               </button>
+                           </td>
+                        </tr>
+                     ))}
+                  </tbody>
+               </table>
+            )}
+          </div>
 
           {/* Pagination Footer */}
           <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">

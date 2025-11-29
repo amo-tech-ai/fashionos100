@@ -107,7 +107,7 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({ onClose, onApply
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   return (
-    <div className="bg-white md:rounded-2xl md:shadow-2xl md:border md:border-gray-100 p-6 w-full max-w-[320px] mx-auto animate-in fade-in zoom-in-95 duration-200">
+    <div className="bg-white md:rounded-2xl md:shadow-2xl md:border md:border-gray-100 p-4 sm:p-6 w-full max-w-[350px] mx-auto animate-in fade-in zoom-in-95 duration-200">
       <div className="flex justify-between items-center mb-6">
         <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-gray-50 rounded-full transition-colors"><ChevronLeft size={16} /></button>
         <span className="font-serif font-bold text-lg">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>

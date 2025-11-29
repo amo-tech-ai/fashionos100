@@ -140,7 +140,7 @@ export const DashboardFinancials: React.FC = () => {
     // Initialize last 6 months
     const data = Array.from({ length: 6 }, (_, i) => {
       const mIndex = (currentMonth - 5 + i + 12) % 12;
-      return { month: months[mIndex], income: 0, expense: 0 };
+      return { month: months[mIndex], income: 0, expense: 0, hIncome: '0%', hExpense: '0%' };
     });
 
     invoices.forEach(inv => {

@@ -37,15 +37,35 @@ export const BookingLayout: React.FC = () => {
 
   if (isSuccess) return <Outlet />;
 
+  const handleBack = () => {
+    if (currentStepIndex > 0) {
+      navigate(STEPS[currentStepIndex - 1].path);
+    } else {
+      navigate('/');
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStepIndex < STEPS.length - 1) {
+      navigate(STEPS[currentStepIndex + 1].path);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#FBF8F5] pt-20 pb-24">
+    <div className="min-h-screen bg-[#FBF8F5] pt-20 pb-32 lg:pb-24">
       {/* Sticky Header */}
       <div className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md z-40 border-b border-gray-200 transition-all duration-300">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => navigate(-1)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 lg:hidden"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button 
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hidden lg:block"
             >
               <ChevronLeft size={20} />
             </button>
@@ -55,7 +75,7 @@ export const BookingLayout: React.FC = () => {
             </div>
           </div>
           
-          {/* Progress Bar */}
+          {/* Progress Bar - Desktop Only */}
           {!isCheckout && (
             <div className="flex-1 max-w-md mx-8 hidden md:block">
               <WizardProgressBar 
@@ -124,18 +144,35 @@ export const BookingLayout: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Bottom Sheet Trigger */}
+      {/* Mobile Bottom Navigation Bar */}
       {!isCheckout && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 flex items-center justify-between pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-          <div>
-            <p className="text-xs font-bold text-gray-400 uppercase">Total</p>
-            <p className="font-serif font-bold text-xl">${totals.total.toLocaleString()}</p>
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+          {/* Price Context */}
+          <div className="flex justify-between items-center mb-3 px-1">
+             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Est. Total</span>
+             <span className="font-serif font-bold text-lg text-gray-900">${totals.total.toLocaleString()}</span>
           </div>
-          {currentStepIndex < STEPS.length - 1 && currentStepIndex !== -1 && (
-            <Button variant="primary" onClick={() => navigate(STEPS[currentStepIndex + 1].path)}>
-              Next Step
+
+          {/* Navigation Buttons */}
+          <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              className="flex-1"
+              onClick={handleBack}
+            >
+              Back
             </Button>
-          )}
+            
+            {currentStepIndex < STEPS.length - 1 && (
+              <Button 
+                variant="primary" 
+                className="flex-[2]" 
+                onClick={handleNext}
+              >
+                Next Step
+              </Button>
+            )}
+          </div>
         </div>
       )}
     </div>

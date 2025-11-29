@@ -1,62 +1,11 @@
 
-import React, { useState } from 'react';
-import { Mail, Phone, MapPin, HelpCircle, CheckCircle2, Loader2 } from 'lucide-react';
-import { Button } from '../../components/Button';
+import React from 'react';
+import { Mail, Phone, MapPin, HelpCircle } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { SectionTag } from '../../components/SectionTag';
-import { Input } from '../../components/forms/Input';
-import { Textarea } from '../../components/forms/Textarea';
-import { Select } from '../../components/forms/Select';
-import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
+import { ContactForm } from '../../components/forms/ContactForm';
 
 export const ContactPage: React.FC = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: 'General Inquiry',
-    message: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // 1. Call Edge Function for Email
-      const response = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`
-        },
-        body: JSON.stringify({
-          to: 'hello@fashionos.com', // Admin email
-          template: 'alert',
-          data: { 
-            title: `New Contact: ${formData.subject}`,
-            name: formData.name,
-            email: formData.email,
-            message: formData.message
-          }
-        })
-      });
-
-      if (!response.ok) {
-         console.warn("Email service unavailable, showing success anyway for MVP");
-      }
-
-      setIsSuccess(true);
-    } catch (error) {
-      console.error("Submission error", error);
-      // Fallback success state for demo
-      setIsSuccess(true);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const contactInfo = [
     {
       icon: Mail,
@@ -110,69 +59,11 @@ export const ContactPage: React.FC = () => {
           {/* Left: Form */}
           <div className="lg:col-span-2">
             <FadeIn delay={100}>
-              <div className="bg-gray-50 rounded-[2rem] p-8 md:p-12 border border-gray-100">
-                {isSuccess ? (
-                  <div className="text-center py-20">
-                    <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle2 size={40} />
-                    </div>
-                    <h3 className="text-3xl font-serif font-bold mb-4">Message Sent!</h3>
-                    <p className="text-gray-500 mb-8">Thank you for reaching out. We'll be in touch shortly.</p>
-                    <Button variant="outline" onClick={() => setIsSuccess(false)}>Send Another</Button>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <h3 className="text-2xl font-serif font-bold mb-6">Send a Message</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <Input 
-                        label="Name"
-                        placeholder="Jane Doe"
-                        required
-                        value={formData.name}
-                        onChange={e => setFormData({...formData, name: e.target.value})}
-                        className="bg-white"
-                      />
-                      <Input 
-                        label="Email"
-                        placeholder="jane@brand.com"
-                        type="email"
-                        required
-                        value={formData.email}
-                        onChange={e => setFormData({...formData, email: e.target.value})}
-                        className="bg-white"
-                      />
-                    </div>
-                    
-                    <Select
-                      label="Subject"
-                      options={["General Inquiry", "Project Proposal", "Partnership", "Careers"]}
-                      value={formData.subject}
-                      onChange={e => setFormData({...formData, subject: e.target.value})}
-                      className="bg-white"
-                    />
-
-                    <Textarea 
-                      label="Message"
-                      placeholder="Tell us about your project..."
-                      required
-                      value={formData.message}
-                      onChange={e => setFormData({...formData, message: e.target.value})}
-                      className="bg-white h-40"
-                    />
-
-                    <div className="pt-2">
-                      <Button 
-                        variant="primary" 
-                        size="lg" 
-                        className="w-full md:w-auto px-12"
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting ? <><Loader2 size={16} className="animate-spin mr-2" /> Sending...</> : 'Send Message'}
-                      </Button>
-                    </div>
-                  </form>
-                )}
-              </div>
+              <ContactForm 
+                title="Send a Message"
+                subtitle="Fill out the form below to start the conversation."
+                serviceType="General Inquiry"
+              />
             </FadeIn>
           </div>
 
