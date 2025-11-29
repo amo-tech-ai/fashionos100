@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { amount, currency = 'usd', title, successUrl, cancelUrl } = await req.json()
+    const { amount, currency = 'usd', title, successUrl, cancelUrl, shootId } = await req.json()
     
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
 
@@ -57,6 +57,9 @@ serve(async (req) => {
       mode: 'payment',
       success_url: successUrl || 'http://localhost:3000/dashboard/bookings?success=true',
       cancel_url: cancelUrl || 'http://localhost:3000/start-project/checkout?canceled=true',
+      metadata: {
+        shootId: shootId // Critical for webhook to know which shoot to update
+      }
     });
 
     return new Response(

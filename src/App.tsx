@@ -92,6 +92,7 @@ const BrandProfilePage = lazy(() => import('./pages/dashboard/BrandProfilePage')
 const SystemHealth = lazy(() => import('./pages/dashboard/SystemHealth').then(m => ({ default: m.SystemHealth })));
 const DashboardInvoices = lazy(() => import('./pages/dashboard/DashboardInvoices').then(m => ({ default: m.DashboardInvoices })));
 const DashboardMessages = lazy(() => import('./pages/dashboard/DashboardMessages').then(m => ({ default: m.DashboardMessages })));
+const ShootDetailPage = lazy(() => import('./pages/dashboard/ShootDetailPage').then(m => ({ default: m.ShootDetailPage })));
 
 const App: React.FC = () => {
   usePageTitle();
@@ -179,6 +180,7 @@ const App: React.FC = () => {
           >
             <Route index element={<DashboardOverview />} />
             <Route path="bookings" element={<DashboardBookings />} />
+            <Route path="shoots/:id" element={<ShootDetailPage />} />
             <Route path="studio" element={<DashboardStudio />} /> 
             <Route path="delivery" element={<DeliveryPortal />} /> 
             <Route path="qa" element={<VisualQAPage />} /> 
