@@ -9,32 +9,61 @@ import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
 import { NotificationsMenu } from '../components/dashboard/NotificationsMenu';
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
+import { usePermissions } from '../hooks/usePermissions';
 
 export const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { signOut, user } = useAuth();
+  const { role, isAdmin, isSponsor, canAccessStudio, canAccessEvents, canAccessFinance, canAccessSponsors } = usePermissions();
 
-  const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: BookOpen, label: 'Brand Profile', path: '/dashboard/brand-profile' },
-    { icon: Camera, label: 'Studio Command', path: '/dashboard/studio' },
-    { icon: Truck, label: 'Delivery Portal', path: '/dashboard/delivery' },
-    { icon: Target, label: 'Leads', path: '/dashboard/leads' },
-    { icon: Users, label: 'Sponsors', path: '/dashboard/sponsors' }, 
-    { icon: TrendingUp, label: 'Opportunities', path: '/dashboard/opportunities' },
-    { icon: Package, label: 'Packages', path: '/dashboard/packages' },
-    { icon: FileText, label: 'Contracts', path: '/dashboard/contracts' },
-    { icon: Mic2, label: 'Activations', path: '/dashboard/activations' },
-    { icon: Calendar, label: 'Bookings', path: '/dashboard/bookings' },
-    { icon: Ticket, label: 'Events', path: '/dashboard/events' },
-    { icon: Wallet, label: 'Financials', path: '/dashboard/financials' },
-    { icon: Image, label: 'Media & Assets', path: '/dashboard/media' },
-    { icon: BarChart3, label: 'ROI & Reports', path: '/dashboard/roi' },
-    { icon: Globe, label: 'Sponsor Portal', path: '/dashboard/portal' },
-    { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
-    { icon: Activity, label: 'System Health', path: '/dashboard/system' },
+  // Define all possible menu items
+  const allMenuItems = [
+    // Core Dashboard
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', roles: ['admin', 'designer', 'creative'] },
+    
+    // Studio Module
+    { icon: BookOpen, label: 'Brand Profile', path: '/dashboard/brand-profile', roles: ['admin', 'designer'] },
+    { icon: Camera, label: 'Studio Command', path: '/dashboard/studio', roles: ['admin', 'creative'] },
+    { icon: Truck, label: 'Delivery Portal', path: '/dashboard/delivery', roles: ['admin', 'designer', 'creative'] },
+    { icon: Calendar, label: 'Bookings', path: '/dashboard/bookings', roles: ['admin', 'designer'] },
+    
+    // Event Module
+    { icon: Ticket, label: 'Events', path: '/dashboard/events', roles: ['admin', 'organizer'] },
+    
+    // Sponsor Module (Admin View)
+    { icon: Target, label: 'Leads', path: '/dashboard/leads', roles: ['admin'] },
+    { icon: Users, label: 'Sponsors', path: '/dashboard/sponsors', roles: ['admin'] }, 
+    { icon: TrendingUp, label: 'Opportunities', path: '/dashboard/opportunities', roles: ['admin'] },
+    { icon: Package, label: 'Packages', path: '/dashboard/packages', roles: ['admin'] },
+    
+    // Operations
+    { icon: FileText, label: 'Contracts', path: '/dashboard/contracts', roles: ['admin', 'organizer'] },
+    { icon: Mic2, label: 'Activations', path: '/dashboard/activations', roles: ['admin', 'organizer'] },
+    { icon: Image, label: 'Media & Assets', path: '/dashboard/media', roles: ['admin', 'organizer', 'creative'] },
+    
+    // Finance & Analytics
+    { icon: Wallet, label: 'Financials', path: '/dashboard/financials', roles: ['admin'] },
+    { icon: FileText, label: 'Invoices', path: '/dashboard/invoices', roles: ['admin', 'designer'] },
+    { icon: BarChart3, label: 'ROI & Reports', path: '/dashboard/roi', roles: ['admin', 'sponsor'] },
+    
+    // Sponsor Portal (Specific)
+    { icon: Globe, label: 'Sponsor Portal', path: '/dashboard/portal', roles: ['sponsor', 'admin'] },
+    
+    // Communication
+    { icon: MessageSquare, label: 'Messages', path: '/dashboard/messages', roles: ['admin', 'designer', 'sponsor', 'creative'] },
+    
+    // Settings
+    { icon: Settings, label: 'Settings', path: '/dashboard/settings', roles: ['all'] },
+    { icon: Activity, label: 'System Health', path: '/dashboard/system', roles: ['admin'] },
   ];
+
+  // Filter items based on role
+  const menuItems = allMenuItems.filter(item => {
+    if (item.roles.includes('all')) return true;
+    if (isAdmin) return true; // Admins see everything
+    return item.roles.includes(role);
+  });
 
   const handleSignOut = async () => {
     await signOut();
@@ -52,7 +81,9 @@ export const DashboardLayout: React.FC = () => {
        <aside className="w-64 bg-white border-r border-gray-100 hidden lg:flex flex-col fixed h-full z-30 top-0 left-0 shadow-sm">
           <div className="p-8 flex-shrink-0">
              <Link to="/" className="text-2xl font-serif font-bold tracking-tighter text-black no-underline">FashionOS</Link>
-             <span className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">Command Center</span>
+             <span className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">
+                {isSponsor ? 'Partner Portal' : 'Command Center'}
+             </span>
           </div>
           <nav className="flex-1 px-4 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 pb-4">
              {menuItems.map((item) => (
@@ -118,20 +149,22 @@ export const DashboardLayout: React.FC = () => {
                 </button>
                 <div className="relative w-full max-w-md hidden md:block">
                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                   <input type="text" placeholder="Search events, clients..." className="w-full bg-gray-50 border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-purple-100 transition-all" />
+                   <input type="text" placeholder="Search..." className="w-full bg-gray-50 border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-purple-100 transition-all" />
                 </div>
-                <Link to="/start-project" className="hidden md:block">
-                  <Button variant="accent" size="sm" className="gap-2 rounded-full">
-                    <Plus size={16} /> Add Booking
-                  </Button>
-                </Link>
+                {!isSponsor && (
+                    <Link to="/start-project" className="hidden md:block">
+                    <Button variant="accent" size="sm" className="gap-2 rounded-full">
+                        <Plus size={16} /> Add Booking
+                    </Button>
+                    </Link>
+                )}
              </div>
              <div className="flex items-center gap-4">
                 <NotificationsMenu />
                 <div className="flex items-center gap-3 pl-4 border-l border-gray-100">
                    <div className="text-right hidden sm:block">
                        <p className="text-sm font-bold leading-none truncate max-w-[120px]">{user?.email || 'User'}</p>
-                       <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Admin</p>
+                       <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{role}</p>
                    </div>
                    <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-500 overflow-hidden border-2 border-white shadow-sm">
                       {initials}
