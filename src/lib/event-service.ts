@@ -3,8 +3,11 @@ import { supabase } from './supabase';
 import { Database } from '../types/database';
 
 export type Event = Database['public']['Tables']['events']['Row'] & {
-  venue?: { name: string; city: string } | null;
+  venue?: { name: string; city: string; address?: string; geo_lat?: number; geo_lng?: number } | null;
   registrations?: any[];
+  ticket_tiers?: Database['public']['Tables']['ticket_tiers']['Row'][];
+  event_schedules?: Database['public']['Tables']['event_schedules']['Row'][];
+  event_assets?: any[];
 };
 
 export const eventService = {
@@ -38,20 +41,36 @@ export const eventService = {
   },
 
   /**
-   * Get a single event by ID
+   * Get a single event by ID with full details
    */
   async getEventById(id: string) {
     const { data, error } = await supabase
       .from('events')
       .select(`
         *,
-        venue:venues(*)
+        venue:venues(*),
+        ticket_tiers(*),
+        event_schedules(*),
+        event_assets(*)
       `)
       .eq('id', id)
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Sort schedules by time
+    if (data.event_schedules) {
+      data.event_schedules.sort((a: any, b: any) => 
+        new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+      );
+    }
+
+    // Sort tickets by price
+    if (data.ticket_tiers) {
+      data.ticket_tiers.sort((a: any, b: any) => a.price - b.price);
+    }
+
+    return data as Event;
   },
 
   /**

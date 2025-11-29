@@ -1,3 +1,4 @@
+
 import React, { ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from './Button';
@@ -13,7 +14,7 @@ interface ErrorBoundaryState {
 }
 
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  state: ErrorBoundaryState = {
+  public state: ErrorBoundaryState = {
     hasError: false,
     error: null,
   };
@@ -40,7 +41,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       }
 
       // Use type assertion for import.meta to access env property safely
-      const isDev = (import.meta as any).env?.DEV;
+      // @ts-ignore
+      const isDev = import.meta.env?.DEV;
 
       return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center bg-white">

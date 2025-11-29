@@ -42,6 +42,7 @@ const DirectoryPage = lazy(() => import('./pages/public/DirectoryPage').then(m =
 const ProfileDetailPage = lazy(() => import('./pages/public/ProfileDetailPage').then(m => ({ default: m.ProfileDetailPage })));
 const DesignerProfilePage = lazy(() => import('./pages/public/DesignerProfilePage').then(m => ({ default: m.DesignerProfilePage })));
 const EventsPage = lazy(() => import('./pages/public/EventsPage').then(m => ({ default: m.EventsPage })));
+const EventDetailPage = lazy(() => import('./pages/public/EventDetailPage').then(m => ({ default: m.EventDetailPage })));
 
 // Booking Wizard
 const StepCategory = lazy(() => import('./pages/public/booking/StepCategory').then(m => ({ default: m.StepCategory })));
@@ -153,6 +154,7 @@ const App: React.FC = () => {
             <Route path="/designers/:id" element={<DesignerProfilePage />} />
             
             <Route path="/events" element={<EventsPage />} />
+            <Route path="/events/:id" element={<EventDetailPage />} />
             
             {/* Placeholders/Redirects */}
             <Route path="/portfolio" element={<DirectoryPage />} />
