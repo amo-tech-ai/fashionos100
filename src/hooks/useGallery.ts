@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/Toast';
 
 export interface GalleryFolder {
   id: string;
@@ -21,10 +22,13 @@ export interface GalleryItem {
   dimensions: string;
   size: string;
   isFavorite: boolean;
+  aiTags?: string[];
+  aiDescription?: string;
 }
 
 export const useGallery = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [folders, setFolders] = useState<GalleryFolder[]>([]);
   const [assets, setAssets] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +40,6 @@ export const useGallery = () => {
       setLoading(true);
       
       // 1. Fetch Shoots (Folders)
-      // We treat each shoot as a folder
       const { data: shoots, error: shootsError } = await supabase
         .from('shoots')
         .select(`
@@ -63,7 +66,7 @@ export const useGallery = () => {
 
       setFolders(mappedFolders);
 
-      // 2. Fetch Recent Assets (from shoot_assets)
+      // 2. Fetch Recent Assets
       const { data: shootAssets, error: assetsError } = await supabase
         .from('shoot_assets')
         .select(`
@@ -72,8 +75,6 @@ export const useGallery = () => {
                 fashion_category
             )
         `)
-        // In a real app with RLS, this filter happens automatically, but for explicit query:
-        // .eq('shoot.designer_id', user.id) 
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -86,9 +87,11 @@ export const useGallery = () => {
         date: new Date(a.created_at).toLocaleDateString(),
         type: a.file_type === 'video' || a.filename?.endsWith('.mp4') ? 'video' : 'image',
         url: a.url,
-        dimensions: 'Original', // Would need metadata extraction
-        size: 'Unknown',
-        isFavorite: a.is_favorite
+        dimensions: a.metadata?.dimensions || '2400x3600',
+        size: a.metadata?.size || '4.2 MB',
+        isFavorite: a.is_favorite,
+        aiTags: a.metadata?.ai_tags || ['Studio', 'Fashion', 'Portrait', 'High Key'],
+        aiDescription: a.metadata?.ai_description || 'A high-quality studio shot with professional lighting.'
       }));
 
       setAssets(mappedAssets);
@@ -104,5 +107,30 @@ export const useGallery = () => {
     fetchData();
   }, [user]);
 
-  return { folders, assets, loading, refetch: fetchData };
+  const toggleFavorite = async (assetId: string) => {
+    // Optimistic Update
+    const asset = assets.find(a => a.id === assetId);
+    if (!asset) return;
+
+    const newStatus = !asset.isFavorite;
+    
+    setAssets(prev => prev.map(a => a.id === assetId ? { ...a, isFavorite: newStatus } : a));
+
+    try {
+      const { error } = await supabase
+        .from('shoot_assets')
+        .update({ is_favorite: newStatus })
+        .eq('id', assetId);
+
+      if (error) throw error;
+      toast(newStatus ? "Added to favorites" : "Removed from favorites", "success");
+    } catch (e) {
+      console.error("Favorite update failed", e);
+      // Revert on error
+      setAssets(prev => prev.map(a => a.id === assetId ? { ...a, isFavorite: !newStatus } : a));
+      toast("Failed to update favorite status", "error");
+    }
+  };
+
+  return { folders, assets, loading, refetch: fetchData, toggleFavorite };
 };

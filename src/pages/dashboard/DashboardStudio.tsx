@@ -1,40 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Calendar, Camera, CheckCircle, Clock, MoreHorizontal, 
-  Filter, Search, Download, Eye, AlertCircle, Loader2, Plus 
+  Camera, CheckCircle, Clock, MoreHorizontal, 
+  Filter, Search, AlertCircle, Loader2, Plus 
 } from 'lucide-react';
-import { FadeIn } from '../../components/FadeIn';
 import { PageHeader, StatCard } from '../../components/dashboard/Shared';
 import { Button } from '../../components/Button';
 import { AICopilotWidget } from '../../components/dashboard/Widgets';
 import { supabase } from '../../lib/supabase';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useRealtime } from '../../hooks/useRealtime';
 import { useToast } from '../../components/Toast';
-
-const StatusBadge = ({ status }: { status: string }) => {
-  const styles: Record<string, string> = {
-    requested: "bg-amber-50 text-amber-700 border-amber-200",
-    confirmed: "bg-blue-50 text-blue-700 border-blue-200",
-    production: "bg-purple-50 text-purple-700 border-purple-200 animate-pulse",
-    post_production: "bg-pink-50 text-pink-700 border-pink-200",
-    review: "bg-indigo-50 text-indigo-700 border-indigo-200",
-    completed: "bg-green-50 text-green-700 border-green-200",
-    cancelled: "bg-red-50 text-red-700 border-red-200",
-    draft: "bg-gray-100 text-gray-600 border-gray-200"
-  };
-  const normalized = status?.toLowerCase() || 'draft';
-  
-  // Map for display labels if needed, otherwise just capitalize
-  const label = normalized.replace('_', ' ');
-
-  return (
-    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${styles[normalized] || 'bg-gray-100'}`}>
-      {label}
-    </span>
-  );
-};
+import { StatusBadge } from '../../components/StatusBadge';
+import { EmptyState } from '../../components/EmptyState';
 
 export const DashboardStudio: React.FC = () => {
   const navigate = useNavigate();
@@ -136,15 +114,14 @@ export const DashboardStudio: React.FC = () => {
                 <Loader2 className="animate-spin text-gray-300" size={32} />
               </div>
             ) : bookings.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-                <Camera size={48} className="mb-4 opacity-20" />
-                <p>No bookings found.</p>
-                <Link to="/start-project" className="mt-4">
-                    <Button variant="outline" size="sm" className="gap-2">
-                        <Plus size={14} /> Create Manual Booking
-                    </Button>
-                </Link>
-              </div>
+              <EmptyState
+                icon={Camera}
+                title="No bookings found"
+                description="No active shoots match your current filters."
+                actionLabel="Create Manual Booking"
+                onAction={() => navigate('/start-project')}
+                className="border-none h-64"
+              />
             ) : (
               <table className="w-full text-left text-sm">
                 <thead className="bg-white text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-gray-50">
@@ -178,7 +155,6 @@ export const DashboardStudio: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button className="p-1.5 hover:bg-gray-100 rounded-md text-gray-500" title="View Details"><Eye size={16} /></button>
                             <button className="p-1.5 hover:bg-gray-100 rounded-md text-gray-500"><MoreHorizontal size={16} /></button>
                           </div>
                         </td>

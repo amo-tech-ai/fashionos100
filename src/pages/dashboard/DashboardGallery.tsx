@@ -11,6 +11,7 @@ import { useGallery, GalleryItem, GalleryFolder } from '../../hooks/useGallery';
 import { FileUploader } from '../../components/FileUploader';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
+import { AssetDetailModal } from '../../components/dashboard/AssetDetailModal';
 
 // --- Sub-Components ---
 
@@ -51,8 +52,12 @@ const FolderCard: React.FC<{ folder: GalleryFolder }> = ({ folder }) => (
   </div>
 );
 
-const MediaCard: React.FC<{ item: GalleryItem }> = ({ item }) => (
-  <div className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer break-inside-avoid mb-6">
+const MediaCard: React.FC<{ 
+  item: GalleryItem; 
+  onToggleFavorite: (id: string) => void;
+  onOpenDetail: (item: GalleryItem) => void;
+}> = ({ item, onToggleFavorite, onOpenDetail }) => (
+  <div className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer break-inside-avoid mb-6" onClick={() => onOpenDetail(item)}>
     <div className="aspect-[4/5] relative overflow-hidden bg-gray-50">
       <img src={item.url} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
       
@@ -69,7 +74,10 @@ const MediaCard: React.FC<{ item: GalleryItem }> = ({ item }) => (
       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4">
          <div className="flex justify-between items-start">
              <div className="flex gap-2">
-                <button className={`p-2 bg-white/20 backdrop-blur hover:bg-white hover:text-black text-white rounded-full transition-colors ${item.isFavorite ? 'text-red-500 bg-white' : ''}`}>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onToggleFavorite(item.id); }}
+                  className={`p-2 bg-white/20 backdrop-blur hover:bg-white hover:text-red-500 text-white rounded-full transition-colors ${item.isFavorite ? 'text-red-500 bg-white' : ''}`}
+                >
                    <Heart size={16} className={item.isFavorite ? "fill-current" : ""} />
                 </button>
                 <button className="p-2 bg-white/20 backdrop-blur hover:bg-white hover:text-black text-white rounded-full transition-colors">
@@ -109,8 +117,10 @@ export const DashboardGallery: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<GalleryItem | null>(null);
   
-  const { folders, assets, loading, refetch } = useGallery();
+  const { folders, assets, loading, refetch, toggleFavorite } = useGallery();
   const { success, error } = useToast();
   const [isUploading, setIsUploading] = useState(false);
 
@@ -119,7 +129,8 @@ export const DashboardGallery: React.FC = () => {
   const filteredAssets = assets.filter(item => {
       const matchesCategory = categoryFilter === 'All Categories' || item.category === categoryFilter;
       const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
+      const matchesFavorite = showFavoritesOnly ? item.isFavorite : true;
+      return matchesCategory && matchesSearch && matchesFavorite;
   });
 
   const handleUpload = async (files: File[]) => {
@@ -162,8 +173,17 @@ export const DashboardGallery: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-20">
+    <div className="space-y-8 animate-in fade-in duration-500 pb-20 relative">
       
+      {/* Detail Modal */}
+      {selectedAsset && (
+        <AssetDetailModal 
+          asset={selectedAsset} 
+          onClose={() => setSelectedAsset(null)} 
+          onToggleFavorite={toggleFavorite}
+        />
+      )}
+
       {/* 1. Header */}
       <div className="flex flex-col md:flex-row justify-between items-end gap-4">
         <div>
@@ -234,6 +254,18 @@ export const DashboardGallery: React.FC = () => {
                />
             </div>
             <div className="flex items-center gap-2 w-full md:w-auto px-2 overflow-x-auto hide-scrollbar">
+               {/* Favorites Toggle */}
+               <button 
+                 onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
+                    showFavoritesOnly 
+                       ? 'bg-red-50 text-red-600 border-red-200' 
+                       : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                 }`}
+               >
+                 <Heart size={12} className={showFavoritesOnly ? "fill-current" : ""} /> Favorites
+               </button>
+
                <div className="h-8 w-px bg-gray-100 mx-2 hidden md:block" />
                
                {categories.map(cat => (
@@ -270,7 +302,12 @@ export const DashboardGallery: React.FC = () => {
          <>
             <div className="columns-1 md:columns-2 lg:columns-4 gap-6 space-y-6">
                {filteredAssets.map((item) => (
-                  <MediaCard key={item.id} item={item} />
+                  <MediaCard 
+                    key={item.id} 
+                    item={item} 
+                    onToggleFavorite={toggleFavorite} 
+                    onOpenDetail={setSelectedAsset}
+                  />
                ))}
             </div>
          </>
@@ -282,9 +319,10 @@ export const DashboardGallery: React.FC = () => {
             </div>
             <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">No assets found</h2>
             <p className="text-gray-500 max-w-md mx-auto mb-8">
-               Try adjusting your search filters or upload new content.
+               Try adjusting your search filters, clearing the favorites toggle, or upload new content.
             </p>
             <div className="flex justify-center gap-4">
+               <Button variant="outline" onClick={() => {setSearchQuery(''); setShowFavoritesOnly(false); setCategoryFilter('All Categories')}}>Clear Filters</Button>
                <Button variant="primary" className="gap-2"><Camera size={16} /> Book a Shoot</Button>
             </div>
          </div>

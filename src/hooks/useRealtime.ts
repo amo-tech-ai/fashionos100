@@ -16,8 +16,10 @@ export const useRealtime = (
   filter?: string
 ) => {
   useEffect(() => {
+    const channelName = `public:${table}${filter ? `:${filter}` : ''}`;
+    
     const channel = supabase
-      .channel(`public:${table}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -27,10 +29,17 @@ export const useRealtime = (
           filter: filter,
         },
         (payload) => {
+          // console.log(`Realtime update on ${table}:`, payload);
           callback(payload);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          // console.log(`Subscribed to ${channelName}`);
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error(`Failed to subscribe to ${channelName}`);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
