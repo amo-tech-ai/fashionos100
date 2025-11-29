@@ -12,6 +12,11 @@ export const StepCategory: React.FC = () => {
   const { state, updateState } = useBooking();
   const navigate = useNavigate();
 
+  // Get detected category from AI context
+  const recommendedCategory = state.brandProfile?.identity?.core_description 
+    ? state.category // If AI set the category in state, it matches
+    : null;
+
   const handleSelect = (categoryId: string) => {
     updateState({ category: categoryId });
   };
@@ -52,6 +57,7 @@ export const StepCategory: React.FC = () => {
                 description={cat.desc}
                 icon={cat.icon}
                 isSelected={state.category === cat.id}
+                isRecommended={state.category === cat.id} // Since AI pre-selects, if it matches current selection it is recommended
                 onClick={() => handleSelect(cat.id)}
              />
           ))}

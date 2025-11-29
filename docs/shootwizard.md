@@ -89,9 +89,9 @@ The user lands on `/dashboard/shoots/[id]`. The view is a **Kanban-style board**
 ## 5. Implementation Phases
 
 ### Phase 1 — Wizard MVP
-*   [ ] Build `WizardLayout` (Progress bar, fluid container).
-*   [ ] Implement `BrandUrlInput` with Gemini hook.
-*   [ ] Create `DraftCreation` logic (Insert to Supabase `shoots` table).
+*   [x] Build `WizardLayout` (Progress bar, fluid container).
+*   [x] Implement `BrandUrlInput` with Gemini hook.
+*   [x] Create `DraftCreation` logic (Insert to Supabase `shoots` table).
 
 ### Phase 2 — Dashboard Foundation
 *   [ ] Create `/dashboard/shoots/[id]` page.
@@ -99,8 +99,8 @@ The user lands on `/dashboard/shoots/[id]`. The view is a **Kanban-style board**
 *   [ ] Implement `PricingSidebar` (Real-time calc).
 
 ### Phase 3 — AI Enhancements
-*   [ ] Wire up "Auto-Fill Brief" using Brand Profile data.
-*   [ ] Implement "Suggest Shots" using Gemini Thinking.
+*   [x] Wire up "Auto-Fill Brief" using Brand Profile data.
+*   [x] Implement "Suggest Shots" using Gemini Thinking.
 
 ---
 

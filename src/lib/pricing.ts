@@ -1,4 +1,6 @@
 
+import { FullBrandProfile } from '../types/brand';
+
 export type ServiceType = 'photography' | 'video' | 'hybrid';
 export type RetouchingType = 'basic' | 'high-end';
 
@@ -13,6 +15,9 @@ export interface BookingState {
   // Core
   service: ServiceType;
   
+  // AI Context
+  brandProfile?: FullBrandProfile;
+
   // Step 1-6
   category: string;
   style: string;

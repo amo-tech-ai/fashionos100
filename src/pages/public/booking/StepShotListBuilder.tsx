@@ -41,9 +41,10 @@ export const StepShotListBuilder: React.FC = () => {
   const handleAiSuggest = async () => {
     if (!state.category) return;
     
-    toast("AI is analyzing your style to suggest shots...", "info");
+    toast("AI is reasoning about your brand style...", "info");
     
-    const result = await recommendShots(state.category, state.style || 'standard');
+    // Pass brandProfile from context to get tailored suggestions
+    const result = await recommendShots(state.category, state.style || 'standard', state.brandProfile);
     
     if (result && result.suggestedAngles) {
         const newItems: ShotListItem[] = result.suggestedAngles.map(angle => ({
@@ -54,7 +55,7 @@ export const StepShotListBuilder: React.FC = () => {
         }));
         
         updateState({ shotList: [...state.shotList, ...newItems] });
-        toast(`Added ${newItems.length} suggested shots`, "success");
+        toast(`Added ${newItems.length} shots tailored to your brand`, "success");
     }
   };
 

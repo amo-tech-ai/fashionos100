@@ -45,7 +45,7 @@ export const StepBrief: React.FC = () => {
     fetchBrand();
   }, []);
 
-  // Auto-fill logic
+  // Auto-fill logic: Use brand info if available, otherwise default
   useEffect(() => {
     if (loadingBrand) return;
 

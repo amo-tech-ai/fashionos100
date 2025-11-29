@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon, Sparkles } from 'lucide-react';
 
 interface CategoryCardProps {
   id: string;
@@ -8,6 +8,7 @@ interface CategoryCardProps {
   description: string;
   icon: LucideIcon;
   isSelected: boolean;
+  isRecommended?: boolean;
   onClick: () => void;
 }
 
@@ -16,6 +17,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
   description,
   icon: Icon,
   isSelected,
+  isRecommended,
   onClick
 }) => {
   return (
@@ -24,11 +26,19 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
       className={`group flex flex-col p-8 rounded-2xl border transition-all duration-300 w-full h-full text-left relative overflow-hidden ${
         isSelected
           ? 'border-fashion-purple bg-purple-50/30 shadow-xl ring-2 ring-fashion-purple ring-offset-2'
-          : 'border-gray-100 bg-white hover:border-gray-300 hover:shadow-xl hover:scale-[1.02]'
+          : isRecommended 
+            ? 'border-purple-200 bg-white shadow-md ring-1 ring-purple-100'
+            : 'border-gray-100 bg-white hover:border-gray-300 hover:shadow-xl hover:scale-[1.02]'
       }`}
       aria-checked={isSelected}
       role="radio"
     >
+      {isRecommended && (
+        <div className="absolute top-3 right-3 flex items-center gap-1 bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+          <Sparkles size={10} /> Recommended
+        </div>
+      )}
+      
       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300 ${
         isSelected 
           ? 'bg-fashion-purple text-white shadow-lg shadow-purple-500/30' 

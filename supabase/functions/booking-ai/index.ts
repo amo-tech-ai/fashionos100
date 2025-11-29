@@ -20,54 +20,79 @@ serve(async (req) => {
       const schema = {
         type: Type.OBJECT,
         properties: {
-          title: { type: Type.STRING, description: "A catchy 3-5 word title for the shoot concept" },
-          concept: { type: Type.STRING, description: "High level summary of the visual direction" },
-          mood: { type: Type.STRING, description: "Adjectives describing the feeling (e.g. Moody, Ethereal)" },
-          lighting: { type: Type.STRING, description: "Technical lighting notes (e.g. Hard Flash, Golden Hour)" },
-          styling: { type: Type.STRING, description: "Wardrobe and prop direction" },
-          tags: { type: Type.ARRAY, items: { type: Type.STRING } }
+          polished_text: { type: Type.STRING, description: "The rewritten, professional brief." },
+          keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+          mood: { type: Type.STRING },
+          visual_style: { type: Type.STRING }
         },
-        required: ["title", "concept", "mood", "lighting", "styling", "tags"]
+        required: ["polished_text", "keywords", "mood", "visual_style"]
       };
 
+      let systemPrompt = `You are a Fashion Creative Director. Rewrite the user's brief to be professional and structured.`;
+      
+      // Add brand voice if available
+      if (context.brandContext) {
+          systemPrompt += `
+            Align the tone with this brand identity:
+            - Mood: ${context.brandContext.mood?.join(', ') || 'Modern'}
+            - Voice: ${context.brandContext.voice?.join(', ') || 'Professional'}
+          `;
+      }
+
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview', // Use Pro for creative writing
-        contents: [{ role: 'user', parts: [{ text: `Rewrite this fashion shoot brief to be professional, actionable, and industry-standard. Input: "${context.rawText}"` }] }],
+        model: 'gemini-2.5-flash', 
+        contents: [{ role: 'user', parts: [{ text: `Input Brief: "${context.rawText}"` }] }],
         config: {
           responseMimeType: "application/json",
           responseSchema: schema,
-          temperature: 0.7
+          systemInstruction: systemPrompt
         }
       });
 
       return new Response(response.text || "{}", { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    // --- 2. SHOT RECOMMENDER ---
+    // --- 2. SHOT RECOMMENDER (Enhanced) ---
     if (action === 'recommend-shots') {
       const schema = {
         type: Type.OBJECT,
         properties: {
           min: { type: Type.NUMBER },
           optimal: { type: Type.NUMBER },
-          reasoning: { type: Type.STRING },
+          reasoning: { type: Type.STRING, description: "Explanation of why these shots are needed based on the brand vibe." },
           suggestedAngles: { type: Type.ARRAY, items: { type: Type.STRING } }
         },
         required: ["min", "optimal", "reasoning", "suggestedAngles"]
       };
 
+      // Construct a rich prompt that encourages reasoning (Thinking Simulation)
+      let brandDetails = "Standard Fashion Brand";
+      if (context.brandContext) {
+         brandDetails = `
+            Brand Description: ${context.brandContext.description || ''}
+            Moods: ${context.brandContext.mood?.join(', ') || ''}
+            Audience: ${context.brandContext.target_audience?.join(', ') || ''}
+         `;
+      }
+
       const prompt = `
-        Context: Fashion Shoot. 
-        Category: ${context.category}. 
-        Style: ${context.style}.
+        Task: Recommend specific photography shots for a fashion campaign.
         
-        Task: Recommend the optimal number of shots per look/product.
-        Example: E-commerce usually needs Front, Back, Side, Detail (4 shots).
-        Provide specific angles.
+        Context:
+        - Category: ${context.category}
+        - Visual Style: ${context.style}
+        - Brand DNA: ${brandDetails}
+
+        Think step-by-step:
+        1. Analyze the Brand DNA to understand if they need abstract, detail-oriented, or lifestyle shots.
+        2. Consider the 'Category' requirements (e.g. E-comm needs front/back, Editorial needs mood).
+        3. Generate a list of 4-8 specific shot angles/compositions that blend the Category requirements with the Brand Vibe.
+        
+        Output JSON matching the schema.
       `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash', // Faster model
+        model: 'gemini-2.5-flash',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
           responseMimeType: "application/json",

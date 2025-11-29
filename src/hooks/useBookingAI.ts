@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabaseUrl, supabaseAnonKey } from '../lib/supabase';
 import { AiRequestPayload, PolishedBrief, ShotRecommendation } from '../types/ai-booking';
+import { FullBrandProfile } from '../types/brand';
 
 export const useBookingAI = () => {
   const [loading, setLoading] = useState(false);
@@ -28,17 +29,34 @@ export const useBookingAI = () => {
     }
   };
 
-  const polishBrief = async (rawText: string): Promise<PolishedBrief | null> => {
+  const polishBrief = async (rawText: string, brandProfile?: FullBrandProfile): Promise<PolishedBrief | null> => {
     return await callAI({
       action: 'polish-brief',
-      context: { rawText }
+      context: { 
+        rawText,
+        // Pass brand context for tone matching
+        brandContext: brandProfile ? {
+             mood: brandProfile.visuals?.moods,
+             voice: brandProfile.identity?.tone_of_voice
+        } : undefined
+      }
     });
   };
 
-  const recommendShots = async (category: string, style: string): Promise<ShotRecommendation | null> => {
+  const recommendShots = async (category: string, style: string, brandProfile?: FullBrandProfile): Promise<ShotRecommendation | null> => {
     return await callAI({
       action: 'recommend-shots',
-      context: { category, style }
+      context: { 
+        category, 
+        style,
+        // Pass detailed brand context for smarter shot selection
+        brandContext: brandProfile ? {
+            description: brandProfile.identity?.core_description,
+            colors: brandProfile.visuals?.colors,
+            mood: brandProfile.visuals?.moods,
+            target_audience: brandProfile.identity?.target_audience
+        } : undefined
+      }
     });
   };
 

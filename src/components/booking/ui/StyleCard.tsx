@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Sparkles } from 'lucide-react';
 
 interface StyleCardProps {
   id: string;
@@ -8,6 +8,7 @@ interface StyleCardProps {
   price: number;
   imageUrl: string;
   isSelected: boolean;
+  isRecommended?: boolean;
   onClick: () => void;
 }
 
@@ -16,6 +17,7 @@ export const StyleCard: React.FC<StyleCardProps> = ({
   price,
   imageUrl,
   isSelected,
+  isRecommended,
   onClick
 }) => {
   return (
@@ -24,7 +26,9 @@ export const StyleCard: React.FC<StyleCardProps> = ({
       className={`group relative h-[420px] rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 ${
         isSelected 
           ? 'ring-4 ring-fashion-purple ring-offset-4 shadow-2xl scale-[1.02]' 
-          : 'hover:shadow-2xl hover:-translate-y-2'
+          : isRecommended
+            ? 'ring-2 ring-purple-200 hover:shadow-xl'
+            : 'hover:shadow-2xl hover:-translate-y-2'
       }`}
       role="radio"
       aria-checked={isSelected}
@@ -43,6 +47,15 @@ export const StyleCard: React.FC<StyleCardProps> = ({
         isSelected ? 'opacity-100' : 'opacity-80 group-hover:opacity-90'
       }`} />
       
+      {/* AI Recommended Badge */}
+      {isRecommended && !isSelected && (
+        <div className="absolute top-4 right-4 z-20">
+           <span className="bg-white/90 backdrop-blur text-purple-700 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-lg">
+              <Sparkles size={10} /> AI Match
+           </span>
+        </div>
+      )}
+
       <div className="absolute bottom-0 left-0 p-8 w-full">
         <div className="flex justify-between items-end">
           <div>

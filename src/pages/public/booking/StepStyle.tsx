@@ -12,6 +12,11 @@ export const StepStyle: React.FC = () => {
   const { state, updateState } = useBooking();
   const navigate = useNavigate();
 
+  // Try to match fuzzy recommendation
+  // E.g. if AI suggested "Streetwear", we check if "street" style contains that key
+  // For now, we rely on exact ID match from the initial AI set in StartProjectPage
+  const recommendedStyleId = state.style;
+
   const handleSelect = (styleId: string) => {
     updateState({ style: styleId });
   };
@@ -52,6 +57,7 @@ export const StepStyle: React.FC = () => {
                price={style.price}
                imageUrl={style.image}
                isSelected={state.style === style.id}
+               isRecommended={recommendedStyleId === style.id}
                onClick={() => handleSelect(style.id)}
              />
           ))}

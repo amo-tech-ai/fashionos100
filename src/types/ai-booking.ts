@@ -5,6 +5,13 @@ export interface AiRequestPayload {
     style?: string;
     rawText?: string;
     currentCount?: number;
+    brandContext?: {
+      mood?: string[] | null;
+      voice?: string[] | null;
+      description?: string | null;
+      colors?: string[] | null;
+      target_audience?: string[] | null;
+    };
   };
 }
 

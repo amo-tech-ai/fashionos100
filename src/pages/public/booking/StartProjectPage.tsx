@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Video, Layers, Sparkles, ArrowRight, Globe, Loader2, Search, CheckCircle2 } from 'lucide-react';
+import { Camera, Video, Layers, Sparkles, Globe, Loader2, Search, CheckCircle2 } from 'lucide-react';
 import { useBooking } from '../../../context/BookingContext';
 import { FadeIn } from '../../../components/FadeIn';
 import { Button } from '../../../components/Button';
-import { Input } from '../../../components/forms/Input';
 import { supabaseUrl, supabaseAnonKey } from '../../../lib/supabase';
 import { ServiceType } from '../../../lib/pricing';
+import { FullBrandProfile } from '../../../types/brand';
 
 const SERVICES: { id: ServiceType; title: string; desc: string; icon: any }[] = [
   { 
@@ -31,7 +31,7 @@ const SERVICES: { id: ServiceType; title: string; desc: string; icon: any }[] = 
 ];
 
 export const StartProjectPage: React.FC = () => {
-  const { state, updateState } = useBooking();
+  const { updateState } = useBooking();
   const navigate = useNavigate();
   
   // AI State
@@ -58,10 +58,21 @@ export const StartProjectPage: React.FC = () => {
       const result = await response.json();
       if (result.success && result.data) {
         setAnalysisResult(result.data);
-        // Pre-fill context
+        
+        // 1. Construct Full Brand Profile for context
+        // (We mock the ID/Company structure since this is a guest flow)
+        const brandProfile: FullBrandProfile = {
+           company: { id: 'guest', name: result.data.brand_name || 'My Brand', owner_id: 'guest', created_at: new Date().toISOString() },
+           identity: result.data.identity,
+           visuals: result.data.visual_identity,
+           recommendations: null // Recommendations generated later
+        };
+
+        // 2. Pre-fill context with Smart Defaults
         updateState({
             category: result.data.detected_category,
             style: result.data.recommended_style,
+            brandProfile: brandProfile, // Save to context
             // Pre-inject brief with AI findings
             brief: `Brand Identity: ${result.data.identity?.core_description}\nVisual Mood: ${result.data.visual_identity?.mood?.join(', ')}`
         });
