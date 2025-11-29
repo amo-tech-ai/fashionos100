@@ -22,6 +22,7 @@ const INITIAL_STATE: DealState = {
   eventId: '',
   eventName: '',
   leadScore: 0,
+  leadCategory: undefined,
   leadNotes: '',
   packageTier: 'Gold',
   cashValue: 0,

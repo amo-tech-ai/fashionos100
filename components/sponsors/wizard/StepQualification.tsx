@@ -62,19 +62,25 @@ export const StepQualification: React.FC<Props> = ({ data, update }) => {
           'Authorization': `Bearer ${supabaseAnonKey}`
         },
         body: JSON.stringify({
-          action: 'lead-score',
+          action: 'score-lead', // Matched backend action name
           sponsorName: data.sponsorName || 'Unknown',
           sponsorIndustry: data.sponsorIndustry || 'General',
           eventDetails: data.eventName || 'Unknown Event'
         })
       });
+      
+      if (!response.ok) throw new Error('AI request failed');
+      
       const res = await response.json();
+      
       update({ 
-        leadScore: res.score || 75, 
+        leadScore: res.score || 0, 
+        leadCategory: res.category,
         leadNotes: res.reasoning || "AI Analysis complete."
       });
     } catch (e) {
       console.error(e);
+      alert("AI Analysis failed. Please check your connection.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -136,12 +142,29 @@ export const StepQualification: React.FC<Props> = ({ data, update }) => {
           </div>
           
           {data.leadScore > 0 && (
-            <div className="mb-4 flex items-center gap-4 bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-100">
-              <div className="flex flex-col items-center justify-center bg-white w-16 h-16 rounded-full shadow-sm border border-purple-100 shrink-0">
-                <span className="text-xl font-bold text-purple-700">{data.leadScore}</span>
-                <span className="text-[10px] text-gray-400 uppercase">Score</span>
+            <div className="mb-4 flex flex-col gap-3 bg-gradient-to-r from-purple-50 to-pink-50 p-5 rounded-2xl border border-purple-100 animate-in fade-in">
+              <div className="flex items-center gap-4">
+                <div className="flex flex-col items-center justify-center bg-white w-16 h-16 rounded-full shadow-sm border border-purple-100 shrink-0 relative">
+                   <span className="text-xl font-bold text-purple-700">{data.leadScore}</span>
+                   <span className="text-[9px] text-gray-400 uppercase tracking-wider">Score</span>
+                </div>
+                
+                <div className="flex-1">
+                   <div className="flex items-center gap-2 mb-1">
+                      <h4 className="font-bold text-purple-900 text-sm">AI Fit Analysis</h4>
+                      {data.leadCategory && (
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${
+                           data.leadCategory === 'High' ? 'bg-green-100 text-green-700' :
+                           data.leadCategory === 'Medium' ? 'bg-amber-100 text-amber-700' :
+                           'bg-red-100 text-red-700'
+                        }`}>
+                           {data.leadCategory} Potential
+                        </span>
+                      )}
+                   </div>
+                   <p className="text-sm text-gray-600 leading-relaxed">{data.leadNotes}</p>
+                </div>
               </div>
-              <p className="text-sm text-gray-700 italic flex-1">"{data.leadNotes}"</p>
             </div>
           )}
 

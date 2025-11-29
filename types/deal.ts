@@ -23,6 +23,7 @@ export interface DealState {
   eventId: string;
   eventName?: string; // Display name
   leadScore: number;
+  leadCategory?: 'High' | 'Medium' | 'Low'; // Added for AI Classification
   leadNotes: string;
   
   // Package
