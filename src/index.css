@@ -1,10 +1,7 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  font-family: 'Inter', sans-serif;
-}
 
 html, body {
   height: 100%;
@@ -12,20 +9,16 @@ html, body {
   padding: 0;
   scroll-behavior: smooth;
   background-color: #FBF8F5;
-  -webkit-font-smoothing: antialiased;
 }
 
 #root {
   /* 
-     Fix: Removed 'height: 100%' constraint.
-     min-height allows the public pages to grow naturally.
-     DashboardLayout will enforce its own height constraints.
+     Fix: Removed 'display: flex' and 'flex-direction: column'.
+     This allows DashboardLayout to handle its own h-screen/overflow logic 
+     without being constrained by a parent flex container.
   */
   min-height: 100%;
   width: 100%;
-  isolation: isolate;
-  display: flex;
-  flex-direction: column;
 }
 
 /* Custom scrollbar */

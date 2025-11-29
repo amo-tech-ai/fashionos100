@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, HelpCircle, CheckCircle2, ChevronDown, Loader2 } from 'lucide-react';
+import { Mail, Phone, MapPin, HelpCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { SectionTag } from '../../components/SectionTag';
@@ -24,7 +24,7 @@ export const ContactPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Trigger Email Notification via Edge Function
+      // 1. Call Edge Function for Email
       const response = await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
         method: 'POST',
         headers: {
@@ -32,7 +32,7 @@ export const ContactPage: React.FC = () => {
           'Authorization': `Bearer ${supabaseAnonKey}`
         },
         body: JSON.stringify({
-          to: 'hello@fashionos.com', // In prod, this would be dynamic or admin email
+          to: 'hello@fashionos.com', // Admin email
           template: 'alert',
           data: { 
             title: `New Contact: ${formData.subject}`,
@@ -44,13 +44,13 @@ export const ContactPage: React.FC = () => {
       });
 
       if (!response.ok) {
-         console.warn("Email service unavailable, simulating success");
+         console.warn("Email service unavailable, showing success anyway for MVP");
       }
 
       setIsSuccess(true);
     } catch (error) {
       console.error("Submission error", error);
-      // Still show success to user if it's just a dev env issue
+      // Fallback success state for demo
       setIsSuccess(true);
     } finally {
       setIsSubmitting(false);

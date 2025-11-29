@@ -67,7 +67,7 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({ onClose, onApply
     const days = [];
 
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-9 w-9" />);
+      days.push(<div key={`empty-${i}`} className="h-9 w-full" />);
     }
 
     for (let i = 1; i <= daysInMonth; i++) {
@@ -91,7 +91,7 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({ onClose, onApply
           onMouseEnter={() => !disabled && setHoverDate(date)}
           onMouseLeave={() => setHoverDate(null)}
           disabled={disabled}
-          className={`h-9 w-9 flex items-center justify-center text-xs font-medium transition-all relative
+          className={`h-9 w-full flex items-center justify-center text-xs font-medium transition-all relative
             ${disabled ? 'text-gray-300 cursor-not-allowed' : isSelected ? 'bg-black text-white z-10' : 'hover:bg-gray-100 text-gray-700'}
             ${inRange ? 'bg-gray-100' : ''}
             ${roundedClass}
@@ -107,7 +107,7 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({ onClose, onApply
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   return (
-    <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 w-[320px] animate-in fade-in zoom-in-95 duration-200">
+    <div className="bg-white md:rounded-2xl md:shadow-2xl md:border md:border-gray-100 p-6 w-full max-w-[320px] mx-auto animate-in fade-in zoom-in-95 duration-200">
       <div className="flex justify-between items-center mb-6">
         <button onClick={() => changeMonth(-1)} className="p-2 hover:bg-gray-50 rounded-full transition-colors"><ChevronLeft size={16} /></button>
         <span className="font-serif font-bold text-lg">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>

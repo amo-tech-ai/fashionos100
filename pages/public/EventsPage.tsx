@@ -38,6 +38,16 @@ export const EventsPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Lock body scroll when mobile calendar is open
+  useEffect(() => {
+    if (showCalendar && window.innerWidth < 768) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [showCalendar]);
+
   const handleApplyDate = (start: Date | null, end: Date | null) => {
     setDateRange({ start, end });
     setShowCalendar(false);
@@ -214,15 +224,29 @@ export const EventsPage: React.FC = () => {
                     
                     <div className="relative shrink-0">
                        <button 
-                          onClick={() => setShowCalendar(!showCalendar)}
+                          onClick={() => setShowCalendar(true)}
                           className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full text-xs font-bold border transition-all whitespace-nowrap ${showCalendar || dateRange.start ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}`}
                        >
                           <Calendar size={14} /> {getDateLabel()} <ChevronDown size={12} />
                        </button>
+                       
                        {showCalendar && (
-                          <div className="absolute top-12 left-0 z-50 shadow-xl rounded-2xl">
-                             <CalendarPicker onClose={() => setShowCalendar(false)} onApply={handleApplyDate} initialStart={dateRange.start} initialEnd={dateRange.end} />
-                          </div>
+                          <>
+                             {/* Mobile Backdrop */}
+                             <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] md:hidden" onClick={() => setShowCalendar(false)} />
+                             
+                             {/* Responsive Calendar Container */}
+                             <div className="absolute top-full left-0 mt-2 z-[70] md:z-50 w-full md:w-auto fixed bottom-0 left-0 right-0 md:relative md:bottom-auto">
+                                <div className="bg-white rounded-t-[2rem] md:rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.15)] md:shadow-xl p-4 md:p-0 pb-safe">
+                                  <div className="md:hidden w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6" />
+                                  <div className="flex justify-between items-center mb-4 md:hidden px-2">
+                                      <h3 className="font-serif font-bold text-xl">Select Dates</h3>
+                                      <button onClick={() => setShowCalendar(false)} className="p-2 bg-gray-100 rounded-full"><X size={18}/></button>
+                                  </div>
+                                  <CalendarPicker onClose={() => setShowCalendar(false)} onApply={handleApplyDate} initialStart={dateRange.start} initialEnd={dateRange.end} />
+                                </div>
+                             </div>
+                          </>
                        )}
                     </div>
 

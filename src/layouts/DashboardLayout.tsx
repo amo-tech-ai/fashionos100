@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, Calendar, Ticket, Wallet, Settings, LogOut, Menu, Search, 
@@ -45,6 +46,7 @@ export const DashboardLayout: React.FC = () => {
 
   return (
     // h-[100dvh] locks the layout to the dynamic viewport height on mobile (avoiding scroll bounce)
+    // This replaces h-screen which fails on mobile browsers with address bars
     <div className="flex h-[100dvh] w-full bg-[#F8F9FB] font-sans overflow-hidden">
        
        {/* Desktop Sidebar */}
