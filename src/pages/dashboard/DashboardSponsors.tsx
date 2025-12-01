@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { 
   Plus, Sparkles, X, SlidersHorizontal, DollarSign, Calendar, 
-  Activity, Users
+  Activity, Users, Search
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
@@ -11,6 +11,7 @@ import { SponsorList } from '../../components/sponsors/SponsorList';
 import { SponsorKanban } from '../../components/sponsors/SponsorKanban';
 import { SponsorKPIWidget } from '../../components/sponsors/SponsorKPIWidget';
 import { useSponsors } from '../../hooks/useSponsors';
+import { Input } from '../../components/forms/Input';
 
 export const DashboardSponsors: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +19,13 @@ export const DashboardSponsors: React.FC = () => {
   const { deals, loading, updateSponsorStatus } = useSponsors();
   
   const [view, setView] = useState<'Pipeline' | 'List'>('Pipeline');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter deals for pipeline view
+  const filteredDeals = deals.filter(d => 
+    d.sponsor?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    d.event?.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-8 animate-in fade-in pb-20 relative">
@@ -39,30 +47,46 @@ export const DashboardSponsors: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Widget (Now using real deals data) */}
+      {/* KPI Widget */}
       <SponsorKPIWidget sponsors={deals} loading={loading} />
 
       {/* View Toggle */}
-      <div className="flex gap-2 bg-white p-1.5 rounded-xl border border-gray-200 w-fit">
-        <button 
-          onClick={() => setView('Pipeline')} 
-          className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${view === 'Pipeline' ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
-        >
-          Pipeline
-        </button>
-        <button 
-          onClick={() => setView('List')} 
-          className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${view === 'List' ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
-        >
-          List View
-        </button>
+      <div className="flex justify-between items-center">
+        <div className="flex gap-2 bg-white p-1.5 rounded-xl border border-gray-200 w-fit">
+          <button 
+            onClick={() => setView('Pipeline')} 
+            className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${view === 'Pipeline' ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
+          >
+            Pipeline
+          </button>
+          <button 
+            onClick={() => setView('List')} 
+            className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${view === 'List' ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'}`}
+          >
+            List View
+          </button>
+        </div>
       </div>
 
       {/* --- PIPELINE VIEW --- */}
       {view === 'Pipeline' && (
         <FadeIn>
+           {/* Pipeline Filter Bar */}
+           <div className="flex gap-4 mb-6">
+              <div className="relative flex-1 max-w-md">
+                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                 <input 
+                    type="text" 
+                    placeholder="Search deals by sponsor or event..." 
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-100 shadow-sm"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                 />
+              </div>
+           </div>
+
            <SponsorKanban 
-             sponsors={deals}
+             sponsors={filteredDeals}
              loading={loading}
              onStatusChange={updateSponsorStatus}
              onSponsorClick={(id) => navigate(`/dashboard/sponsors/${id}`)}

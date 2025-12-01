@@ -55,11 +55,17 @@ export const SponsorKanban: React.FC<SponsorKanbanProps> = ({
     setDraggedSponsorId(null);
   };
 
+  // Helper to calculate column total value
+  const getColumnTotal = (items: EventSponsor[]) => {
+    return items.reduce((sum, item) => sum + (item.cash_value || 0), 0);
+  };
+
   return (
     <div className="flex gap-6 overflow-x-auto pb-8 min-h-[calc(100vh-300px)]">
       {COLUMNS.map((col) => {
         // Filter deals for this column
         const stageSponsors = sponsors.filter(s => s.status === col.id);
+        const stageValue = getColumnTotal(stageSponsors);
         
         return (
           <div 
@@ -69,16 +75,31 @@ export const SponsorKanban: React.FC<SponsorKanbanProps> = ({
             onDrop={(e) => handleDrop(e, col.id)}
           >
             {/* Header */}
-            <div className="flex items-center justify-between mb-4 px-1">
-                <div className="flex items-center gap-2">
-                    <div className={`w-3 h-3 rounded-full ${col.color}`} />
-                    <h4 className="font-bold text-gray-900">{col.label}</h4>
-                    <span className="bg-gray-100 text-xs font-bold px-2 py-0.5 rounded-full">{stageSponsors.length}</span>
+            <div className="mb-4 px-1">
+                <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${col.color}`} />
+                        <h4 className="font-bold text-gray-900">{col.label}</h4>
+                        <span className="bg-gray-100 text-xs font-bold px-2 py-0.5 rounded-full">{stageSponsors.length}</span>
+                    </div>
+                </div>
+                <div className="text-xs text-gray-500 font-medium pl-5">
+                    ${stageValue.toLocaleString()} Pipeline
                 </div>
             </div>
 
             {/* Drop Zone */}
             <div className={`flex-1 flex flex-col gap-3 p-2 rounded-2xl transition-colors ${dragOverColumn === col.id ? 'bg-purple-50 border-2 border-dashed border-purple-300' : 'bg-gray-50/50'}`}>
+              
+              {/* Quick Add Button for Lead Column */}
+              {col.id === 'Lead' && !loading && (
+                 <Link to="/dashboard/sponsors/new-deal">
+                    <button className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-xs font-bold hover:border-purple-300 hover:text-purple-500 hover:bg-white transition-all flex items-center justify-center gap-2 bg-gray-50">
+                       <Plus size={14} /> New Deal
+                    </button>
+                 </Link>
+              )}
+
               {loading ? (
                 <SponsorCardSkeleton />
               ) : (
@@ -92,9 +113,16 @@ export const SponsorKanban: React.FC<SponsorKanbanProps> = ({
                       <SponsorCard 
                         sponsor={sponsor} 
                         onClick={() => onSponsorClick(sponsor.sponsor_id)} 
+                        compact={true}
                       />
                     </div>
                 ))
+              )}
+              
+              {!loading && stageSponsors.length === 0 && col.id !== 'Lead' && (
+                  <div className="h-24 flex items-center justify-center text-gray-300 text-sm italic">
+                      Drop here
+                  </div>
               )}
             </div>
           </div>

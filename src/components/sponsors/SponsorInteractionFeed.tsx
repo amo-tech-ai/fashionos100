@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { MessageSquare, Phone, Mail, Plus, Calendar, User, Send, Loader2 } from 'lucide-react';
 import { Button } from '../Button';
 import { Textarea } from '../forms/Textarea';
@@ -8,6 +8,7 @@ import { SponsorInteraction } from '../../types/sponsorship';
 import { sponsorService } from '../../lib/sponsor-service';
 import { useToast } from '../Toast';
 import { FadeIn } from '../FadeIn';
+import { useRealtime } from '../../hooks/useRealtime';
 
 interface SponsorInteractionFeedProps {
   sponsorId: string;
@@ -24,12 +25,9 @@ export const SponsorInteractionFeed: React.FC<SponsorInteractionFeedProps> = ({ 
   const [newSummary, setNewSummary] = useState('');
   const [newDetails, setNewDetails] = useState('');
 
-  useEffect(() => {
-    loadInteractions();
-  }, [sponsorId]);
-
-  const loadInteractions = async () => {
-    setLoading(true);
+  const loadInteractions = useCallback(async () => {
+    // Silent reload if already loaded to avoid flicker
+    if (interactions.length === 0) setLoading(true);
     try {
       const data = await sponsorService.getInteractions(sponsorId);
       setInteractions(data);
@@ -38,7 +36,18 @@ export const SponsorInteractionFeed: React.FC<SponsorInteractionFeedProps> = ({ 
     } finally {
       setLoading(false);
     }
-  };
+  }, [sponsorId]); // Removed interactions.length dependency to avoid stale closures in realtime callback
+
+  useEffect(() => {
+    loadInteractions();
+  }, [loadInteractions]);
+
+  // Subscribe to new interactions
+  useRealtime('sponsor_interactions', (payload) => {
+      if (payload.new?.sponsor_id === sponsorId || payload.old?.sponsor_id === sponsorId) {
+          loadInteractions();
+      }
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +64,7 @@ export const SponsorInteractionFeed: React.FC<SponsorInteractionFeedProps> = ({ 
       success("Activity logged");
       setNewSummary('');
       setNewDetails('');
-      loadInteractions();
+      // loadInteractions will be triggered by realtime
     } catch (e) {
       console.error(e);
       error("Failed to log activity");
@@ -129,7 +138,7 @@ export const SponsorInteractionFeed: React.FC<SponsorInteractionFeedProps> = ({ 
 
       {/* Timeline */}
       <div className="relative space-y-8 before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-px before:bg-gray-100">
-         {loading ? (
+         {loading && interactions.length === 0 ? (
              <div className="text-center py-8 text-gray-400 text-sm">Loading history...</div>
          ) : interactions.length === 0 ? (
              <div className="text-center py-8 text-gray-400 text-sm">No interactions recorded yet.</div>

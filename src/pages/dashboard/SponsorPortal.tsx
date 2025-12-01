@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Calendar, MapPin, Upload, Download, FileText, CheckCircle, 
   Loader2, User, Eye, Heart, Share2, TrendingUp, Plus, Sparkles, DollarSign, CreditCard, Filter, Building2
@@ -17,6 +16,7 @@ import { Input } from '../../components/forms/Input';
 import { Textarea } from '../../components/forms/Textarea';
 import { notificationService } from '../../lib/notification-service';
 import { SponsorFileManager } from '../../components/sponsors/SponsorFileManager';
+import { useRealtime } from '../../hooks/useRealtime';
 
 export const SponsorPortal: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'assets' | 'analytics'>('home');
@@ -33,15 +33,15 @@ export const SponsorPortal: React.FC = () => {
   const [creatingProfile, setCreatingProfile] = useState(false);
   const [newProfileData, setNewProfileData] = useState({ name: '', website: '', industry: '' });
   
+  // Filtering
+  const [selectedEventId, setSelectedEventId] = useState<string>('all');
   const { success, error } = useToast();
 
-  useEffect(() => {
-    fetchSponsorData();
-  }, []);
-
-  const fetchSponsorData = async () => {
+  const fetchSponsorData = useCallback(async () => {
+    // Don't show loading spinner on refetch if profile exists
+    if (!sponsorProfile) setLoading(true);
+    
     try {
-      setLoading(true);
       const { data: { user } } = await (supabase.auth as any).getUser();
       if (!user) return;
 
@@ -77,7 +77,16 @@ export const SponsorPortal: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sponsorProfile]); // sponsorProfile dependency helps skip loading state on updates
+
+  useEffect(() => {
+    fetchSponsorData();
+  }, [fetchSponsorData]);
+
+  // Subscribe to updates for this sponsor
+  useRealtime('sponsor_deliverables', () => fetchSponsorData());
+  useRealtime('event_sponsors', () => fetchSponsorData());
+  useRealtime('sponsor_roi_metrics', () => fetchSponsorData());
 
   const handleCreateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,6 +129,7 @@ export const SponsorPortal: React.FC = () => {
 
         await supabase.from('sponsor_deliverables').update({ status: 'pending_review', asset_url: publicUrl }).eq('id', deliverableId);
         
+        // Optimistic update
         setDeliverables(prev => prev.map(d => d.id === deliverableId ? { ...d, status: 'pending_review', asset_url: publicUrl } : d));
         success("File uploaded successfully");
 
@@ -155,7 +165,7 @@ export const SponsorPortal: React.FC = () => {
           window.location.href = response.data.url;
       } else if (response.success && response.data?.mock) {
           await supabase.from('event_sponsors').update({ status: 'Paid' }).eq('id', dealId);
-          fetchSponsorData();
+          // The realtime subscription will catch this update
           success("Payment successful (Mock)");
       } else {
           throw new Error("Payment initialization failed");
@@ -168,9 +178,30 @@ export const SponsorPortal: React.FC = () => {
     }
   };
 
-  const activeDeal = deals[0];
-  const totalImpressions = metrics.filter(m => m.metric_name.includes('Impression')).reduce((a, b) => a + Number(b.metric_value), 0);
-  
+  // --- Filter Logic ---
+  const filteredMetrics = useMemo(() => {
+    if (selectedEventId === 'all') return metrics;
+    const matchingDeals = deals.filter(d => d.event_id === selectedEventId).map(d => d.id);
+    return metrics.filter(m => matchingDeals.includes(m.event_sponsor_id));
+  }, [metrics, selectedEventId, deals]);
+
+  // --- Chart Data Prep ---
+  const impressionData = useMemo(() => {
+    const impMetrics = filteredMetrics.filter(m => m.metric_name.includes('Impression') || m.metric_name.includes('Views'));
+    return impMetrics.map((m, i) => ({
+        label: new Date(m.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        value: m.metric_value
+    })).slice(-7);
+  }, [filteredMetrics]);
+
+  const conversionData = useMemo(() => {
+    const leadMetrics = filteredMetrics.filter(m => m.metric_name.includes('Lead') || m.metric_name.includes('Click'));
+    return leadMetrics.map(m => ({
+        label: m.metric_name.replace('Generated', '').trim(),
+        value: m.metric_value
+    }));
+  }, [filteredMetrics]);
+
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-purple-600" size={48}/></div>;
 
   if (!sponsorProfile) {
@@ -193,6 +224,10 @@ export const SponsorPortal: React.FC = () => {
       </div>
     );
   }
+
+  const activeDeal = deals[0];
+  const eventOptions = Array.from(new Set(deals.map(d => d.event))).filter(Boolean);
+  const totalImpressions = filteredMetrics.filter(m => m.metric_name.includes('Impression')).reduce((a, b) => a + Number(b.metric_value), 0);
 
   return (
     <div className="animate-in fade-in duration-500 pb-20 font-sans">
@@ -330,15 +365,42 @@ export const SponsorPortal: React.FC = () => {
           {activeTab === 'analytics' && (
              <div className="space-y-8">
                  <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-                     <h2 className="font-serif font-bold text-xl mb-6">ROI Performance</h2>
+                     <div className="flex justify-between items-center mb-6">
+                      <h2 className="font-serif font-bold text-xl text-gray-900">ROI Performance</h2>
+                      
+                      {/* Event Filter */}
+                      <div className="flex items-center gap-2">
+                         <Filter size={14} className="text-gray-400" />
+                         <select 
+                            className="bg-gray-50 border-none text-xs font-bold rounded-lg px-3 py-2 text-gray-600 focus:ring-2 focus:ring-purple-100 cursor-pointer"
+                            value={selectedEventId}
+                            onChange={(e) => setSelectedEventId(e.target.value)}
+                         >
+                            <option value="all">All Events</option>
+                            {eventOptions.map((e: any) => (
+                                <option key={e.id} value={e.id}>{e.title}</option>
+                            ))}
+                         </select>
+                      </div>
+                   </div>
+
                      {metrics.length > 0 ? (
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                                <ResponsiveBarChart 
-                                    title="Metrics Overview"
-                                    data={metrics.map(m => ({ label: m.metric_name, value: m.metric_value }))}
-                                    color="#8b5cf6"
-                                />
+                               <ResponsiveLineChart 
+                                  title="Impressions Over Time"
+                                  data={impressionData.length > 0 ? impressionData : [{label: 'Start', value: 0}, {label: 'Now', value: 0}]} 
+                                  color="#8b5cf6"
+                                  height={200}
+                               />
+                            </div>
+                            <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                               <ResponsiveBarChart 
+                                  title="Conversion Metrics"
+                                  data={conversionData.length > 0 ? conversionData : [{label: 'None', value: 0}]}
+                                  color="#ec4899"
+                                  height={200}
+                               />
                             </div>
                          </div>
                      ) : (

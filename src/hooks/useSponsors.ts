@@ -1,8 +1,8 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { sponsorService } from '../lib/sponsor-service';
 import { SponsorProfile, EventSponsor } from '../types/sponsorship';
 import { useToast } from '../components/Toast';
+import { useRealtime } from './useRealtime';
 
 export const useSponsors = () => {
   const [sponsors, setSponsors] = useState<SponsorProfile[]>([]);
@@ -11,7 +11,7 @@ export const useSponsors = () => {
   const { error: toastError, success: toastSuccess } = useToast();
 
   const fetchAll = useCallback(async () => {
-    setLoading(true);
+    // Don't set loading to true here to avoid flickering on real-time updates
     try {
       const [sData, dData] = await Promise.all([
         sponsorService.getSponsors(),
@@ -30,6 +30,15 @@ export const useSponsors = () => {
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
+
+  // Real-time subscriptions
+  useRealtime('event_sponsors', () => {
+    fetchAll();
+  });
+
+  useRealtime('sponsor_profiles', () => {
+    fetchAll();
+  });
 
   // Optimistic Update for Kanban Drag & Drop
   const updateSponsorStatus = async (dealId: string, newStatus: string) => {

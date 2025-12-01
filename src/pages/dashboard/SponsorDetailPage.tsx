@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   ArrowLeft, Building2, Globe, 
@@ -17,6 +17,7 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { SponsorInteractionFeed } from '../../components/sponsors/SponsorInteractionFeed';
 import { SponsorContactList } from '../../components/sponsors/SponsorContactList';
 import { SponsorFileManager } from '../../components/sponsors/SponsorFileManager';
+import { useRealtime } from '../../hooks/useRealtime';
 
 export const SponsorDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,6 +27,7 @@ export const SponsorDetailPage: React.FC = () => {
   const [deals, setDeals] = useState<EventSponsor[]>([]); 
   const [activations, setActivations] = useState<SponsorActivation[]>([]);
   const [deliverables, setDeliverables] = useState<SponsorDeliverable[]>([]);
+  const [metrics, setMetrics] = useState<SponsorRoiMetric[]>([]);
   const [loading, setLoading] = useState(true);
 
   // UI States
@@ -39,12 +41,10 @@ export const SponsorDetailPage: React.FC = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
 
-  useEffect(() => {
-    if (id) fetchData();
-  }, [id]);
-
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = useCallback(async () => {
+    // Don't show full loading spinner on refetch if we already have data
+    if (!sponsor) setLoading(true);
+    
     try {
         const { data: profile, error: profileError } = await supabase
             .from('sponsor_profiles')
@@ -68,13 +68,15 @@ export const SponsorDetailPage: React.FC = () => {
         const dealIds = eventSponsors?.map(d => d.id) || [];
         if (dealIds.length > 0) {
             // Parallel fetch for sub-data
-            const [actsRes, delsRes] = await Promise.all([
+            const [actsRes, delsRes, metricsRes] = await Promise.all([
                 supabase.from('sponsor_activations').select('*, event_sponsor:event_sponsors(event:events(title))').in('event_sponsor_id', dealIds),
                 supabase.from('sponsor_deliverables').select('*, event_sponsor:event_sponsors(event:events(title))').in('event_sponsor_id', dealIds),
+                supabase.from('sponsor_roi_metrics').select('*').in('event_sponsor_id', dealIds)
             ]);
 
             setActivations(actsRes.data || []);
             setDeliverables(delsRes.data || []);
+            setMetrics(metricsRes.data || []);
         }
         
     } catch (error) {
@@ -82,7 +84,18 @@ export const SponsorDetailPage: React.FC = () => {
     } finally {
         setLoading(false);
     }
-  };
+  }, [id]); // Removed sponsor dependency to avoid loop
+
+  useEffect(() => {
+    if (id) fetchData();
+  }, [id, fetchData]);
+
+  // Subscribe to changes relevant to this sponsor
+  useRealtime('sponsor_deliverables', () => fetchData());
+  useRealtime('sponsor_activations', () => fetchData());
+  useRealtime('sponsor_roi_metrics', () => fetchData());
+  useRealtime('event_sponsors', () => fetchData());
+  useRealtime('sponsor_profiles', () => fetchData());
 
   const handleGeneratePitch = async () => {
     if (!sponsor) return;
@@ -209,7 +222,7 @@ export const SponsorDetailPage: React.FC = () => {
               <div className="flex flex-wrap gap-3 w-full lg:w-auto">
                 <Button variant="white" size="sm" onClick={handleGeneratePitch} disabled={generatingPitch} className="flex-1 md:flex-none">
                   {generatingPitch ? <Loader2 size={14} className="animate-spin mr-2" /> : <Sparkles size={14} className="mr-2 text-purple-600" />}
-                  AI Pitch
+                  {generatingPitch ? 'Drafting...' : 'Draft Pitch'}
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setShowEditForm(true)} className="flex-1 md:flex-none">Edit</Button>
                 <Link to="/dashboard/sponsors/new-deal" className="flex-1 md:flex-none"><Button variant="primary" size="sm" className="w-full">Create Deal</Button></Link>

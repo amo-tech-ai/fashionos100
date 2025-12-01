@@ -3,21 +3,25 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   Calendar, MapPin, Clock, Share2, ArrowLeft, 
-  Ticket, CheckCircle2, Info, Lock, Loader2 
+  Ticket, CheckCircle2, Info, Lock, Loader2, ExternalLink, Mail 
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { eventService, Event } from '../../lib/event-service';
-import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
+import { supabaseUrl, supabaseAnonKey, supabase } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
+import { usePermissions } from '../../hooks/usePermissions';
+import { EventSponsor } from '../../types/sponsorship';
 
 export const EventDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [event, setEvent] = useState<Event | null>(null);
+  const [sponsors, setSponsors] = useState<EventSponsor[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const { toast } = useToast();
+  const { canAccessSponsors } = usePermissions();
 
   useEffect(() => {
     if (id) fetchEvent(id);
@@ -30,6 +34,16 @@ export const EventDetailPage: React.FC = () => {
       if (data.ticket_tiers && data.ticket_tiers.length > 0) {
         setSelectedTicketId(data.ticket_tiers[0].id);
       }
+
+      // Fetch Sponsors for this event
+      const { data: sponsorsData } = await supabase
+        .from('event_sponsors')
+        .select('*, sponsor:sponsor_profiles(*)')
+        .eq('event_id', eventId)
+        .in('status', ['Signed', 'Paid', 'Activation Ready']); // Only show active/confirmed sponsors
+      
+      setSponsors(sponsorsData || []);
+
     } catch (error) {
       console.error('Failed to load event', error);
     } finally {
@@ -181,6 +195,51 @@ export const EventDetailPage: React.FC = () => {
                             <span className="inline-block mt-2 text-xs font-bold bg-white px-2 py-1 rounded border border-gray-200 text-gray-500">
                                 📍 {item.location_in_venue}
                             </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </FadeIn>
+            )}
+
+            {/* Partners & Sponsors */}
+            {sponsors.length > 0 && (
+              <FadeIn delay={150}>
+                <h2 className="text-2xl font-serif font-bold mb-6">Partners & Sponsors</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {sponsors.map((s, i) => (
+                    <div key={s.id} className="border border-gray-100 p-4 rounded-2xl flex items-center justify-between hover:shadow-sm transition-shadow">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden">
+                           {s.sponsor?.logo_url ? (
+                              <img src={s.sponsor.logo_url} alt={s.sponsor.name} className="w-full h-full object-contain" />
+                           ) : (
+                              <span className="text-xl font-bold text-gray-300">{s.sponsor?.name.charAt(0)}</span>
+                           )}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-900">{s.sponsor?.name}</p>
+                          <p className="text-xs text-gray-500 uppercase tracking-wider">{s.level || 'Partner'}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {canAccessSponsors && (
+                           <Link to={`/dashboard/sponsors/${s.sponsor_id}`} title="View in CRM">
+                              <Button variant="ghost" size="sm" className="text-purple-600 bg-purple-50 hover:bg-purple-100"><ExternalLink size={14}/></Button>
+                           </Link>
+                        )}
+                        {s.sponsor?.website_url ? (
+                           <a href={s.sponsor.website_url} target="_blank" rel="noreferrer">
+                              <Button variant="outline" size="sm">Visit</Button>
+                           </a>
+                        ) : (
+                           <Button variant="outline" size="sm" disabled>Visit</Button>
+                        )}
+                        {canAccessSponsors && s.sponsor?.contact_email && (
+                            <a href={`mailto:${s.sponsor.contact_email}`}>
+                                <Button variant="outline" size="sm"><Mail size={14}/></Button>
+                            </a>
                         )}
                       </div>
                     </div>
