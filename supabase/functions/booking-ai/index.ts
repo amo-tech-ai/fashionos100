@@ -56,7 +56,13 @@ serve(async (req) => {
         }
       });
 
-      return new Response(response.text || "{}", { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      let responseText = response.text || "{}";
+      // Cleanup Markdown
+      responseText = responseText.trim();
+      if (responseText.startsWith('```json')) responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+      else if (responseText.startsWith('```')) responseText = responseText.replace(/^```\n/, '').replace(/\n```$/, '');
+
+      return new Response(responseText, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     // --- 2. SHOT RECOMMENDER (Enhanced with Thinking) ---
@@ -108,7 +114,13 @@ serve(async (req) => {
         }
       });
 
-      return new Response(response.text || "{}", { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      let responseText = response.text || "{}";
+      // Cleanup Markdown
+      responseText = responseText.trim();
+      if (responseText.startsWith('```json')) responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+      else if (responseText.startsWith('```')) responseText = responseText.replace(/^```\n/, '').replace(/\n```$/, '');
+
+      return new Response(responseText, { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     return new Response(JSON.stringify({ error: "Invalid Action" }), { status: 400, headers: corsHeaders });

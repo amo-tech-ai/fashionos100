@@ -72,19 +72,25 @@ export const EventWizard: React.FC = () => {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
-          // Restore Dates
-          if (parsed.state.startDate) parsed.state.startDate = new Date(parsed.state.startDate);
-          if (parsed.state.endDate) parsed.state.endDate = new Date(parsed.state.endDate);
           
-          setState(parsed.state);
-          // Only restore step if it's not success/intro to avoid confusion, otherwise default to INTRO
-          if (parsed.step > Step.INTRO && parsed.step < Step.SUCCESS) {
-            setCurrentStep(parsed.step);
-            toast("Draft restored from previous session", "info");
+          // Validation check
+          if (parsed && parsed.state && typeof parsed.step === 'number') {
+              // Restore Dates
+              if (parsed.state.startDate) parsed.state.startDate = new Date(parsed.state.startDate);
+              if (parsed.state.endDate) parsed.state.endDate = new Date(parsed.state.endDate);
+              
+              setState(prev => ({ ...prev, ...parsed.state }));
+              
+              // Only restore step if it's not success/intro to avoid confusion, otherwise default to INTRO
+              if (parsed.step > Step.INTRO && parsed.step < Step.SUCCESS) {
+                setCurrentStep(parsed.step);
+                toast("Draft restored from previous session", "info");
+              }
           }
         }
       } catch (e) {
         console.error("Failed to load draft", e);
+        // Fallback to initial state silently
       } finally {
         setIsLoaded(true);
       }
@@ -169,8 +175,7 @@ export const EventWizard: React.FC = () => {
       }
 
       const data = result.data;
-      console.log("AI Result:", data);
-
+      
       // Merge AI data into state
       setState(prev => {
         let newStartDate = new Date();

@@ -86,7 +86,15 @@ serve(async (req) => {
       }
     })
 
-    const responseText = response.text || "{}"
+    let responseText = response.text || "{}"
+
+    // Robust JSON Parsing
+    responseText = responseText.trim();
+    if (responseText.startsWith('```json')) {
+        responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+    } else if (responseText.startsWith('```')) {
+        responseText = responseText.replace(/^```\n/, '').replace(/\n```$/, '');
+    }
 
     // Validate JSON
     try {

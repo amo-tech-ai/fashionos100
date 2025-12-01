@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Calendar, MapPin, Upload, Download, FileText, CheckCircle, 
@@ -17,6 +18,7 @@ import { Textarea } from '../../components/forms/Textarea';
 import { notificationService } from '../../lib/notification-service';
 import { SponsorFileManager } from '../../components/sponsors/SponsorFileManager';
 import { useRealtime } from '../../hooks/useRealtime';
+import { mediaService } from '../../lib/media-service';
 
 export const SponsorPortal: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'assets' | 'analytics'>('home');
@@ -77,7 +79,7 @@ export const SponsorPortal: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [sponsorProfile]); // sponsorProfile dependency helps skip loading state on updates
+  }, [sponsorProfile]);
 
   useEffect(() => {
     fetchSponsorData();
@@ -121,6 +123,9 @@ export const SponsorPortal: React.FC = () => {
     setUploadingId(deliverableId);
     
     try {
+        // Upload to PUBLIC bucket (documents) - Assuming it's public for MVP simplicity or use signed URLs
+        // Given SponsorFileManager uses 'documents' as a bucket and lists files, let's use that.
+        // The previous implementation used 'documents' bucket.
         const filePath = `sponsor-assets/${sponsorProfile.id}/${deliverableId}/${file.name}`;
         const { error: uploadError } = await supabase.storage.from('documents').upload(filePath, file);
         if (uploadError) throw uploadError;
@@ -149,6 +154,33 @@ export const SponsorPortal: React.FC = () => {
     } finally {
         setUploadingId(null);
     }
+  };
+
+  const handleDownload = async (url: string, title: string) => {
+      // If it's a direct link (not supabase storage), open it
+      if (!url.includes('supabase')) {
+          window.open(url, '_blank');
+          return;
+      }
+
+      try {
+          // Try to download via blob if it's ours
+          const response = await fetch(url);
+          if (!response.ok) throw new Error('Network response was not ok');
+          const blob = await response.blob();
+          const blobUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = title || 'download';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(blobUrl);
+      } catch (e) {
+          console.error('Download failed', e);
+          // Fallback
+          window.open(url, '_blank');
+      }
   };
 
   const handlePayment = async (dealId: string, amount: number) => {
@@ -309,7 +341,12 @@ export const SponsorPortal: React.FC = () => {
                                               <input type="file" id={`upload-${item.id}`} className="hidden" onChange={(e) => e.target.files?.[0] && handleFileUpload(item.id, item.event_sponsor_id, e.target.files[0])} disabled={!!uploadingId} />
                                               <label htmlFor={`upload-${item.id}`}>
                                                   <Button size="sm" variant="primary" as="span" className="cursor-pointer w-full md:w-auto" disabled={!!uploadingId}>
-                                                      {uploadingId === item.id ? <Loader2 className="animate-spin" size={14}/> : 'Upload'}
+                                                      {uploadingId === item.id ? (
+                                                          <span className="flex items-center gap-2">
+                                                              <Loader2 size={12} className="animate-spin" /> 
+                                                              Uploading...
+                                                          </span>
+                                                      ) : 'Upload'}
                                                   </Button>
                                               </label>
                                           </div>
@@ -339,7 +376,9 @@ export const SponsorPortal: React.FC = () => {
                                           <p className="text-xs text-gray-500">Signed PDF</p>
                                       </div>
                                   </div>
-                                  <a href={activeDeal.contract_url} target="_blank" rel="noreferrer"><Download size={16} className="text-gray-400 hover:text-purple-600"/></a>
+                                  <button onClick={() => handleDownload(activeDeal.contract_url!, 'contract.pdf')} className="text-gray-400 hover:text-purple-600">
+                                    <Download size={16} />
+                                  </button>
                               </div>
                           )}
                           {deliverables.filter(d => d.asset_url).map(d => (
@@ -351,7 +390,9 @@ export const SponsorPortal: React.FC = () => {
                                           <p className="text-xs text-gray-500">Uploaded Asset</p>
                                       </div>
                                   </div>
-                                  <a href={d.asset_url!} target="_blank" rel="noreferrer"><Download size={16} className="text-gray-400 hover:text-purple-600"/></a>
+                                  <button onClick={() => handleDownload(d.asset_url!, d.title)} className="text-gray-400 hover:text-purple-600">
+                                    <Download size={16} />
+                                  </button>
                               </div>
                           ))}
                       </div>

@@ -1,13 +1,9 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { GoogleGenAI, Type } from "https://esm.sh/@google/genai@0.1.1"
+import { corsHeaders } from "../_shared/cors.ts"
 
 declare const Deno: any;
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
 
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -81,11 +77,21 @@ serve(async (req: Request) => {
         responseMimeType: "application/json",
         responseSchema: schema,
         temperature: 0.2,
-        thinkingConfig: { thinkingBudget: 2048 } // Enable Thinking for complex logic
+        thinkingConfig: { thinkingBudget: 4096 } // Enable High Thinking for complex logistics
       }
     });
 
-    return new Response(response.text, {
+    let responseText = response.text || "{}";
+
+    // Robust JSON Parsing
+    responseText = responseText.trim();
+    if (responseText.startsWith('```json')) {
+        responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+    } else if (responseText.startsWith('```')) {
+        responseText = responseText.replace(/^```\n/, '').replace(/\n```$/, '');
+    }
+
+    return new Response(responseText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
 

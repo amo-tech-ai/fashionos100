@@ -29,6 +29,22 @@ export const mediaService = {
   },
 
   /**
+   * Download a file from storage
+   */
+  async downloadAsset(bucket: string, path: string) {
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .download(path);
+
+      if (error) throw error;
+      return data; // Blob
+    } catch (error) {
+      throw handleError(error);
+    }
+  },
+
+  /**
    * Delete a file from storage
    */
   async deleteAsset(bucket: string, path: string) {

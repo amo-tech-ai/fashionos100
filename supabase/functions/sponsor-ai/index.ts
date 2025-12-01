@@ -198,15 +198,16 @@ serve(async (req) => {
       config: config
     });
 
-    let outputText = response.text;
+    let outputText = response.text || "";
     
     // Robust JSON parsing for structured outputs
     if (responseMimeType === 'application/json') {
         try {
-             // Sometimes models wrap JSON in markdown code blocks
-             const jsonMatch = outputText.match(/```json\n([\s\S]*?)\n```/) || outputText.match(/```\n([\s\S]*?)\n```/);
-             if (jsonMatch) {
-                 outputText = jsonMatch[1];
+             outputText = outputText.trim();
+             if (outputText.startsWith('```json')) {
+                 outputText = outputText.replace(/^```json\n/, '').replace(/\n```$/, '');
+             } else if (outputText.startsWith('```')) {
+                 outputText = outputText.replace(/^```\n/, '').replace(/\n```$/, '');
              }
              // Validate it parses
              JSON.parse(outputText);
@@ -220,7 +221,7 @@ serve(async (req) => {
         }
     }
 
-    return new Response(outputText || "", {
+    return new Response(outputText, {
       headers: { ...corsHeaders, 'Content-Type': responseMimeType },
     })
 

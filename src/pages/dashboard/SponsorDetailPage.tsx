@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
@@ -18,6 +17,7 @@ import { SponsorInteractionFeed } from '../../components/sponsors/SponsorInterac
 import { SponsorContactList } from '../../components/sponsors/SponsorContactList';
 import { SponsorFileManager } from '../../components/sponsors/SponsorFileManager';
 import { useRealtime } from '../../hooks/useRealtime';
+import { useToast } from '../../components/Toast';
 
 export const SponsorDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,6 +40,8 @@ export const SponsorDetailPage: React.FC = () => {
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
+  
+  const { success, error: toastError } = useToast();
 
   const fetchData = useCallback(async () => {
     // Don't show full loading spinner on refetch if we already have data
@@ -70,7 +72,7 @@ export const SponsorDetailPage: React.FC = () => {
             // Parallel fetch for sub-data
             const [actsRes, delsRes, metricsRes] = await Promise.all([
                 supabase.from('sponsor_activations').select('*, event_sponsor:event_sponsors(event:events(title))').in('event_sponsor_id', dealIds),
-                supabase.from('sponsor_deliverables').select('*, event_sponsor:event_sponsors(event:events(title))').in('event_sponsor_id', dealIds),
+                supabase.from('sponsor_deliverables').select('*, event_sponsor:event_sponsors(event:events(title))').in('event_sponsor_id', dealIds).order('due_date', { ascending: true }),
                 supabase.from('sponsor_roi_metrics').select('*').in('event_sponsor_id', dealIds)
             ]);
 
@@ -96,6 +98,68 @@ export const SponsorDetailPage: React.FC = () => {
   useRealtime('sponsor_roi_metrics', () => fetchData());
   useRealtime('event_sponsors', () => fetchData());
   useRealtime('sponsor_profiles', () => fetchData());
+
+  // --- DELIVERABLE HANDLERS ---
+  const handleAddDeliverable = async (item: Partial<SponsorDeliverable>) => {
+      try {
+          const { error } = await supabase.from('sponsor_deliverables').insert([item]);
+          if (error) throw error;
+          success("Deliverable added");
+          fetchData();
+      } catch (e: any) {
+          console.error(e);
+          toastError("Failed to add deliverable");
+      }
+  };
+
+  const handleUpdateDeliverable = async (id: string, updates: Partial<SponsorDeliverable>) => {
+      try {
+          const { error } = await supabase.from('sponsor_deliverables').update(updates).eq('id', id);
+          if (error) throw error;
+          success("Deliverable updated");
+          fetchData();
+      } catch (e: any) {
+          console.error(e);
+          toastError("Failed to update deliverable");
+      }
+  };
+
+  const handleDeleteDeliverable = async (id: string) => {
+      if (!window.confirm("Delete this deliverable?")) return;
+      try {
+          const { error } = await supabase.from('sponsor_deliverables').delete().eq('id', id);
+          if (error) throw error;
+          success("Deliverable deleted");
+          fetchData();
+      } catch (e: any) {
+          console.error(e);
+          toastError("Failed to delete deliverable");
+      }
+  };
+
+  const handleUploadDeliverable = async (id: string, file: File) => {
+    try {
+        const fileName = `deliverables/${id}/${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        
+        const { error: uploadError } = await supabase.storage
+            .from('documents')
+            .upload(fileName, file, { upsert: true });
+            
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('documents')
+            .getPublicUrl(fileName);
+
+        await handleUpdateDeliverable(id, { asset_url: publicUrl, status: 'uploaded' });
+        success("File uploaded");
+    } catch (e: any) {
+        console.error(e);
+        toastError("Upload failed: " + e.message);
+    }
+  };
+
+  // --- END DELIVERABLE HANDLERS ---
 
   const handleGeneratePitch = async () => {
     if (!sponsor) return;
@@ -365,7 +429,14 @@ export const SponsorDetailPage: React.FC = () => {
 
             {activeTab === 'deliverables' && (
                 <FadeIn>
-                    <DeliverablesTracker deliverables={deliverables} />
+                    <DeliverablesTracker 
+                        deliverables={deliverables} 
+                        deals={deals}
+                        onAdd={handleAddDeliverable}
+                        onUpdate={handleUpdateDeliverable}
+                        onDelete={handleDeleteDeliverable}
+                        onUpload={handleUploadDeliverable}
+                    />
                 </FadeIn>
             )}
 

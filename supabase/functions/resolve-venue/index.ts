@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { GoogleGenAI, Type } from "https://esm.sh/@google/genai@0.1.1";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -53,17 +54,25 @@ serve(async (req) => {
       ],
       config: {
         tools: [{ googleMaps: {} }], // Enable Maps Grounding
+        thinkingConfig: { thinkingBudget: 1024 }, // Enable Thinking to select best matches
         temperature: 0, // Deterministic output
         responseMimeType: "application/json",
         responseSchema: schema
       }
     });
 
-    // Parse the structured JSON response
-    const text = response.text;
+    // Parse the structured JSON response with robust cleanup
+    let text = response.text || "{}";
+    text = text.trim();
+    if (text.startsWith('```json')) {
+        text = text.replace(/^```json\n/, '').replace(/\n```$/, '');
+    } else if (text.startsWith('```')) {
+        text = text.replace(/^```\n/, '').replace(/\n```$/, '');
+    }
+
     let candidates = [];
     try {
-      const json = JSON.parse(text || "{}");
+      const json = JSON.parse(text);
       candidates = json.candidates || [];
     } catch (e) {
       console.error("JSON parse error", e);

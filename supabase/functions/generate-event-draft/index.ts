@@ -102,12 +102,13 @@ serve(async (req) => {
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash", // Use 2.5 Flash for robust multimodal reasoning
+      model: "gemini-2.5-flash", 
       contents: { parts },
       config: {
-        tools: [{ googleSearch: {} }], // Enable Google Search Grounding for venue checking
+        tools: [{ googleSearch: {} }], // Enable Google Search Grounding
         responseMimeType: "application/json",
         responseSchema: schema,
+        thinkingConfig: { thinkingBudget: 2048 }, // Activate Thinking for reasoning about defaults
         systemInstruction: `You are the AI Event Architect for FashionOS.
         Task: Convert user input into a complete, structured fashion event plan.
         
@@ -122,7 +123,7 @@ serve(async (req) => {
         Reasoning Steps:
         1. Analyze the input for explicit details.
         2. If a venue name is provided, use Google Search to find its real address and capacity if possible.
-        3. If details are missing, INFER reasonable defaults based on the event type.
+        3. If details are missing, INFER reasonable defaults based on the event type (e.g. Gala = high price, Pop-up = low price).
         4. Generate a professional description and catchy title suggestions.
         5. Structure ticket tiers and schedule logically.
 
@@ -131,14 +132,22 @@ serve(async (req) => {
       }
     })
 
-    const responseText = response.text || "{}"
+    let responseText = response.text || "{}"
 
-    // Safe parse
+    // Robust JSON Parsing: Remove Markdown code blocks if present
+    responseText = responseText.trim();
+    if (responseText.startsWith('```json')) {
+        responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+    } else if (responseText.startsWith('```')) {
+        responseText = responseText.replace(/^```\n/, '').replace(/\n```$/, '');
+    }
+
+    // Safe parse verification
     try {
         JSON.parse(responseText);
     } catch (e) {
         console.error("Invalid JSON output from AI:", responseText);
-        throw new Error("AI failed to generate a valid event draft.");
+        throw new Error("AI failed to generate a valid event draft (JSON Parse Error).");
     }
 
     return new Response(responseText, {

@@ -83,24 +83,20 @@ export const SponsorFileManager: React.FC<SponsorFileManagerProps> = ({ sponsorI
 
   const handleDownload = async (fileName: string) => {
       try {
-          // Get signed URL or public URL depending on bucket setting
-          // For 'documents' which is private, we use the service to get a signed URL or download blob
-          // For MVP simplicity assuming we use the helper which returns publicURL, 
-          // but if private we might need a signed url method. 
-          // Let's try to construct the download URL.
-          
-          // Since mediaService.uploadAsset returns publicUrl, we can assume a public strategy or signed url getter
-          // But listAssets doesn't return URLs. We need to generate them.
-          
-          // HACK: For now triggering a direct download via storage API if possible, 
-          // or constructing a path if we assume public. 
-          // Best practice: Create a `getDownloadUrl` in media-service.
-          // We'll mock the download action UI for now or use a known pattern if bucket is public.
-          // 'documents' bucket is PRIVATE per plan.
-          
-          alert("Download logic would generate a signed URL here.");
+          const blob = await mediaService.downloadAsset(BUCKET, `${FOLDER}/${fileName}`);
+          if (blob) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          }
       } catch(e) {
           console.error(e);
+          error("Failed to download file. Check permissions.");
       }
   };
 
