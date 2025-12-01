@@ -87,8 +87,11 @@ export const SponsorForm: React.FC<SponsorFormProps> = ({ sponsor, onClose, onSa
     e.preventDefault();
     setLoading(true);
 
-    // Process social links
-    const links = socialLinksStr.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    // Process social links robustly
+    const links = socialLinksStr
+        .split(',')
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
 
     const payload = {
         ...formData,

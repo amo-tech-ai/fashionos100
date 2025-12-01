@@ -61,8 +61,8 @@ export const SystemHealth: React.FC = () => {
     // 3. Storage Check
     const startStore = performance.now();
     const { data: buckets, error: storeError } = await supabase.storage.listBuckets();
-    const requiredBuckets = ['event-media', 'avatars', 'documents', 'production-assets', 'brand-assets'];
-    // Checking if buckets exist
+    // Buckets used in the codebase:
+    const requiredBuckets = ['event-media', 'avatars', 'documents', 'production-assets'];
     const missingBuckets = requiredBuckets.filter(b => !buckets?.find(x => x.name === b));
     
     updateCheck(
@@ -84,7 +84,7 @@ export const SystemHealth: React.FC = () => {
       updateCheck('Edge Functions (Ping)', false, 0, e.message);
     }
 
-    // 5. Deep AI Checks (OPTIONS requests to specific endpoints to verify deployment)
+    // 5. Deep AI Checks
     const checkAIEndpoint = async (endpoint: string, label: string) => {
         const start = performance.now();
         try {
@@ -191,7 +191,7 @@ export const SystemHealth: React.FC = () => {
          <h3 className="text-xl font-serif font-bold mb-4">Troubleshooting Guide</h3>
          <div className="space-y-4 text-sm text-gray-400">
             <p>1. <strong className="text-white">Realtime Errors:</strong> Ensure "Broadcast" and "Presence" are enabled for all tables in Supabase Replication settings.</p>
-            <p>2. <strong className="text-white">Storage Errors:</strong> Run the migration script again or manually create buckets in Supabase Dashboard ({`> Storage > New Bucket`}).</p>
+            <p>2. <strong className="text-white">Storage Errors:</strong> Run the migration script again or manually create buckets in Supabase Dashboard ({`> Storage > New Bucket`}). Required: documents, production-assets, event-media, avatars.</p>
             <p>3. <strong className="text-white">AI Function Errors:</strong> Verify <code>GEMINI_API_KEY</code> is set in Edge Function secrets via <code>supabase secrets set</code>.</p>
          </div>
       </div>

@@ -12,7 +12,9 @@ serve(async (req) => {
     const apiKey = Deno.env.get('GEMINI_API_KEY')
     if (!apiKey) throw new Error('Missing GEMINI_API_KEY')
 
-    const { action, sponsorName, sponsorIndustry, eventDetails, contractTerms, metrics } = await req.json()
+    const requestData = await req.json()
+    const { action, sponsorName, sponsorIndustry, eventDetails, contractTerms, metrics, mediaBase64 } = requestData
+    
     const ai = new GoogleGenAI({ apiKey })
     
     let prompt = "";
@@ -21,6 +23,7 @@ serve(async (req) => {
     let tools: any[] = [];
     let thinkingConfig = undefined;
     let modelName = 'gemini-2.5-flash'; // Default model
+    let contents: any[] = [];
     
     let systemInstruction = "You are a helpful AI assistant for fashion event production.";
     
@@ -180,6 +183,87 @@ serve(async (req) => {
         Tone: Professional, aspirational, luxury.
       `;
       responseMimeType = 'text/plain';
+
+    } else if (action === 'recommend-packages') {
+        // Suggest sponsorship packages
+        systemInstruction = "You are a Sponsorship Strategist. Create tailored packages.";
+        prompt = `
+            Sponsor: ${sponsorName} (${sponsorIndustry})
+            Event: ${eventDetails}
+            
+            Task: Recommend 3 sponsorship tiers (Title, Gold, Silver) that would appeal to this specific sponsor.
+            For example, if they are a tech brand, suggest digital activations. If beauty, suggest backstage access.
+        `;
+        
+        responseSchema = {
+            type: Type.OBJECT,
+            properties: {
+                recommendations: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            tier_name: { type: Type.STRING },
+                            price: { type: Type.NUMBER },
+                            features: { type: Type.ARRAY, items: { type: Type.STRING } }
+                        },
+                        required: ["tier_name", "price", "features"]
+                    }
+                }
+            }
+        };
+
+    } else if (action === 'draft-contract') {
+        // Draft simple contract terms
+        systemInstruction = "You are a Legal Assistant for events.";
+        prompt = `
+            Draft the key terms for a sponsorship agreement.
+            Sponsor: ${sponsorName}
+            Event: ${contractTerms?.event}
+            Tier: ${contractTerms?.tier}
+            Value: Cash $${contractTerms?.value}, In-Kind $${contractTerms?.inKind}
+            
+            Include standard clauses for:
+            1. Deliverables
+            2. Payment Schedule (50% deposit, 50% pre-event)
+            3. Cancellation Policy
+            4. Usage Rights
+            
+            Format: Plain text, clearly numbered sections.
+        `;
+        responseMimeType = 'text/plain';
+
+    } else if (action === 'analyze-media') {
+        // Vision analysis of uploaded asset
+        modelName = 'gemini-2.5-flash'; // Multimodal
+        systemInstruction = "You are a Design QA Specialist. Verify if the image is suitable for high-end print or digital use.";
+        
+        prompt = "Analyze this image. Is it a logo, a document, or a creative asset? Rate its quality for professional use.";
+        
+        if (mediaBase64) {
+            contents = [{
+                role: 'user',
+                parts: [
+                    { text: prompt },
+                    { inlineData: { mimeType: 'image/png', data: mediaBase64 } }
+                ]
+            }];
+        } else {
+             // Fallback if no image provided
+             return new Response(JSON.stringify({ error: "No image data provided for analysis" }), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 400
+            });
+        }
+        responseMimeType = 'application/json';
+        responseSchema = {
+            type: Type.OBJECT,
+            properties: {
+                asset_type: { type: Type.STRING, enum: ['logo', 'document', 'photo', 'other'] },
+                quality_score: { type: Type.NUMBER },
+                feedback: { type: Type.STRING }
+            }
+        };
     }
 
     // Configure API call
@@ -192,9 +276,14 @@ serve(async (req) => {
     if (tools.length > 0) config.tools = tools;
     if (thinkingConfig) config.thinkingConfig = thinkingConfig;
 
+    // Construct contents if not already set (for text-only prompts)
+    if (contents.length === 0) {
+        contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    }
+
     const response = await ai.models.generateContent({
       model: modelName,
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      contents: contents,
       config: config
     });
 

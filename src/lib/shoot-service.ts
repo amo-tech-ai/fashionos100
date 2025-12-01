@@ -1,3 +1,4 @@
+
 import { supabase } from './supabase';
 import { Database } from '../types/database';
 
@@ -33,11 +34,8 @@ export const shootService = {
 
     // Search (Client Name or ID)
     if (search) {
-      // Note: brief_data is JSONB. Searching inside it depends on structure.
-      // We search ID or brief_data->contact->firstName/lastName
-      // For simplicity in this MVP, we search ID or create a text search column in DB.
-      // Here we search ID for strictness or use an 'or' clause if 'brief_data' casts to text.
-      query = query.or(`id.ilike.%${search}%, fashion_category.ilike.%${search}%`);
+      // Note: searching UUID fields with ilike requires casting to text
+      query = query.or(`id.ilike.%${search}%,fashion_category.ilike.%${search}%`);
     }
 
     // Pagination

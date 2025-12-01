@@ -88,7 +88,7 @@ Navigate to `/dashboard/system` within the app to run a health check on the data
 
 ## 📦 Storage Buckets
 
-The migration script attempts to create these, but if they are missing, ensure they exist:
+The migration script attempts to create these, but if they are missing, ensure they exist in your Supabase Dashboard > Storage:
 *   `event-media` (Public)
 *   `avatars` (Public)
 *   `documents` (Private)
@@ -103,3 +103,5 @@ Ensure Realtime is enabled for the following tables in Supabase Dashboard -> Dat
 *   `notifications`
 *   `chat_messages`
 *   `payments`
+*   `event_sponsors`
+*   `sponsor_deliverables`

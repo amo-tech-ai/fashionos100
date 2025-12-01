@@ -37,7 +37,10 @@ export const DashboardCalendar = () => {
 
     // Map Events
     events.forEach(e => {
+        if (!e.start_time) return;
         const date = new Date(e.start_time);
+        if (isNaN(date.getTime())) return;
+        
         items.push({
             id: `evt-${e.id}`,
             day: date.getDate(),
