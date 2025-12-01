@@ -18,8 +18,6 @@ export const useRealtime = (
   useEffect(() => {
     const channelName = `public:${table}${filter ? `:${filter}` : ''}`;
     
-    // console.log(`[Realtime] Connecting to ${channelName}...`);
-
     const channel = supabase
       .channel(channelName)
       .on(
@@ -31,14 +29,11 @@ export const useRealtime = (
           filter: filter,
         },
         (payload) => {
-          // console.debug(`[Realtime] Update received on ${table}:`, payload);
           callback(payload);
         }
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          // console.debug(`[Realtime] Subscribed to ${channelName}`);
-        } else if (status === 'CHANNEL_ERROR') {
+        if (status === 'CHANNEL_ERROR') {
           console.warn(`[Realtime] Failed to subscribe to ${channelName}. Check network or permissions.`);
         } else if (status === 'TIMED_OUT') {
           console.warn(`[Realtime] Subscription timed out for ${channelName}. Retrying...`);
@@ -46,7 +41,6 @@ export const useRealtime = (
       });
 
     return () => {
-      // console.debug(`[Realtime] Unsubscribing from ${channelName}`);
       supabase.removeChannel(channel);
     };
   }, [table, event, filter, callback]);

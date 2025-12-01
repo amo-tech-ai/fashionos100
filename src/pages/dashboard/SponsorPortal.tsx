@@ -123,9 +123,6 @@ export const SponsorPortal: React.FC = () => {
     setUploadingId(deliverableId);
     
     try {
-        // Upload to PUBLIC bucket (documents) - Assuming it's public for MVP simplicity or use signed URLs
-        // Given SponsorFileManager uses 'documents' as a bucket and lists files, let's use that.
-        // The previous implementation used 'documents' bucket.
         const filePath = `sponsor-assets/${sponsorProfile.id}/${deliverableId}/${file.name}`;
         const { error: uploadError } = await supabase.storage.from('documents').upload(filePath, file);
         if (uploadError) throw uploadError;
@@ -139,12 +136,12 @@ export const SponsorPortal: React.FC = () => {
         success("File uploaded successfully");
 
         const deal = deals.find(d => d.id === eventSponsorId);
-        if (deal && (deal.event as any)?.organizer_id) {
-            const organizerId = (deal.event as any).organizer_id;
+        if (deal && deal.event?.organizer_id) {
+            const organizerId = deal.event.organizer_id;
             await notificationService.notifyOwner({
                 ownerId: organizerId,
                 title: "New Sponsor Asset",
-                message: `${sponsorProfile.name} uploaded a file for ${(deal.event as any).title}.`,
+                message: `${sponsorProfile.name} uploaded a file for ${deal.event.title}.`,
                 type: 'info'
             });
         }

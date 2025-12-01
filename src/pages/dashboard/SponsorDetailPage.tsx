@@ -1,14 +1,15 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   ArrowLeft, Building2, Globe, 
   Loader2, Send, Lock, Sparkles, Copy, Check, X,
-  User
+  User, ChevronDown
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
-import { SponsorProfile, EventSponsor, SponsorActivation, SponsorRoiMetric, SponsorDeliverable } from '../../types/sponsorship';
+import { SponsorProfile, EventSponsor, SponsorActivation, SponsorRoiMetric, SponsorDeliverable, SponsorStatus } from '../../types/sponsorship';
 import { SponsorForm } from '../../components/sponsors/SponsorForm';
 import { aiService } from '../../lib/ai-service';
 import { DeliverablesTracker } from '../../components/sponsors/DeliverablesTracker';
@@ -18,6 +19,7 @@ import { SponsorContactList } from '../../components/sponsors/SponsorContactList
 import { SponsorFileManager } from '../../components/sponsors/SponsorFileManager';
 import { useRealtime } from '../../hooks/useRealtime';
 import { useToast } from '../../components/Toast';
+import { sponsorService } from '../../lib/sponsor-service';
 
 export const SponsorDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +37,7 @@ export const SponsorDetailPage: React.FC = () => {
   const [pitchDraft, setPitchDraft] = useState<string | null>(null);
   const [generatingPitch, setGeneratingPitch] = useState(false);
   const [copiedPitch, setCopiedPitch] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   // Invite State
   const [showInvite, setShowInvite] = useState(false);
@@ -86,7 +89,7 @@ export const SponsorDetailPage: React.FC = () => {
     } finally {
         setLoading(false);
     }
-  }, [id]); // Removed sponsor dependency to avoid loop
+  }, [id]); 
 
   useEffect(() => {
     if (id) fetchData();
@@ -99,7 +102,23 @@ export const SponsorDetailPage: React.FC = () => {
   useRealtime('event_sponsors', () => fetchData());
   useRealtime('sponsor_profiles', () => fetchData());
 
-  // --- DELIVERABLE HANDLERS ---
+  // --- HANDLERS ---
+  
+  const handleStatusChange = async (newStatus: string) => {
+      if (!lastDeal) return;
+      setUpdatingStatus(true);
+      try {
+          await sponsorService.updateDealStatus(lastDeal.id, newStatus);
+          success(`Deal status updated to ${newStatus}`);
+          fetchData();
+      } catch (e) {
+          console.error(e);
+          toastError("Failed to update status");
+      } finally {
+          setUpdatingStatus(false);
+      }
+  };
+
   const handleAddDeliverable = async (item: Partial<SponsorDeliverable>) => {
       try {
           const { error } = await supabase.from('sponsor_deliverables').insert([item]);
@@ -158,8 +177,6 @@ export const SponsorDetailPage: React.FC = () => {
         toastError("Upload failed: " + e.message);
     }
   };
-
-  // --- END DELIVERABLE HANDLERS ---
 
   const handleGeneratePitch = async () => {
     if (!sponsor) return;
@@ -234,6 +251,8 @@ export const SponsorDetailPage: React.FC = () => {
   const leadCategory = sponsor.lead_category || 'New';
   const scoreColor = leadScore >= 80 ? 'bg-green-500' : leadScore >= 50 ? 'bg-amber-500' : 'bg-gray-300';
 
+  const dealStatuses: SponsorStatus[] = ['Lead', 'Contacted', 'Negotiating', 'Signed', 'Paid', 'Activation Ready', 'Churned'];
+
   return (
     <div className="animate-in fade-in duration-500 pb-20 font-sans">
       <div className="mb-6">
@@ -303,10 +322,34 @@ export const SponsorDetailPage: React.FC = () => {
                 <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Active Deals</p>
                 <p className="text-lg md:text-xl font-bold text-gray-900">{activeDealsCount}</p>
               </div>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Status</p>
+              <div className="relative group">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Latest Status</p>
                 {lastDeal ? (
-                    <StatusBadge status={lastDeal.status} />
+                    <div className="relative">
+                        <button 
+                            className="inline-flex items-center gap-1.5 text-sm font-bold text-gray-900 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-all w-full justify-between"
+                            disabled={updatingStatus}
+                        >
+                           <div className="flex items-center gap-2">
+                                <StatusBadge status={lastDeal.status} />
+                           </div>
+                           {updatingStatus ? <Loader2 size={12} className="animate-spin" /> : <ChevronDown size={14} />}
+                        </button>
+                        
+                        {/* Status Dropdown */}
+                        <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl p-1 z-20 hidden group-hover:block animate-in fade-in zoom-in-95">
+                            {dealStatuses.map(status => (
+                                <button
+                                    key={status}
+                                    onClick={() => handleStatusChange(status)}
+                                    className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg hover:bg-gray-50 flex items-center justify-between ${lastDeal.status === status ? 'bg-purple-50 text-purple-700' : 'text-gray-600'}`}
+                                >
+                                    {status}
+                                    {lastDeal.status === status && <Check size={12} />}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 ) : (
                     <span className="text-sm text-gray-400">No deals yet</span>
                 )}
@@ -348,7 +391,7 @@ export const SponsorDetailPage: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-purple-100 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed font-medium">
+            <div className="bg-white p-4 rounded-xl border border-purple-100 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
               {pitchDraft}
             </div>
           </div>

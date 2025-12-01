@@ -1,5 +1,5 @@
 
-import { supabase } from './supabase';
+import { supabase, supabaseUrl, supabaseAnonKey } from './supabase';
 
 export interface AiResponse<T = any> {
   success: boolean;
@@ -42,23 +42,14 @@ export const aiService = {
    */
   async callEdgeFunctionBlob(functionName: string, body: any): Promise<{ success: boolean; data?: Blob; error?: string }> {
     try {
-      // We use the raw invoke but need to handle response type manually if the SDK doesn't support blob inference well
-      // The Supabase JS SDK invoke method returns parsed JSON by default. 
-      // For binary, we often need to use the global fetch with the session token, 
-      // OR rely on the function returning a signed URL (preferred for large files).
-      // However, for PDF generation which is small, we can try to use the raw response if supported, 
-      // or simply fallback to fetch if SDK limits us.
-      
-      // Let's use standard fetch with Supabase Auth headers for Blob support
       const { data: { session } } = await supabase.auth.getSession();
-      // @ts-ignore
-      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${functionName}`;
+      const functionUrl = `${supabaseUrl}/functions/v1/${functionName}`;
       
       const response = await fetch(functionUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token || (import.meta as any).env.VITE_SUPABASE_ANON_KEY}`
+          'Authorization': `Bearer ${session?.access_token || supabaseAnonKey}`
         },
         body: JSON.stringify(body)
       });

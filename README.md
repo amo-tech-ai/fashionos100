@@ -105,3 +105,11 @@ Ensure Realtime is enabled for the following tables in Supabase Dashboard -> Dat
 *   `payments`
 *   `event_sponsors`
 *   `sponsor_deliverables`
+*   `sponsor_roi_metrics`
+*   `sponsor_profiles`
+
+## 📱 Mobile Optimization
+The app is built mobile-first. To test mobile workflows:
+1.  Navigate to **Dashboard > Sponsors**
+2.  Use the **List View** to manage deals if drag-and-drop is difficult.
+3.  Click into any Sponsor to edit the **Latest Status** directly via the dropdown.
