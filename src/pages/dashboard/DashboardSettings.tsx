@@ -8,7 +8,7 @@ import { Button } from '../../components/Button';
 import { Input } from '../../components/forms/Input';
 import { FadeIn } from '../../components/FadeIn';
 import { PageHeader } from '../../components/dashboard/Shared';
-import { supabase } from '../../lib/supabase';
+import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
 import { profileService } from '../../lib/profile-service';
 
@@ -49,16 +49,17 @@ export const DashboardSettings: React.FC = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [isInviting, setIsInviting] = useState(false);
   const [teamLoading, setTeamLoading] = useState(false);
+  const [companyId, setCompanyId] = useState<string | null>(null);
 
   useEffect(() => {
     loadProfile();
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'team') {
+    if (activeTab === 'team' && profileData.id) {
         loadTeam();
     }
-  }, [activeTab]);
+  }, [activeTab, profileData.id]);
 
   const loadProfile = async () => {
     try {
@@ -74,6 +75,10 @@ export const DashboardSettings: React.FC = () => {
           avatarUrl: data.profile?.avatar_url || '',
           role: data.profile?.role || 'User'
         });
+        
+        if (data.company?.id) {
+            setCompanyId(data.company.id);
+        }
       }
     } catch (e) {
       console.error("Failed to load profile", e);
@@ -83,25 +88,29 @@ export const DashboardSettings: React.FC = () => {
   const loadTeam = async () => {
       setTeamLoading(true);
       try {
-          // Fetch teams owned by this user or where they are a member
-          // For MVP, we assume 1 team per user (Company)
-          const { data: company } = await supabase.from('companies').select('id').eq('owner_id', profileData.id).single();
+          // Fetch company if not already set
+          let currentCompanyId = companyId;
+          if (!currentCompanyId) {
+             const { data: company } = await supabase.from('companies').select('id').eq('owner_id', profileData.id).single();
+             if (company) {
+                 currentCompanyId = company.id;
+                 setCompanyId(company.id);
+             }
+          }
           
-          if (company) {
-               // Real implementation would join organizer_team_members
-               // For now, we mock the list based on what we might have or return empty if table empty
+          if (currentCompanyId) {
                const { data: members, error } = await supabase
                   .from('organizer_team_members')
                   .select(`
                       *,
                       user:profiles(email, full_name, avatar_url)
                   `)
-                  .eq('team_id', company.id); // Assuming team_id links to company_id in advanced schema or we map it
+                  .eq('team_id', currentCompanyId);
 
                if (members && members.length > 0) {
                    setTeamMembers(members);
                } else {
-                   // Fallback: Just show the current user as the only member if no team table entries
+                   // If no members found but company exists, show owner
                    setTeamMembers([{
                        user: {
                            email: profileData.email,
@@ -133,11 +142,24 @@ export const DashboardSettings: React.FC = () => {
       if (!inviteEmail) return;
       setIsInviting(true);
       try {
-          // In a real app, this calls an Edge Function to send invite email
-          // For MVP, we simulate a success
-          await new Promise(r => setTimeout(r, 1000));
-          
-          // Add optimistic pending member
+          // Call Real Edge Function
+          const response = await fetch(`${supabaseUrl}/functions/v1/invite-user`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${supabaseAnonKey}`
+              },
+              body: JSON.stringify({
+                  email: inviteEmail,
+                  role: 'creative', // Default role for team members
+                  teamId: companyId,
+                  redirectTo: window.location.origin + '/dashboard'
+              })
+          });
+
+          if (!response.ok) throw new Error('Invite failed');
+
+          // Optimistic Update
           setTeamMembers(prev => [...prev, {
               user: { email: inviteEmail, full_name: 'Pending...', avatar_url: '' },
               role_in_team: 'Invited',
@@ -147,7 +169,8 @@ export const DashboardSettings: React.FC = () => {
           setInviteEmail('');
           success(`Invitation sent to ${inviteEmail}`);
       } catch (e) {
-          error("Failed to send invite");
+          console.error(e);
+          error("Failed to send invite. Ensure you are an admin.");
       } finally {
           setIsInviting(false);
       }

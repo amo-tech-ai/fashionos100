@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, XCircle, Loader2, Server, Database, HardDrive, Sparkles, Activity } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, Server, Database, HardDrive, Sparkles, Activity, Wifi } from 'lucide-react';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { FadeIn } from '../../components/FadeIn';
 import { PageHeader } from '../../components/dashboard/Shared';
@@ -20,6 +20,7 @@ export const SystemHealth: React.FC = () => {
     { name: 'Brand Schema', status: 'loading' },
     { name: 'Studio Schema', status: 'loading' },
     { name: 'Event Schema', status: 'loading' },
+    { name: 'Realtime (Websockets)', status: 'loading', critical: true },
     { name: 'Storage Buckets', status: 'loading', critical: true },
     { name: 'Edge Functions (Ping)', status: 'loading', critical: true },
     { name: 'AI: Event Draft Gen', status: 'loading' },
@@ -42,7 +43,22 @@ export const SystemHealth: React.FC = () => {
     await checkTable('shoots', 'Studio Schema');
     await checkTable('events', 'Event Schema');
 
-    // 2. Storage Check
+    // 2. Realtime Check
+    const checkRealtime = async () => {
+        const start = performance.now();
+        const channel = supabase.channel('health-check');
+        channel.subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+                updateCheck('Realtime (Websockets)', true, performance.now() - start, 'Connected');
+                supabase.removeChannel(channel);
+            } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                updateCheck('Realtime (Websockets)', false, performance.now() - start, 'Connection Failed');
+            }
+        });
+    };
+    checkRealtime();
+
+    // 3. Storage Check
     const startStore = performance.now();
     const { data: buckets, error: storeError } = await supabase.storage.listBuckets();
     const requiredBuckets = ['event-media', 'avatars', 'documents', 'production-assets', 'brand-assets'];
@@ -56,7 +72,7 @@ export const SystemHealth: React.FC = () => {
         storeError ? storeError.message : (missingBuckets.length > 0 ? `Missing: ${missingBuckets.join(', ')}` : `${buckets?.length} buckets verified`)
     );
 
-    // 3. Edge Function Check (Basic Ping)
+    // 4. Edge Function Check (Basic Ping)
     const startEdge = performance.now();
     try {
       const res = await fetch(`${supabaseUrl}/functions/v1/ai-copilot`, {
@@ -68,7 +84,7 @@ export const SystemHealth: React.FC = () => {
       updateCheck('Edge Functions (Ping)', false, 0, e.message);
     }
 
-    // 4. Deep AI Checks (OPTIONS requests to specific endpoints to verify deployment)
+    // 5. Deep AI Checks (OPTIONS requests to specific endpoints to verify deployment)
     const checkAIEndpoint = async (endpoint: string, label: string) => {
         const start = performance.now();
         try {
@@ -132,6 +148,7 @@ export const SystemHealth: React.FC = () => {
                 }`}>
                   {check.name.includes('AI') ? <Sparkles size={18} /> : 
                    check.name.includes('Storage') ? <HardDrive size={18} /> :
+                   check.name.includes('Realtime') ? <Wifi size={18} /> :
                    check.name.includes('Function') ? <Server size={18} /> : <Database size={18} />}
                 </div>
                 
@@ -173,9 +190,9 @@ export const SystemHealth: React.FC = () => {
       <div className="mt-12 bg-gray-900 text-white p-8 rounded-3xl">
          <h3 className="text-xl font-serif font-bold mb-4">Troubleshooting Guide</h3>
          <div className="space-y-4 text-sm text-gray-400">
-            <p>1. <strong className="text-white">Storage Errors:</strong> Run the migration script again or manually create buckets in Supabase Dashboard ({`> Storage > New Bucket`}).</p>
-            <p>2. <strong className="text-white">AI Function Errors:</strong> Verify <code>GEMINI_API_KEY</code> is set in Edge Function secrets via <code>supabase secrets set</code>.</p>
-            <p>3. <strong className="text-white">Table Missing:</strong> Execute the full SQL migration found in <code>supabase/migrations/20250309_complete_schema.sql</code>.</p>
+            <p>1. <strong className="text-white">Realtime Errors:</strong> Ensure "Broadcast" and "Presence" are enabled for all tables in Supabase Replication settings.</p>
+            <p>2. <strong className="text-white">Storage Errors:</strong> Run the migration script again or manually create buckets in Supabase Dashboard ({`> Storage > New Bucket`}).</p>
+            <p>3. <strong className="text-white">AI Function Errors:</strong> Verify <code>GEMINI_API_KEY</code> is set in Edge Function secrets via <code>supabase secrets set</code>.</p>
          </div>
       </div>
     </div>

@@ -477,6 +477,8 @@ export interface Database {
           created_at: string
           brand_story: string | null
           social_links: string[] | null
+          lead_score: number | null
+          lead_category: string | null
         }
         Insert: {
           id?: string
@@ -492,6 +494,8 @@ export interface Database {
           created_at?: string
           brand_story?: string | null
           social_links?: string[] | null
+          lead_score?: number | null
+          lead_category?: string | null
         }
         Update: {
           id?: string
@@ -507,6 +511,107 @@ export interface Database {
           created_at?: string
           brand_story?: string | null
           social_links?: string[] | null
+          lead_score?: number | null
+          lead_category?: string | null
+        }
+      }
+      sponsor_interactions: {
+        Row: {
+          id: string
+          sponsor_id: string
+          created_by: string
+          type: string
+          summary: string
+          details: string | null
+          date: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          sponsor_id: string
+          created_by: string
+          type: string
+          summary: string
+          details?: string | null
+          date?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          sponsor_id?: string
+          created_by?: string
+          type?: string
+          summary?: string
+          details?: string | null
+          date?: string
+          created_at?: string
+        }
+      }
+      sponsor_contacts: {
+        Row: {
+          id: string
+          sponsor_id: string
+          name: string
+          role: string | null
+          email: string | null
+          phone: string | null
+          linkedin_url: string | null
+          is_primary: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          sponsor_id: string
+          name: string
+          role?: string | null
+          email?: string | null
+          phone?: string | null
+          linkedin_url?: string | null
+          is_primary?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          sponsor_id?: string
+          name?: string
+          role?: string | null
+          email?: string | null
+          phone?: string | null
+          linkedin_url?: string | null
+          is_primary?: boolean
+          created_at?: string
+        }
+      }
+      sponsorship_packages: {
+        Row: {
+          id: string
+          created_by: string | null
+          name: string
+          description: string | null
+          default_price: number
+          default_slots: number | null
+          deliverables_template: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          created_by?: string | null
+          name: string
+          description?: string | null
+          default_price: number
+          default_slots?: number | null
+          deliverables_template?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          created_by?: string | null
+          name?: string
+          description?: string | null
+          default_price?: number
+          default_slots?: number | null
+          deliverables_template?: Json | null
+          created_at?: string
         }
       }
       event_sponsors: {

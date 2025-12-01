@@ -1,84 +1,61 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
-import { EventSponsor } from '../types/sponsorship';
-import { aiService } from '../lib/ai-service';
+import { sponsorService } from '../lib/sponsor-service';
+import { SponsorProfile, EventSponsor } from '../types/sponsorship';
 import { useToast } from '../components/Toast';
 
 export const useSponsors = () => {
-  const [sponsors, setSponsors] = useState<EventSponsor[]>([]);
+  const [sponsors, setSponsors] = useState<SponsorProfile[]>([]);
+  const [deals, setDeals] = useState<EventSponsor[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast, error: toastError } = useToast();
+  const { error: toastError, success: toastSuccess } = useToast();
 
-  // Fetch Sponsors
-  const fetchSponsors = useCallback(async () => {
+  const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('event_sponsors')
-        .select(`
-          *,
-          sponsor:sponsor_profiles(*)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setSponsors(data || []);
-    } catch (err: any) {
-      console.error('Error fetching sponsors:', err);
-      toastError('Failed to load sponsors');
+      const [sData, dData] = await Promise.all([
+        sponsorService.getSponsors(),
+        sponsorService.getDeals()
+      ]);
+      setSponsors(sData || []);
+      setDeals(dData || []);
+    } catch (e: any) {
+      console.error(e);
+      toastError('Failed to load sponsor data');
     } finally {
       setLoading(false);
     }
   }, [toastError]);
 
   useEffect(() => {
-    fetchSponsors();
-  }, [fetchSponsors]);
+    fetchAll();
+  }, [fetchAll]);
 
-  // Update Sponsor Status (Kanban Drag & Drop)
+  // Optimistic Update for Kanban Drag & Drop
   const updateSponsorStatus = async (dealId: string, newStatus: string) => {
-    // Optimistic Update
-    const previousSponsors = [...sponsors];
-    setSponsors(prev => prev.map(s => s.id === dealId ? { ...s, status: newStatus } as any : s));
+    // 1. Snapshot previous state
+    const previousDeals = [...deals];
+    
+    // 2. Optimistic Update
+    setDeals(curr => curr.map(d => d.id === dealId ? { ...d, status: newStatus as any } : d));
 
     try {
-      const { error } = await supabase
-        .from('event_sponsors')
-        .update({ status: newStatus })
-        .eq('id', dealId);
-
-      if (error) throw error;
-      toast(`Deal moved to ${newStatus}`, 'success');
-    } catch (err: any) {
-      setSponsors(previousSponsors); // Rollback
+      // 3. API Call
+      await sponsorService.updateDealStatus(dealId, newStatus);
+      toastSuccess('Deal updated');
+    } catch (e) {
+      // 4. Rollback on error
+      console.error(e);
+      setDeals(previousDeals);
       toastError('Failed to update status');
     }
   };
 
-  // AI Actions
-  const generateAiInsights = async (mode: 'activation' | 'scoring', params: { sponsorName: string, industry: string, eventDetails: string }) => {
-    const action = mode === 'scoring' ? 'score-lead' : 'activation-ideas';
-    
-    const result = await aiService.sponsorAgent(action, {
-      sponsorName: params.sponsorName,
-      sponsorIndustry: params.industry,
-      eventDetails: params.eventDetails
-    });
-
-    if (!result.success) {
-      toastError('AI Analysis failed');
-      return null;
-    }
-
-    return result.data;
-  };
-
   return {
     sponsors,
+    deals,
     loading,
-    refetch: fetchSponsors,
     updateSponsorStatus,
-    generateAiInsights
+    refetch: fetchAll
   };
 };

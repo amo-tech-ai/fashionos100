@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { GoogleGenAI, Type } from "https://esm.sh/@google/genai"
+import { GoogleGenAI, Type } from "https://esm.sh/@google/genai@0.1.1"
 
 declare const Deno: any;
 
@@ -71,17 +71,17 @@ serve(async (req: Request) => {
       2. Overlay the Talent schedules to find overlaps.
       3. Ensure the date is before the Deadline.
       4. If conflicts exist, prioritize the Venue availability but note the conflict.
-      5. Provide a "thought_process" explaining your logic like a human scheduler.
-      6. Return top 3 suggestions.
+      5. Return top 3 suggestions.
     `
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash', // Updated from 2.0-flash to stable 2.5
+      model: 'gemini-2.5-flash', 
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
         responseSchema: schema,
-        temperature: 0.2
+        temperature: 0.2,
+        thinkingConfig: { thinkingBudget: 2048 } // Enable Thinking for complex logic
       }
     });
 

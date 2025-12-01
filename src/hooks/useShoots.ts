@@ -1,10 +1,13 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { shootService, Shoot, ShootFilters } from '../lib/shoot-service';
 import { useAuth } from '../context/AuthContext';
+import { usePermissions } from './usePermissions';
 import { useToast } from '../components/Toast';
 
 export const useShoots = () => {
   const { user } = useAuth();
+  const { isAdmin } = usePermissions();
   const { toast, error: toastError } = useToast();
   
   // Data State
@@ -24,7 +27,11 @@ export const useShoots = () => {
     if (!user) return;
     try {
       setLoading(true);
-      const { data, count } = await shootService.getShoots(user.id, filters);
+      
+      // RBAC Logic: Admins see all, Users see their own
+      const targetUserId = isAdmin ? undefined : user.id;
+      
+      const { data, count } = await shootService.getShoots(targetUserId, filters);
       setShoots(data);
       setTotalCount(count);
     } catch (err: any) {
@@ -33,7 +40,7 @@ export const useShoots = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, filters]);
+  }, [user, isAdmin, filters, toastError]);
 
   useEffect(() => {
     fetchShoots();
@@ -65,8 +72,7 @@ export const useShoots = () => {
   const setStatusFilter = (status: string) => setFilters(prev => ({ ...prev, status, page: 1 }));
   const setSearchTerm = (search: string) => setFilters(prev => ({ ...prev, search, page: 1 }));
 
-  // KPI Calculations (Local snapshot of fetched data for immediate feedback, 
-  // traditionally this should be a separate aggregate query if paginated)
+  // KPI Calculations (Local snapshot of fetched data)
   const kpis = {
     totalBookings: totalCount,
     active: shoots.filter(s => ['confirmed', 'shooting', 'post_production'].includes(s.status)).length,

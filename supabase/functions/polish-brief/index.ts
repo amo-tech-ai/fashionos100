@@ -15,7 +15,7 @@ serve(async (req) => {
     const apiKey = Deno.env.get('GEMINI_API_KEY')
     if (!apiKey) throw new Error('Missing GEMINI_API_KEY')
 
-    const { brief, type } = await req.json()
+    const { brief, type, brandContext } = await req.json()
 
     if (!brief) throw new Error('No brief provided')
 
@@ -50,25 +50,26 @@ serve(async (req) => {
       Act as a high-end Fashion Creative Director. 
       Analyze the following rough brief from a client. 
       
+      Input Brief: "${brief}"
+      ${brandContext ? `Brand Context: Align tone with ${JSON.stringify(brandContext)}` : ''}
+      
       Your tasks:
       1. Rewrite the brief to be professional, structured (using headings like 'Concept', 'Lighting', 'Styling'), and clear for a production crew. 
       2. Extract key visual tags useful for search.
       3. Identify the overall mood.
       4. Suggest a specific Visual Style reference that matches their description.
-      
-      Input Brief: "${brief}"
     `;
 
     if (type === 'marketing') {
         prompt = `
         Act as a Senior Fashion Copywriter.
         Rewrite this event description to be engaging, high-converting, and exciting for attendees.
+        Input Description: "${brief}"
+        
         1. Rewrite the description to be punchy and aspirational.
         2. Extract key marketing tags.
         3. Identify the event vibe.
-        4. Suggest a visual style for the marketing assets.
-        
-        Input Description: "${brief}"`;
+        4. Suggest a visual style for the marketing assets.`;
     }
     
     const response = await ai.models.generateContent({
@@ -86,6 +87,13 @@ serve(async (req) => {
     })
 
     const responseText = response.text || "{}"
+
+    // Validate JSON
+    try {
+        JSON.parse(responseText);
+    } catch (e) {
+        throw new Error("Failed to generate valid JSON response.");
+    }
 
     return new Response(responseText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

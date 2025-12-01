@@ -18,22 +18,42 @@ serve(async (req) => {
     const { type, dealId, sponsorName, sponsorEmail } = await req.json();
 
     if (type === 'deal-signed') {
-        // 1. Log Activity
         console.log(`Automating workflow for Signed Deal: ${dealId}`);
         
-        // 2. Create Onboarding Tasks (Mock for now as 'tasks' table logic varies per project)
-        // In a real scenario, you would insert into your tasks table:
-        // await supabase.from('tasks').insert([
-        //   { title: `Onboard ${sponsorName}`, description: "Send welcome kit...", priority: "high" },
-        //   { title: `Collect Assets for ${sponsorName}`, description: "Logo, video...", priority: "medium" }
-        // ]);
+        // 1. Fetch Deal Metadata to find Event Organizer
+        const { data: deal } = await supabase
+          .from('event_sponsors')
+          .select(`
+             id,
+             event:events(organizer_id, title),
+             sponsor:sponsor_profiles(owner_id, name)
+          `)
+          .eq('id', dealId)
+          .single();
         
-        // 3. Send Welcome Email (Stub)
-        // In production, use Resend or SendGrid API here
-        console.log(`Sending welcome email to ${sponsorEmail || 'sponsor contact'}`);
+        if (deal) {
+            // 2. Notify Organizer
+            if (deal.event?.organizer_id) {
+                await supabase.from('notifications').insert({
+                    user_id: deal.event.organizer_id,
+                    title: 'New Deal Signed! 🎉',
+                    message: `${deal.sponsor.name} just signed for ${deal.event.title}.`,
+                    type: 'success'
+                });
+            }
+
+            // 3. Notify Sponsor (if they have portal access)
+            if (deal.sponsor?.owner_id) {
+                await supabase.from('notifications').insert({
+                    user_id: deal.sponsor.owner_id,
+                    title: 'Partnership Active',
+                    message: `Welcome to ${deal.event.title}! Please check your portal for next steps.`,
+                    type: 'success'
+                });
+            }
+        }
         
-        // 4. Return success
-        return new Response(JSON.stringify({ success: true, message: "Onboarding workflow triggered: Tasks created & Email sent." }), {
+        return new Response(JSON.stringify({ success: true, message: "Workflow executed: Notifications sent." }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
     }

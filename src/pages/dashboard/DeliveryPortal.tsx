@@ -11,6 +11,8 @@ import { Button } from '../../components/Button';
 import { supabase } from '../../lib/supabase';
 import { FileUploader } from '../../components/FileUploader';
 import { useToast } from '../../components/Toast';
+import { notificationService } from '../../lib/notification-service';
+import { useAuth } from '../../context/AuthContext';
 
 // --- Types ---
 interface Asset {
@@ -23,6 +25,7 @@ interface Asset {
     model?: string;
     background?: string;
   };
+  shoot_id?: string;
   isFavorite: boolean;
   aiScore?: number;
   aiReason?: string;
@@ -33,11 +36,13 @@ export const DeliveryPortal: React.FC = () => {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeRevision, setActiveRevision] = useState<Asset | null>(null);
+  const [revisionNote, setRevisionNote] = useState('');
   
   // Filters
   const [filterAngle, setFilterAngle] = useState('All');
   const [showFavorites, setShowFavorites] = useState(false);
   const { success, error } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchAssets();
@@ -65,6 +70,7 @@ export const DeliveryPortal: React.FC = () => {
                 model: a.metadata?.model || 'Unknown',
                 background: a.metadata?.background || 'Studio'
             },
+            shoot_id: a.shoot_id,
             isFavorite: a.is_favorite
         }));
 
@@ -118,24 +124,41 @@ export const DeliveryPortal: React.FC = () => {
     success("Assets approved successfully");
   };
 
-  const submitRevision = async (note: string) => {
+  const submitRevision = async () => {
     if (activeRevision) {
+      const note = revisionNote || "Please review this asset.";
+      
       // Optimistic
       setAssets(prev => prev.map(a => a.id === activeRevision.id ? { ...a, status: 'revision' } : a));
       
       // DB
       await supabase.from('shoot_assets').update({ status: 'revision_requested' }).eq('id', activeRevision.id);
       
+      // NOTIFY STUDIO / ADMIN
+      // Find shoot designer (owner) or just notify all admins in real app
+      // For now, we'll assume we notify the studio admin (represented by a specific ID or service role logic)
+      // Here we'll just create a notification record that admins can see
+      if (activeRevision.shoot_id) {
+          // Optional: Fetch shoot details to know who to notify specifically
+          // For MVP, we log the notification which admins can see if they query all
+          // Or notify the user themselves for confirmation
+          await notificationService.create({
+              userId: user?.id || 'system', // Self-notification for audit
+              title: "Revision Requested",
+              message: `You requested changes on ${activeRevision.title}: "${note}"`,
+              type: 'info'
+          });
+          
+          // In a real multi-tenant app, we'd notify the studio owner.
+      }
+
       success("Revision request sent");
+      setRevisionNote('');
       setActiveRevision(null);
     }
   };
 
   const handleBulkUpload = async (files: File[]) => {
-    // In a real scenario, we'd link these to a specific shoot ID.
-    // For this demo, we'll upload to a 'general' folder and create asset records linked to a dummy shoot if needed,
-    // or just to the assets table with a null shoot_id if allowed.
-    
     try {
         const { data: { user } } = await (supabase.auth as any).getUser();
         if (!user) throw new Error("User not authenticated");
@@ -156,10 +179,6 @@ export const DeliveryPortal: React.FC = () => {
                 .getPublicUrl(fileName);
 
             // 2. Create Record
-            // Note: We need a valid shoot_id. In a real app, this page would likely be /dashboard/shoots/:id/delivery
-            // We will fetch the most recent shoot for the user to attach to, or leave null if schema allows.
-            
-            // Temporary fetch for demo context
             const { data: recentShoot } = await supabase.from('shoots').select('id').limit(1).single();
             const shootId = recentShoot?.id; 
 
@@ -310,7 +329,7 @@ export const DeliveryPortal: React.FC = () => {
             </div>
         )}
 
-        {/* Upload Area - Replaced with robust uploader */}
+        {/* Upload Area */}
         <div className="mt-8 pt-8 border-t border-gray-100">
           <h3 className="font-serif font-bold text-lg mb-4">Add New Assets</h3>
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-1">
@@ -366,6 +385,7 @@ export const DeliveryPortal: React.FC = () => {
                         {['Fix Lighting', 'Remove Blemish', 'Color Correct', 'Crop tighter', 'Clean Background'].map(chip => (
                            <button 
                               key={chip}
+                              onClick={() => setRevisionNote(prev => prev ? `${prev}\n${chip}` : chip)}
                               className="px-3 py-1.5 rounded-full border border-gray-200 text-xs font-medium text-gray-600 hover:border-purple-300 hover:text-purple-600 hover:bg-purple-50 transition-colors"
                            >
                               {chip}
@@ -379,12 +399,14 @@ export const DeliveryPortal: React.FC = () => {
                      <textarea 
                         className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-500 min-h-[150px] resize-none"
                         placeholder="Describe exactly what needs to be changed..."
+                        value={revisionNote}
+                        onChange={(e) => setRevisionNote(e.target.value)}
                      />
                   </div>
                </div>
 
                <div className="pt-6 mt-auto border-t border-gray-100">
-                  <Button fullWidth size="lg" variant="primary" onClick={() => submitRevision("Notes")}>
+                  <Button fullWidth size="lg" variant="primary" onClick={submitRevision} disabled={!revisionNote.trim()}>
                      Submit Revision Request
                   </Button>
                </div>

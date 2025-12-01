@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Sparkles, Instagram, Video, Linkedin, Twitter, Copy, Check } from 'lucide-react';
 import { Button } from '../Button';
 import { LoadingSpinner } from '../LoadingSpinner';
+import { supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { SocialPostPlan } from '../../types/sponsorship';
 import { FadeIn } from '../FadeIn';
 import { useToast } from '../Toast';

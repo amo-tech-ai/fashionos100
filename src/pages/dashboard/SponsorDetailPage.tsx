@@ -1,45 +1,43 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
-  ArrowLeft, Building2, Mail, Phone, Globe, 
+  ArrowLeft, Building2, Globe, 
   Loader2, Send, Lock, Sparkles, Copy, Check, X,
-  TrendingUp, Eye, MousePointerClick, Target, DollarSign, MapPin, User
+  User
 } from 'lucide-react';
 import { FadeIn } from '../../components/FadeIn';
 import { Button } from '../../components/Button';
 import { supabase, supabaseUrl, supabaseAnonKey } from '../../lib/supabase';
 import { SponsorProfile, EventSponsor, SponsorActivation, SponsorRoiMetric, SponsorDeliverable } from '../../types/sponsorship';
-import { Input } from '../../components/forms/Input';
 import { SponsorForm } from '../../components/sponsors/SponsorForm';
 import { aiService } from '../../lib/ai-service';
-import { StatCard } from '../../components/dashboard/Shared';
+import { DeliverablesTracker } from '../../components/sponsors/DeliverablesTracker';
+import { StatusBadge } from '../../components/StatusBadge';
+import { SponsorInteractionFeed } from '../../components/sponsors/SponsorInteractionFeed';
+import { SponsorContactList } from '../../components/sponsors/SponsorContactList';
+import { SponsorFileManager } from '../../components/sponsors/SponsorFileManager';
 
 export const SponsorDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [activeTab, setActiveTab] = useState<'overview' | 'deliverables' | 'activations'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'contacts' | 'activity' | 'deliverables' | 'files'>('overview');
   
   const [sponsor, setSponsor] = useState<SponsorProfile | null>(null);
   const [deals, setDeals] = useState<EventSponsor[]>([]); 
   const [activations, setActivations] = useState<SponsorActivation[]>([]);
   const [deliverables, setDeliverables] = useState<SponsorDeliverable[]>([]);
-  const [metrics, setMetrics] = useState<SponsorRoiMetric[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // UI States
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [pitchDraft, setPitchDraft] = useState<string | null>(null);
+  const [generatingPitch, setGeneratingPitch] = useState(false);
+  const [copiedPitch, setCopiedPitch] = useState(false);
 
   // Invite State
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
-
-  // Edit State
-  const [showEditForm, setShowEditForm] = useState(false);
-
-  // Pitch Generation State
-  const [pitchDraft, setPitchDraft] = useState<string | null>(null);
-  const [generatingPitch, setGeneratingPitch] = useState(false);
-  const [copiedPitch, setCopiedPitch] = useState(false);
-
-  // File Upload State
-  const [uploadingId, setUploadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) fetchData();
@@ -69,29 +67,54 @@ export const SponsorDetailPage: React.FC = () => {
 
         const dealIds = eventSponsors?.map(d => d.id) || [];
         if (dealIds.length > 0) {
-            const { data: acts } = await supabase
-                .from('sponsor_activations')
-                .select('*, event_sponsor:event_sponsors(event:events(title))')
-                .in('event_sponsor_id', dealIds);
-            setActivations(acts || []);
+            // Parallel fetch for sub-data
+            const [actsRes, delsRes] = await Promise.all([
+                supabase.from('sponsor_activations').select('*, event_sponsor:event_sponsors(event:events(title))').in('event_sponsor_id', dealIds),
+                supabase.from('sponsor_deliverables').select('*, event_sponsor:event_sponsors(event:events(title))').in('event_sponsor_id', dealIds),
+            ]);
 
-            const { data: dels } = await supabase
-                .from('sponsor_deliverables')
-                .select('*, event_sponsor:event_sponsors(event:events(title))')
-                .in('event_sponsor_id', dealIds);
-            setDeliverables(dels || []);
-
-            const { data: metricsData } = await supabase
-                .from('sponsor_roi_metrics')
-                .select('*')
-                .in('event_sponsor_id', dealIds);
-            setMetrics(metricsData || []);
+            setActivations(actsRes.data || []);
+            setDeliverables(delsRes.data || []);
         }
-
+        
     } catch (error) {
         console.error("Error loading details:", error);
     } finally {
         setLoading(false);
+    }
+  };
+
+  const handleGeneratePitch = async () => {
+    if (!sponsor) return;
+    setGeneratingPitch(true);
+    setPitchDraft(null);
+    
+    const eventContext = deals.length > 0 && deals[0].event 
+      ? (deals[0].event as any).title 
+      : 'Upcoming Fashion Events';
+
+    try {
+      const result = await aiService.sponsorAgent('generate-pitch', {
+          sponsorName: sponsor.name,
+          sponsorIndustry: sponsor.industry || 'Luxury',
+          eventDetails: eventContext
+      });
+
+      if (result.success && typeof result.data === 'string') {
+          setPitchDraft(result.data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setGeneratingPitch(false);
+    }
+  };
+
+  const handleCopyPitch = () => {
+    if (pitchDraft) {
+      navigator.clipboard.writeText(pitchDraft);
+      setCopiedPitch(true);
+      setTimeout(() => setCopiedPitch(false), 2000);
     }
   };
 
@@ -115,7 +138,7 @@ export const SponsorDetailPage: React.FC = () => {
       
       alert(`Invitation sent to ${inviteEmail}`);
       setShowInvite(false);
-      fetchData(); 
+      fetchData();
     } catch (e) {
       console.error(e);
       alert("Failed to send invitation. Please check permissions.");
@@ -124,154 +147,103 @@ export const SponsorDetailPage: React.FC = () => {
     }
   };
 
-  const handleGeneratePitch = async () => {
-    if (!sponsor) return;
-    setGeneratingPitch(true);
-    setPitchDraft(null);
-    
-    const eventContext = deals.length > 0 && deals[0].event 
-      ? (deals[0].event as any).title 
-      : 'Upcoming Fashion Events';
-
-    try {
-      // Use central AI Service
-      const result = await aiService.sponsorAgent('generate-pitch', {
-          sponsorName: sponsor.name,
-          sponsorIndustry: sponsor.industry || 'Luxury',
-          eventDetails: eventContext
-      });
-
-      if (result.success && typeof result.data === 'string') {
-          setPitchDraft(result.data);
-      } else {
-          throw new Error('Invalid response format');
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Failed to generate pitch. Ensure AI service is active.");
-    } finally {
-      setGeneratingPitch(false);
-    }
-  };
-
-  const handleCopyPitch = () => {
-    if (pitchDraft) {
-      navigator.clipboard.writeText(pitchDraft);
-      setCopiedPitch(true);
-      setTimeout(() => setCopiedPitch(false), 2000);
-    }
-  };
-
-  if (loading) {
-    return (
-        <div className="min-h-screen flex items-center justify-center">
-            <Loader2 className="animate-spin text-purple-600" size={48} />
-        </div>
-    );
-  }
-
-  if (!sponsor) {
-      return (
-          <div className="p-12 text-center">
-              <h2 className="text-2xl font-bold mb-4">Sponsor Not Found</h2>
-              <Link to="/dashboard/sponsors"><Button>Back to List</Button></Link>
-          </div>
-      );
-  }
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-purple-600" size={48} /></div>;
+  if (!sponsor) return <div className="p-12 text-center">Sponsor Not Found</div>;
 
   const totalSpent = deals.reduce((acc, deal) => acc + (deal.cash_value || 0), 0);
   const activeDealsCount = deals.filter(d => d.status === 'Signed' || d.status === 'Paid').length;
-  const lastDeal = deals[0]; 
-
-  // Calculate ROI Metrics
-  const totalImpressions = metrics
-    .filter(m => m.metric_name.toLowerCase().includes('impression'))
-    .reduce((acc, curr) => acc + Number(curr.metric_value), 0);
-
-  const totalLeads = metrics
-    .filter(m => m.metric_name.toLowerCase().includes('lead'))
-    .reduce((acc, curr) => acc + Number(curr.metric_value), 0);
-
-  const engagementMetrics = metrics.filter(m => m.metric_name.toLowerCase().includes('engagement'));
-  const avgEngagement = engagementMetrics.length > 0 
-    ? (engagementMetrics.reduce((acc, curr) => acc + Number(curr.metric_value), 0) / engagementMetrics.length)
-    : 0;
+  const lastDeal = deals[0];
+  const leadScore = sponsor.lead_score || 0;
+  const leadCategory = sponsor.lead_category || 'New';
+  const scoreColor = leadScore >= 80 ? 'bg-green-500' : leadScore >= 50 ? 'bg-amber-500' : 'bg-gray-300';
 
   return (
     <div className="animate-in fade-in duration-500 pb-20 font-sans">
       <div className="mb-6">
         <Link to="/dashboard/sponsors" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-black transition-colors">
-          <ArrowLeft size={16} className="mr-2" /> Back to Sponsors
+          <ArrowLeft size={16} className="mr-2" /> Back to List
         </Link>
       </div>
 
-      {/* Header Card */}
-      <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm mb-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-purple-50 rounded-full blur-3xl -mr-12 -mt-12 opacity-50 pointer-events-none" />
+      {/* 1. Hero Profile Header */}
+      <div className="bg-white rounded-[2rem] p-6 md:p-8 border border-gray-100 shadow-sm mb-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-purple-50 to-pink-50 rounded-full blur-3xl -mr-20 -mt-20 opacity-70 pointer-events-none" />
         
-        <div className="relative z-10 flex flex-col md:flex-row gap-8 items-start">
-          <div className="w-24 h-24 bg-white border border-gray-200 rounded-2xl p-1 shadow-sm shrink-0 flex items-center justify-center overflow-hidden">
+        <div className="relative z-10 flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+          {/* Logo */}
+          <div className="w-24 h-24 md:w-28 md:h-28 bg-white border border-gray-200 rounded-3xl p-2 shadow-sm shrink-0 flex items-center justify-center overflow-hidden">
             {sponsor.logo_url ? (
                 <img src={sponsor.logo_url} alt={sponsor.name} className="w-full h-full object-contain rounded-xl" />
             ) : (
-                <span className="text-2xl font-bold text-gray-300">{sponsor.name.charAt(0)}</span>
+                <span className="text-3xl font-bold text-gray-300">{sponsor.name.charAt(0)}</span>
             )}
           </div>
           
-          <div className="flex-1">
-            <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+          <div className="flex-1 w-full">
+            <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
               <div>
-                <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">{sponsor.name}</h1>
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <span className="flex items-center gap-1.5"><Building2 size={14} /> {sponsor.industry || 'Industry N/A'}</span>
+                <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2">{sponsor.name}</h1>
+                <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                  <span className="flex items-center gap-1.5 bg-gray-100 px-2.5 py-1 rounded-full text-xs font-medium"><Building2 size={12} /> {sponsor.industry || 'N/A'}</span>
                   {sponsor.website_url && (
-                      <>
-                        <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                        <a href={sponsor.website_url} target="_blank" rel="noopener noreferrer" className="hover:text-purple-600 flex items-center gap-1">
-                            <Globe size={14} /> Website
-                        </a>
-                      </>
+                      <a href={sponsor.website_url} target="_blank" rel="noopener noreferrer" className="hover:text-purple-600 flex items-center gap-1">
+                          <Globe size={14} /> Website
+                      </a>
                   )}
                 </div>
+                
+                {/* Fit Score Bar */}
+                {leadScore > 0 && (
+                    <div className="flex items-center gap-3 mt-2">
+                        <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div className={`h-full ${scoreColor}`} style={{ width: `${leadScore}%` }} />
+                        </div>
+                        <span className="text-xs font-bold text-gray-600">{leadScore}/100 Fit Score</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase bg-gray-100 text-gray-500`}>
+                            {leadCategory}
+                        </span>
+                    </div>
+                )}
               </div>
-              <div className="flex gap-3">
-                <Button 
-                  variant="white" 
-                  size="sm" 
-                  onClick={handleGeneratePitch}
-                  disabled={generatingPitch}
-                  className="text-purple-600 border-purple-100 hover:bg-purple-50"
-                >
-                  {generatingPitch ? <Loader2 size={14} className="animate-spin mr-2" /> : <Sparkles size={14} className="mr-2" />}
-                  {generatingPitch ? 'Drafting...' : 'Draft Pitch'}
+
+              <div className="flex flex-wrap gap-3 w-full lg:w-auto">
+                <Button variant="white" size="sm" onClick={handleGeneratePitch} disabled={generatingPitch} className="flex-1 md:flex-none">
+                  {generatingPitch ? <Loader2 size={14} className="animate-spin mr-2" /> : <Sparkles size={14} className="mr-2 text-purple-600" />}
+                  AI Pitch
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setShowEditForm(true)}>Edit Profile</Button>
-                <Link to="/dashboard/sponsors/new-deal"><Button variant="primary" size="sm">New Deal</Button></Link>
+                <Button variant="outline" size="sm" onClick={() => setShowEditForm(true)} className="flex-1 md:flex-none">Edit</Button>
+                <Link to="/dashboard/sponsors/new-deal" className="flex-1 md:flex-none"><Button variant="primary" size="sm" className="w-full">Create Deal</Button></Link>
               </div>
             </div>
 
+            {/* Key Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 pt-8 border-t border-gray-100">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Total Investment</p>
-                <p className="text-xl font-bold text-gray-900">${totalSpent.toLocaleString()}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Lifetime Value</p>
+                <p className="text-lg md:text-xl font-bold text-gray-900">${totalSpent.toLocaleString()}</p>
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Active Deals</p>
-                <p className="text-xl font-bold text-gray-900">{activeDealsCount}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Active Deals</p>
+                <p className="text-lg md:text-xl font-bold text-gray-900">{activeDealsCount}</p>
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Latest Status</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Status</p>
                 {lastDeal ? (
-                    <span className="inline-flex items-center gap-1.5 text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> {lastDeal.status}
-                    </span>
+                    <StatusBadge status={lastDeal.status} />
                 ) : (
                     <span className="text-sm text-gray-400">No deals yet</span>
                 )}
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Activations</p>
-                <p className="text-sm font-bold text-gray-900">{activations.length} Planned</p>
+                 <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 border border-white shadow-sm">
+                        <User size={14} />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Owner</p>
+                        <p className="text-sm font-bold text-gray-900">Assign</p>
+                    </div>
+                 </div>
               </div>
             </div>
           </div>
@@ -306,13 +278,13 @@ export const SponsorDetailPage: React.FC = () => {
         </FadeIn>
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-white p-1.5 rounded-xl border border-gray-200 w-fit mb-6">
-        {['overview', 'deliverables', 'activations'].map((tab) => (
+      {/* 2. Tabs Navigation */}
+      <div className="flex gap-2 bg-white p-1.5 rounded-xl border border-gray-200 w-full md:w-fit mb-8 overflow-x-auto hide-scrollbar">
+        {['overview', 'activity', 'contacts', 'deliverables', 'files'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
-            className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+            className={`flex-1 md:flex-initial px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
               activeTab === tab ? 'bg-gray-900 text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'
             }`}
           >
@@ -321,190 +293,131 @@ export const SponsorDetailPage: React.FC = () => {
         ))}
       </div>
 
+      {/* 3. Tab Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <FadeIn key={activeTab} className="bg-white rounded-3xl border border-gray-100 shadow-sm min-h-[400px] p-6">
+        
+        {/* Left Main Content (2 cols) */}
+        <div className="lg:col-span-2 space-y-8">
+            
             {activeTab === 'overview' && (
-              <div className="space-y-8">
-                {/* ROI KPI Section */}
-                <div>
-                    <h3 className="font-serif font-bold text-xl mb-4 flex items-center gap-2">
-                        <TrendingUp size={20} className="text-purple-600" /> Performance Metrics
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border border-purple-100">
-                        <div className="text-center sm:text-left">
-                            <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
-                                <Eye size={16} className="text-purple-600" />
-                                <span className="text-xs font-bold text-purple-700 uppercase tracking-wider">Total Impressions</span>
-                            </div>
-                            <p className="text-2xl font-bold text-gray-900">{totalImpressions > 0 ? `${(totalImpressions / 1000).toFixed(1)}k` : '--'}</p>
+                <FadeIn>
+                    <div className="space-y-8">
+                        {/* AI Summary */}
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                            <h3 className="font-serif font-bold text-lg mb-3 flex items-center gap-2">
+                                <Sparkles size={16} className="text-purple-500" /> Brand Intelligence
+                            </h3>
+                            <p className="text-gray-600 leading-relaxed text-sm">
+                                {sponsor.brand_story || `${sponsor.name} is a leading player in the ${sponsor.industry} space. They have a history of sponsoring high-profile events and focus on luxury, sustainability, and innovation.`}
+                            </p>
+                            {sponsor.social_links && sponsor.social_links.length > 0 && (
+                                <div className="mt-4 pt-4 border-t border-gray-50 flex flex-wrap gap-2">
+                                    {sponsor.social_links.map((link, i) => (
+                                        <a key={i} href={link} target="_blank" className="text-xs bg-gray-50 px-3 py-1.5 rounded-full text-gray-500 border border-gray-200 hover:text-purple-600 hover:border-purple-200 transition-colors">
+                                            {new URL(link).hostname.replace('www.', '')}
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        <div className="text-center sm:text-left">
-                            <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
-                                <MousePointerClick size={16} className="text-pink-600" />
-                                <span className="text-xs font-bold text-pink-700 uppercase tracking-wider">Avg Engagement</span>
-                            </div>
-                            <p className="text-2xl font-bold text-gray-900">{avgEngagement > 0 ? `${avgEngagement.toFixed(1)}%` : '--'}</p>
-                        </div>
-                        <div className="text-center sm:text-left">
-                            <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
-                                <Target size={16} className="text-green-600" />
-                                <span className="text-xs font-bold text-green-700 uppercase tracking-wider">Leads Generated</span>
-                            </div>
-                            <p className="text-2xl font-bold text-gray-900">{totalLeads > 0 ? totalLeads : '--'}</p>
-                        </div>
-                    </div>
-                </div>
 
-                {/* Deals List */}
-                <div>
-                  <h3 className="font-serif font-bold text-xl mb-4 flex items-center gap-2">
-                      <DollarSign size={20} /> Deal History
-                  </h3>
-                  {deals.length > 0 ? (
-                      <div className="space-y-4">
-                        {deals.map((deal) => (
-                        <div key={deal.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                                    <span className="text-xs font-bold text-gray-500">{deal.level ? deal.level[0] : 'S'}</span>
-                                </div>
-                                <div>
-                                    <p className="font-bold text-gray-900 text-sm">{deal.event?.title || 'Untitled Event'}</p>
-                                    <p className="text-xs text-gray-500">{new Date(deal.created_at).toLocaleDateString()}</p>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase ${
-                                    deal.status === 'Signed' ? 'bg-green-100 text-green-700' : 
-                                    deal.status === 'Negotiating' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
-                                }`}>{deal.status}</span>
-                                <p className="text-xs font-bold text-gray-900 mt-1">${deal.cash_value.toLocaleString()}</p>
+                        {/* Recent Deals */}
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                            <h3 className="font-serif font-bold text-lg mb-4">Recent Deals</h3>
+                            <div className="space-y-4">
+                                {deals.slice(0,3).map(deal => (
+                                    <div key={deal.id} className="flex justify-between items-center p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                                        <div>
+                                            <p className="font-bold text-gray-900">{(deal.event as any)?.title}</p>
+                                            <p className="text-xs text-gray-500">{new Date(deal.created_at).toLocaleDateString()}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <StatusBadge status={deal.status} />
+                                            <p className="text-sm font-bold mt-1">${deal.cash_value.toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                                {deals.length === 0 && <p className="text-gray-400 text-sm text-center py-4">No deals yet.</p>}
                             </div>
                         </div>
-                        ))}
                     </div>
-                  ) : (
-                      <div className="text-center text-gray-400 py-8 border-2 border-dashed border-gray-100 rounded-xl">No activity recorded.</div>
-                  )}
-                </div>
-              </div>
+                </FadeIn>
             )}
-            
+
+            {activeTab === 'activity' && (
+                <FadeIn>
+                    <SponsorInteractionFeed sponsorId={sponsor.id} />
+                </FadeIn>
+            )}
+
             {activeTab === 'deliverables' && (
-                 <div className="space-y-4">
-                     <h3 className="font-serif font-bold text-xl mb-4">Asset Requirements</h3>
-                     {deliverables.length > 0 ? (
-                         deliverables.map(item => (
-                             <div key={item.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
-                                 <div>
-                                     <p className="font-bold text-sm">{item.title}</p>
-                                     <p className="text-xs text-gray-500">Due: {new Date(item.due_date).toLocaleDateString()}</p>
-                                 </div>
-                                 <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${
-                                     item.status === 'approved' ? 'bg-green-100 text-green-700' :
-                                     item.status === 'uploaded' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
-                                 }`}>
-                                     {item.status}
-                                 </span>
-                             </div>
-                         ))
-                     ) : (
-                         <div className="text-center text-gray-400 py-12">No deliverables assigned.</div>
-                     )}
-                 </div>
+                <FadeIn>
+                    <DeliverablesTracker deliverables={deliverables} />
+                </FadeIn>
             )}
-            
-            {activeTab === 'activations' && (
-                 <div className="space-y-4">
-                    <h3 className="font-serif font-bold text-xl mb-4">On-Site Activations</h3>
-                    {activations.length > 0 ? (
-                        activations.map(act => (
-                            <div key={act.id} className="p-4 border border-gray-100 rounded-xl">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h4 className="font-bold text-gray-900">{act.title}</h4>
-                                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">{act.status}</span>
-                                </div>
-                                <p className="text-sm text-gray-600">{act.description}</p>
-                                <div className="mt-3 text-xs text-gray-500 flex items-center gap-2">
-                                    <MapPin size={12} /> {act.location_in_venue || 'Location TBD'}
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="text-center text-gray-400 py-12">No activations planned.</div>
-                    )}
-                 </div>
+
+            {activeTab === 'contacts' && (
+                <FadeIn>
+                    <SponsorContactList sponsorId={sponsor.id} />
+                </FadeIn>
             )}
-          </FadeIn>
+
+             {activeTab === 'files' && (
+                <FadeIn>
+                    <SponsorFileManager sponsorId={sponsor.id} />
+                </FadeIn>
+            )}
+
         </div>
 
-        {/* Sidebar: Contact & Access */}
+        {/* Right Sidebar (Quick Actions) */}
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-serif font-bold text-lg">Portal Access</h3>
-              {sponsor.owner_id ? (
-                  <span className="text-xs font-bold bg-green-50 text-green-600 px-2 py-1 rounded-full flex items-center gap-1">
-                      <Lock size={10} /> Active
-                  </span>
-              ) : (
-                  <span className="text-xs font-bold bg-amber-50 text-amber-600 px-2 py-1 rounded-full flex items-center gap-1">
-                      Inactive
-                  </span>
-              )}
-            </div>
             
-            {/* Invite Flow */}
-            {!sponsor.owner_id && (
-                <div className="pt-2">
-                    {!showInvite ? (
-                        <Button variant="primary" size="sm" fullWidth onClick={() => setShowInvite(true)}>
-                            <Send size={14} className="mr-2" /> Invite to Portal
-                        </Button>
-                    ) : (
-                        <div className="space-y-2 bg-purple-50 p-3 rounded-xl animate-in fade-in">
-                            <p className="text-xs font-bold text-purple-700 mb-1">Send Invite To:</p>
-                            <Input 
-                              value={inviteEmail} 
-                              onChange={(e) => setInviteEmail(e.target.value)} 
-                              className="bg-white text-xs"
-                              placeholder="Enter email"
-                            />
-                            <div className="flex gap-2 mt-2">
-                                <Button size="sm" variant="primary" fullWidth onClick={handleInvite} disabled={inviting}>
-                                    {inviting ? 'Sending...' : 'Send'}
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={() => setShowInvite(false)}>Cancel</Button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Contact Info */}
-            <div className="mt-6 pt-6 border-t border-gray-100 space-y-4">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">
-                        <User size={14} />
-                    </div>
+            {/* Portal Status */}
+            <div className="bg-gradient-to-br from-gray-900 to-black p-6 rounded-2xl text-white shadow-lg">
+                <div className="flex justify-between items-start mb-4">
                     <div>
-                        <p className="text-sm font-bold text-gray-900">{sponsor.contact_name || 'No Name'}</p>
-                        <p className="text-xs text-gray-500">Primary Contact</p>
+                        <h3 className="font-bold text-lg">Sponsor Portal</h3>
+                        <p className="text-xs text-gray-400 mt-1">External access status</p>
                     </div>
+                    <div className={`w-3 h-3 rounded-full ${sponsor.owner_id ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : 'bg-red-500'}`} />
                 </div>
-                {sponsor.contact_email && (
-                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                        <Mail size={14} className="text-gray-400" /> {sponsor.contact_email}
+                
+                {sponsor.owner_id ? (
+                    <div className="space-y-4">
+                         <div className="bg-white/10 rounded-lg p-3 text-xs">
+                             <p className="text-gray-300 mb-1">Last Active</p>
+                             <p className="font-mono">Today, 10:42 AM</p>
+                         </div>
+                         <Button size="sm" variant="white" fullWidth>View As Sponsor</Button>
                     </div>
-                )}
-                {sponsor.contact_phone && (
-                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                        <Phone size={14} className="text-gray-400" /> {sponsor.contact_phone}
+                ) : (
+                    <div>
+                        <p className="text-sm text-gray-400 mb-4">Invite the sponsor to track their ROI and upload assets directly.</p>
+                        {!showInvite ? (
+                            <Button size="sm" variant="white" fullWidth onClick={() => setShowInvite(true)}>
+                                Send Invite
+                            </Button>
+                        ) : (
+                            <div className="space-y-2">
+                                <input 
+                                    value={inviteEmail} 
+                                    onChange={(e) => setInviteEmail(e.target.value)}
+                                    className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-white"
+                                    placeholder="Email address"
+                                />
+                                <div className="flex gap-2">
+                                    <Button size="sm" variant="white" fullWidth onClick={handleInvite} disabled={inviting}>
+                                        {inviting ? 'Sending...' : 'Send Access'}
+                                    </Button>
+                                    <Button size="sm" variant="ghost" onClick={() => setShowInvite(false)} className="text-gray-300 hover:text-white">Cancel</Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
-          </div>
+
         </div>
       </div>
 

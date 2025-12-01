@@ -43,13 +43,15 @@ serve(async (req) => {
         );
 
         // 1. Update Shoot Status
-        const { error: updateError } = await supabase
+        const { data: shoot, error: updateError } = await supabase
           .from('shoots')
           .update({ 
             status: 'confirmed', 
             deposit_paid: true 
           })
-          .eq('id', shootId);
+          .eq('id', shootId)
+          .select('designer_id')
+          .single();
 
         if (updateError) throw updateError;
 
@@ -61,6 +63,16 @@ serve(async (req) => {
             status: 'succeeded',
             provider_payment_id: session.payment_intent as string
         });
+        
+        // 3. Notify User
+        if (shoot && shoot.designer_id) {
+            await supabase.from('notifications').insert({
+                user_id: shoot.designer_id,
+                title: 'Payment Successful',
+                message: `Your deposit for shoot #${shootId.substring(0,8)} has been received. Production will start soon.`,
+                type: 'success'
+            });
+        }
         
         console.log(`Shoot ${shootId} confirmed successfully.`);
       }

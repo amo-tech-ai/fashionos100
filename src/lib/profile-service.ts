@@ -3,6 +3,7 @@ import { supabase } from './supabase';
 import { Database } from '../types/database';
 
 export type Profile = Database['public']['Tables']['profiles']['Row'];
+export type Company = Database['public']['Tables']['companies']['Row'];
 
 export const profileService = {
   /**
@@ -31,7 +32,7 @@ export const profileService = {
     return {
       user,
       profile: profile as Profile | null,
-      company: company as { name: string; website_url?: string } | null
+      company: company as Company | null
     };
   },
 

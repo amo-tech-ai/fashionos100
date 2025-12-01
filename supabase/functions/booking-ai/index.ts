@@ -38,7 +38,6 @@ serve(async (req) => {
         3. **Professionalism:** Use industry-standard terminology.
       `;
       
-      // Add brand voice if available
       if (context.brandContext) {
           systemPrompt += `
             Ensure the output aligns with this brand identity:
@@ -48,7 +47,7 @@ serve(async (req) => {
       }
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview', // Upgraded for complex reasoning and rewriting
+        model: 'gemini-2.5-flash', 
         contents: [{ role: 'user', parts: [{ text: `Input Brief to Polish: "${context.rawText}"` }] }],
         config: {
           responseMimeType: "application/json",
@@ -60,7 +59,7 @@ serve(async (req) => {
       return new Response(response.text || "{}", { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    // --- 2. SHOT RECOMMENDER (Enhanced) ---
+    // --- 2. SHOT RECOMMENDER (Enhanced with Thinking) ---
     if (action === 'recommend-shots') {
       const schema = {
         type: Type.OBJECT,
@@ -73,7 +72,6 @@ serve(async (req) => {
         required: ["min", "optimal", "reasoning", "suggestedAngles"]
       };
 
-      // Construct a rich prompt that encourages reasoning (Thinking Simulation)
       let brandDetails = "Standard Fashion Brand";
       if (context.brandContext) {
          brandDetails = `
@@ -91,10 +89,10 @@ serve(async (req) => {
         - Visual Style: ${context.style}
         - Brand DNA: ${brandDetails}
 
-        Think step-by-step:
+        Instructions:
         1. Analyze the Brand DNA to understand if they need abstract, detail-oriented, or lifestyle shots.
-        2. Consider the 'Category' requirements (e.g. E-comm needs front/back, Editorial needs mood).
-        3. Generate a list of 4-8 specific shot angles/compositions that blend the Category requirements with the Brand Vibe.
+        2. Consider the 'Category' requirements.
+        3. Generate a list of 4-8 specific shot angles.
         
         Output JSON matching the schema.
       `;
@@ -104,20 +102,16 @@ serve(async (req) => {
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
           responseMimeType: "application/json",
-          responseSchema: schema
+          responseSchema: schema,
+          temperature: 0.2,
+          thinkingConfig: { thinkingBudget: 1024 } // Enable thinking for shot strategy
         }
       });
 
       return new Response(response.text || "{}", { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    // --- 3. BUNDLE SUGGESTIONS ---
-    if (action === 'suggest-bundle') {
-        // Logic for bundles (if needed)
-        return new Response(JSON.stringify({ error: "Not implemented" }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    }
-
-    throw new Error('Invalid Action')
+    return new Response(JSON.stringify({ error: "Invalid Action" }), { status: 400, headers: corsHeaders });
 
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {

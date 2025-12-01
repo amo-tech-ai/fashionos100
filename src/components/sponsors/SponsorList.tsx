@@ -1,23 +1,25 @@
 
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, ArrowUpDown, SlidersHorizontal, ChevronDown, Check } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, SlidersHorizontal, ChevronDown, Check, MoreHorizontal, Calendar, DollarSign, User, Zap } from 'lucide-react';
 import { EventSponsor } from '../../types/sponsorship';
 import { SponsorCard } from './SponsorCard';
 import { FadeIn } from '../FadeIn';
 import { EmptyState } from '../EmptyState';
+import { StatusBadge } from '../StatusBadge';
 
 interface SponsorListProps {
   sponsors: EventSponsor[];
   onSponsorClick?: (sponsor: EventSponsor) => void;
 }
 
-type SortOption = 'Name (A-Z)' | 'Value (High-Low)' | 'Status' | 'Newest';
+type SortOption = 'Name (A-Z)' | 'Value (High-Low)' | 'Status' | 'Newest' | 'Active Events' | 'Last Interaction';
 
 export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorClick }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTier, setFilterTier] = useState<string>('All Tiers');
   const [filterStatus, setFilterStatus] = useState<string>('All Statuses');
   const [filterType, setFilterType] = useState<string>('All Types');
+  const [filterPartnership, setFilterPartnership] = useState<string>('All Partners');
   const [sortBy, setSortBy] = useState<SortOption>('Name (A-Z)');
   const [showFilters, setShowFilters] = useState(false);
 
@@ -60,6 +62,14 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
     if (filterType !== 'All Types') {
       result = result.filter(s => s.sponsor?.sponsor_type === filterType);
     }
+    
+    if (filterPartnership !== 'All Partners') {
+        if (filterPartnership === 'Multi-Event') {
+            result = result.filter(s => (s.active_events_count || 0) > 1);
+        } else if (filterPartnership === 'Single Event') {
+            result = result.filter(s => (s.active_events_count || 0) === 1);
+        }
+    }
 
     // 2. Sort
     result.sort((a, b) => {
@@ -72,13 +82,20 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
           return a.status.localeCompare(b.status);
         case 'Newest':
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'Active Events':
+          return (b.active_events_count || 0) - (a.active_events_count || 0);
+        case 'Last Interaction':
+          // Fallback to created_at if last_interaction_date is missing
+          const dateA = a.sponsor?.last_interaction_date ? new Date(a.sponsor.last_interaction_date).getTime() : 0;
+          const dateB = b.sponsor?.last_interaction_date ? new Date(b.sponsor.last_interaction_date).getTime() : 0;
+          return dateB - dateA;
         default:
           return 0;
       }
     });
 
     return result;
-  }, [sponsors, searchQuery, filterTier, filterStatus, filterType, sortBy]);
+  }, [sponsors, searchQuery, filterTier, filterStatus, filterType, filterPartnership, sortBy]);
 
   return (
     <div className="space-y-6">
@@ -91,7 +108,7 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
           <input 
             type="text" 
             placeholder="Search sponsors or industry..." 
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border-none rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-100 transition-all placeholder:text-gray-400 font-medium"
+            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border-none rounded-xl text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-purple-100 transition-all placeholder:text-gray-400 font-medium"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -111,8 +128,8 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
             <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:border-gray-300 transition-all">
               <ArrowUpDown size={14} /> {sortBy}
             </button>
-            <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl p-1 z-20 hidden group-hover:block animate-in fade-in zoom-in-95">
-              {['Name (A-Z)', 'Value (High-Low)', 'Status', 'Newest'].map((opt) => (
+            <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-xl p-1 z-20 hidden group-hover:block animate-in fade-in zoom-in-95">
+              {['Name (A-Z)', 'Value (High-Low)', 'Status', 'Newest', 'Active Events', 'Last Interaction'].map((opt) => (
                 <button
                   key={opt}
                   onClick={() => setSortBy(opt as SortOption)}
@@ -128,7 +145,7 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
 
       {/* Expandable Filters */}
       {showFilters && (
-        <FadeIn className="bg-gray-50 p-6 rounded-2xl border border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <FadeIn className="bg-gray-50 p-6 rounded-2xl border border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Tier Filter */}
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 block">Sponsor Tier</label>
@@ -179,25 +196,98 @@ export const SponsorList: React.FC<SponsorListProps> = ({ sponsors, onSponsorCli
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
             </div>
           </div>
+
+          {/* Partnership Filter */}
+          <div>
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 block">Partnership Level</label>
+            <div className="relative">
+                <select 
+                    value={filterPartnership} 
+                    onChange={(e) => setFilterPartnership(e.target.value)}
+                    className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-purple-500 appearance-none cursor-pointer"
+                >
+                    {['All Partners', 'Single Event', 'Multi-Event'].map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+            </div>
+          </div>
         </FadeIn>
       )}
 
       {/* Grid Results */}
       {filteredAndSortedSponsors.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAndSortedSponsors.map((sponsor, i) => (
-            <FadeIn key={sponsor.id} delay={i * 50}>
-              <SponsorCard sponsor={sponsor} onClick={() => onSponsorClick?.(sponsor)} />
-            </FadeIn>
-          ))}
-        </div>
+        <>
+          {/* Mobile List View */}
+          <div className="md:hidden space-y-4">
+            {filteredAndSortedSponsors.map((sponsor, i) => (
+              <FadeIn key={sponsor.id} delay={i * 50}>
+                 <div 
+                    onClick={() => onSponsorClick?.(sponsor)}
+                    className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm active:scale-95 transition-all"
+                 >
+                    <div className="flex justify-between items-start mb-3">
+                       <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden border border-gray-100">
+                              {sponsor.sponsor?.logo_url ? (
+                                  <img src={sponsor.sponsor.logo_url} alt={sponsor.sponsor.name} className="w-full h-full object-contain" />
+                              ) : (
+                                  <span className="text-sm font-bold text-gray-400">{sponsor.sponsor?.name.substring(0,2)}</span>
+                              )}
+                          </div>
+                          <div>
+                              <h4 className="font-bold text-gray-900 text-sm">{sponsor.sponsor?.name}</h4>
+                              <p className="text-xs text-gray-500">{sponsor.sponsor?.industry || 'Brand'}</p>
+                          </div>
+                       </div>
+                       <StatusBadge status={sponsor.status} />
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-sm border-t border-gray-50 pt-3 mt-2">
+                        <div className="flex items-center gap-1 text-gray-500">
+                            <DollarSign size={14} />
+                            <span className="font-bold text-gray-900">${sponsor.cash_value.toLocaleString()}</span>
+                        </div>
+                        {sponsor.active_events_count && sponsor.active_events_count > 1 ? (
+                            <div className="flex items-center gap-1 text-purple-600 text-xs font-bold bg-purple-50 px-2 py-0.5 rounded-md">
+                                <Zap size={12} />
+                                <span>{sponsor.active_events_count} Events</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-1 text-gray-400 text-xs">
+                                <Calendar size={12} />
+                                <span>{new Date(sponsor.created_at).toLocaleDateString()}</span>
+                            </div>
+                        )}
+                    </div>
+                 </div>
+              </FadeIn>
+            ))}
+          </div>
+
+          {/* Desktop Grid View */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredAndSortedSponsors.map((sponsor, i) => (
+              <FadeIn key={sponsor.id} delay={i * 50}>
+                <SponsorCard sponsor={sponsor} onClick={() => onSponsorClick?.(sponsor)} />
+              </FadeIn>
+            ))}
+          </div>
+        </>
       ) : (
         <EmptyState
           icon={SlidersHorizontal}
           title="No sponsors found"
           description="Try adjusting your search or filters."
           actionLabel="Clear Filters"
-          onAction={() => { setSearchQuery(''); setFilterTier('All Tiers'); setFilterStatus('All Statuses'); setFilterType('All Types'); }}
+          onAction={() => { 
+              setSearchQuery(''); 
+              setFilterTier('All Tiers'); 
+              setFilterStatus('All Statuses'); 
+              setFilterType('All Types');
+              setFilterPartnership('All Partners');
+          }}
         />
       )}
     </div>

@@ -98,7 +98,6 @@ serve(async (req) => {
     }
 
     if (parts.length === 0) {
-        // Redundant check but safe
         throw new Error("No valid content parts to generate from.")
     }
 
@@ -106,35 +105,26 @@ serve(async (req) => {
       model: "gemini-2.5-flash", // Use 2.5 Flash for robust multimodal reasoning
       contents: { parts },
       config: {
+        tools: [{ googleSearch: {} }], // Enable Google Search Grounding for venue checking
         responseMimeType: "application/json",
         responseSchema: schema,
         systemInstruction: `You are the AI Event Architect for FashionOS.
         Task: Convert user input into a complete, structured fashion event plan.
         
         Capabilities:
-        - Analyze text, URLs, images (moodboards, flyers), and documents (contracts, schedules).
-        - Extract event details like Date, Time, Venue, and Schedule from images/PDFs.
-        - If multiple inputs are provided, synthesize them into one coherent plan.
-        - If multiple URLs are provided (e.g. Instagram, Press, Website), cross-reference them to identify the Brand Voice, Theme, and Audience.
-
+        - Analyze text, URLs, images, and documents.
+        - Use Google Search to verify venue locations, check calendar dates, and understand current fashion trends related to the event theme.
+        
         Context:
         - Year: 2025.
         - Event Types: Runway, Party, Workshop, Exhibition, Pop-up, Conference.
 
         Reasoning Steps:
-        1. Analyze the input for explicit details (Date, Location, Theme, Target Audience).
-        2. If details are missing, INFER reasonable defaults based on the event type.
-           - Runways typically happen in the evening. Workshops in the morning.
-        3. Infer 'targetAudience' based on category if not provided:
-           - 'Runway' -> 'Industry Professionals, Buyers'
-           - 'Pop-up' -> 'General Public'
-           - 'Workshop' -> 'Aspiring Designers, Students'
-           - 'Party' -> 'Influencers, VIPs'
+        1. Analyze the input for explicit details.
+        2. If a venue name is provided, use Google Search to find its real address and capacity if possible.
+        3. If details are missing, INFER reasonable defaults based on the event type.
         4. Generate a professional description and catchy title suggestions.
-        5. Structure ticket tiers if not provided:
-           - Suggest 'General Admission' and 'VIP' with reasonable prices based on the vibe.
-        6. Create a default schedule if one is not provided:
-           - E.g. 'Doors Open', 'Main Event', 'Networking'.
+        5. Structure ticket tiers and schedule logically.
 
         Output:
         - Return ONLY valid JSON matching the schema.`,
@@ -142,6 +132,14 @@ serve(async (req) => {
     })
 
     const responseText = response.text || "{}"
+
+    // Safe parse
+    try {
+        JSON.parse(responseText);
+    } catch (e) {
+        console.error("Invalid JSON output from AI:", responseText);
+        throw new Error("AI failed to generate a valid event draft.");
+    }
 
     return new Response(responseText, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

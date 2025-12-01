@@ -11,6 +11,7 @@ import { Button } from '../../components/Button';
 import { useEvents } from '../../hooks/useEvents';
 import { useRealtime } from '../../hooks/useRealtime';
 import { useAuth } from '../../context/AuthContext';
+import { usePermissions } from '../../hooks/usePermissions';
 import { StatusBadge } from '../../components/StatusBadge';
 import { EmptyState } from '../../components/EmptyState';
 
@@ -45,7 +46,13 @@ const RevenueChart = () => (
 
 export const DashboardEvents = () => {
   const { user } = useAuth();
-  const { events, loading, kpis, refetch } = useEvents({ organizerId: user?.id });
+  const { isAdmin } = usePermissions();
+  
+  // If Admin, pass undefined to see all events. If User, pass ID.
+  const { events, loading, kpis, refetch } = useEvents({ 
+    organizerId: isAdmin ? undefined : user?.id 
+  });
+  
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -73,7 +80,9 @@ export const DashboardEvents = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-serif font-bold text-gray-900">Events Dashboard</h1>
-          <p className="text-gray-500 text-sm">Manage your runway shows, ticket sales, and guest lists.</p>
+          <p className="text-gray-500 text-sm">
+            {isAdmin ? 'Admin View: Managing all platform events.' : 'Manage your runway shows, ticket sales, and guest lists.'}
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative hidden md:block">
@@ -171,7 +180,7 @@ export const DashboardEvents = () => {
       {/* 5. ALL EVENTS GRID */}
       <section>
          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-serif font-bold text-xl">My Events</h3>
+            <h3 className="font-serif font-bold text-xl">{isAdmin ? 'All Platform Events' : 'My Events'}</h3>
             <Button variant="ghost" size="sm" onClick={refetch}>Refresh List</Button>
          </div>
          
@@ -186,7 +195,7 @@ export const DashboardEvents = () => {
                      key={evt.id} 
                      delay={i * 50} 
                      className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:border-purple-200 transition-all group cursor-pointer transform hover:-translate-y-1 flex flex-col h-full"
-                     onClick={() => navigate(`/dashboard/events`)} // Could go to detail page later
+                     onClick={() => navigate(`/events/${evt.id}`)} // Navigates to public/preview view
                    >
                       <div className="aspect-[16/9] relative overflow-hidden bg-gray-100">
                          {evt.featured_image_url ? (

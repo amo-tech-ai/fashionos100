@@ -1,3 +1,4 @@
+
 # 🗺️ FashionOS Sitemap
 
 ## 🌳 Visual Hierarchy
@@ -32,6 +33,15 @@ graph TD
         Dash --> D_Evt[Events Manager]
         Dash --> D_Fin[Financials]
         Dash --> D_Gal[Gallery]
+        
+        %% Sponsor CRM Module
+        Dash --> Sponsor[Sponsors /dashboard/sponsors]
+        Sponsor --> Sp_Pipe[Pipeline & Leads]
+        Sponsor --> Sp_List[Directory List]
+        Sponsor --> Sp_Detail[Profile :id]
+        Sponsor --> Sp_Pack[Packages]
+        Sponsor --> Sp_Deliv[Deliverables Tracker]
+        Sponsor --> Sp_ROI[ROI Analytics]
         
         %% Secondary Modules
         Dash --> D_Inv[Invoices]
@@ -108,12 +118,18 @@ The authenticated workspace for agency owners and creators. Wrapped in `Dashboar
 *   **Analytics**: Ticket sales velocity, revenue per event, attendee demographics.
 *   **Activity Feed**: Recent registrations and updates.
 
-#### 5. Financials (`/dashboard/financials`)
+#### 5. Sponsors (`/dashboard/sponsors`)
+*   **Pipeline**: Visual Kanban board for deal stages.
+*   **Directory**: CRM list view of all brand partners.
+*   **Packages**: Builder for sponsorship tiers.
+*   **Analytics**: ROI and revenue reporting.
+
+#### 6. Financials (`/dashboard/financials`)
 *   **Overview**: Total Balance, Income vs Expenses.
 *   **Cashflow**: Monthly bar charts.
 *   **Transactions**: Detailed table of payments and invoices.
 
-#### 6. Gallery (`/dashboard/gallery`)
+#### 7. Gallery (`/dashboard/gallery`)
 *   **Media Library**: Grid view of uploaded assets.
 *   **Organization**: Folders and Collections.
 *   **Filtering**: By date, type (Image/Video), and tags.
