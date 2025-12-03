@@ -1,3 +1,4 @@
+
 # 🗺️ FashionOS Sitemap & Architecture
 
 ## 1. Full Sitemap Structure
