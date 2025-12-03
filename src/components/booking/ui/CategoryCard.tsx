@@ -29,7 +29,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
         group relative flex flex-col bg-white rounded-2xl overflow-hidden cursor-pointer
         transition-all duration-300 ease-out h-full
         ${isSelected 
-          ? 'ring-2 ring-fashion-purple shadow-xl scale-[1.01]' 
+          ? 'ring-4 ring-fashion-purple shadow-2xl scale-[1.02] z-10' 
           : 'border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1'
         }
       `}
