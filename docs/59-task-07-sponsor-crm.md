@@ -21,44 +21,57 @@ Action: Build the Sponsor CRM Dashboard.
 =========================================
 1. TYPES & MOCK DATA
 =========================================
-Define TypeScript interfaces in `src/types/sponsor.ts`:
-- `Sponsor`: id, name, industry, tier (Gold/Silver), status, value, logo_url.
-- Create a `MOCK_SPONSORS` array with 5-10 realistic fashion brands.
+Define TypeScript interfaces in `src/types/sponsorship.ts`:
+- `SponsorProfile`: id, name, industry, contact_info.
+- `EventSponsor` (The Deal): id, event_id, sponsor_id, status ('Lead', 'Negotiating', 'Signed'), value.
+- Create `MOCK_DEALS` array with 5-10 realistic fashion brand deals.
 
 =========================================
-2. KANBAN BOARD (`src/components/crm/SponsorPipeline.tsx`)
+2. COMPONENT: `SponsorCard.tsx`
+=========================================
+- Props: `deal: EventSponsor`.
+- Visuals:
+  - Sponsor Logo (circle).
+  - Brand Name (Bold).
+  - Deal Value (e.g. "$15k").
+  - Tier Badge (Gold/Silver).
+  - Last Activity (e.g. "Email 2d ago").
+
+=========================================
+3. VIEW: `SponsorKanban.tsx`
 =========================================
 - Layout: Horizontal scrolling container.
-- Columns: "New Leads", "Contacted", "Proposal Sent", "Signed".
-- **Card Component:**
-  - Display Logo, Name, Estimated Value.
-  - Simple "Move to Next Stage" button (for MVP, instead of complex drag-and-drop).
-- Logic: Filter `MOCK_SPONSORS` by status into columns.
+- Columns: "New Leads", "Contacted", "Proposal Sent", "Signed", "Paid".
+- Logic:
+  - Filter `MOCK_DEALS` into columns based on status.
+  - Render `SponsorCard` in each column.
+  - (Bonus) Add a "+ New Deal" button at the bottom of "New Leads".
 
 =========================================
-3. SPONSOR PROFILE (`src/components/crm/SponsorProfile.tsx`)
+4. VIEW: `SponsorDetail.tsx`
 =========================================
-- A detail view for a single sponsor.
-- **Header:** Large Logo, Name, Current Status.
+- A full-page view for a single sponsor.
+- **Header:** Large Logo, Name, Total Pipeline Value.
 - **Tabs:**
-  - "Overview": Description, Contact Info.
-  - "Deliverables": Checklist of assets (Logo, Video).
+  - "Overview": Industry, Website, Description.
+  - "Deals": List of all events they are sponsoring.
+  - "Deliverables": Checklist (Logo Upload, Social Post).
   - "Activations": Booth/Lounge details.
-- **AI Action:** Add a button "Draft Pitch Email" that logs "Calling AI..." to console.
 
 =========================================
-4. PAGE INTEGRATION
+5. INTEGRATION
 =========================================
-- Update `src/pages/dashboard/SponsorsPage.tsx` to render the Pipeline by default.
-- Add a way to click a card and open the Profile view (modal or navigation).
+- Create `src/pages/dashboard/SponsorsPage.tsx` (renders Kanban).
+- Create `src/pages/dashboard/SponsorDetailPage.tsx` (renders Detail).
+- Add routes to `App.tsx`.
 
-Output the Types, Pipeline component, and Profile component.
+Output the Types, SponsorCard, and Kanban component.
 ```
 
 ---
 
 ## 3. Verification Checklist
-- [ ] Kanban columns render correctly.
-- [ ] Sponsors appear in correct columns.
-- [ ] Clicking a sponsor opens the detail view.
-- [ ] Layout handles overflow (horizontal scroll) on mobile.
+- [ ] Kanban columns render correctly with horizontal scroll.
+- [ ] Sponsors appear in correct status columns.
+- [ ] Clicking a sponsor card navigates to the detail view.
+- [ ] "Value" fields are formatted as currency.

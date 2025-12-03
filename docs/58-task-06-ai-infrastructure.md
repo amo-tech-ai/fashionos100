@@ -20,18 +20,25 @@ Action: Set up the AI Infrastructure using Supabase Edge Functions.
 
 CONTEXT:
 We need to call Google Gemini 3 securely.
+Stack: Deno (Supabase Functions), @google/genai SDK.
 
 =========================================
 1. EDGE FUNCTION (`supabase/functions/ai-copilot/index.ts`)
 =========================================
 Create a Deno function that:
-1.  Accepts `POST` requests with `{ prompt, task, context }`.
+1.  Accepts `POST` requests with `{ action, context }`.
 2.  Retrieves `GEMINI_API_KEY` from environment variables.
 3.  Initializes `GoogleGenAI` client.
 4.  **Logic Branching:**
-    - If `task === 'polish_brief'`, use `gemini-2.5-flash`. System Prompt: "You are a Creative Director. Structure this messy brief."
-    - If `task === 'generate_plan'`, use `gemini-3-pro`. System Prompt: "You are an Event Producer. Create a timeline."
-5.  Returns the text response.
+    - **Case 'polish_brief':**
+      - Model: `gemini-2.5-flash`.
+      - System Prompt: "You are a Creative Director. Rewrite this brief to be professional and structured (Concept, Lighting, Styling)."
+      - Input: `context.brief`.
+    - **Case 'generate_event_draft':**
+      - Model: `gemini-3-pro`.
+      - System Prompt: "You are an Event Producer. Extract event details (Title, Date, Venue, Budget) from this text/url into JSON."
+      - Use `responseSchema` to force JSON output.
+5.  Returns the text/JSON response.
 6.  Includes CORS headers to allow calls from localhost and the production domain.
 
 =========================================
@@ -39,9 +46,15 @@ Create a Deno function that:
 =========================================
 Create a TypeScript service wrapper:
 - `const AI_ENDPOINT = '.../functions/v1/ai-copilot'`
-- Implement `polishBrief(text: string)`: Calls the endpoint with the user's auth token.
-- Implement `generateEventDraft(description: string)`: Calls the endpoint.
+- Implement `polishBrief(text: string)`: Calls the endpoint with the user's auth token (supabase.auth.session).
+- Implement `generateEventDraft(text: string)`: Calls the endpoint.
 - Handle errors gracefully (e.g., if the function times out).
+
+=========================================
+3. TYPE DEFINITIONS
+=========================================
+Create `src/types/ai.ts`:
+- Interfaces for the expected JSON responses (e.g., `EventDraft`).
 
 Output the TypeScript code for the Edge Function and the Frontend Service.
 ```
@@ -52,3 +65,4 @@ Output the TypeScript code for the Edge Function and the Frontend Service.
 - [ ] Function deploys via `supabase functions deploy`.
 - [ ] `curl` request to function returns Gemini output.
 - [ ] Frontend `polishBrief` call works with a mock string.
+- [ ] API Key is NOT present in any frontend file.

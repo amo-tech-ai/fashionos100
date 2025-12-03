@@ -1,249 +1,186 @@
 # 🌍 Phase 3: Public Website & Marketing
 
 **Status:** 🟢 Ready for Implementation
-**Goal:** Build the public-facing "Storefront" of FashionOS to convert visitors into dashboard users.
+**Goal:** Build the public-facing "Storefront" of FashionOS using a high-performance SPA architecture.
 
 ---
 
-## Stage 11: Brand & Content Strategy
+## Stage 11: Brand Identity & SEO Foundation
 
-**Objective:** Define the visual and verbal identity before coding pages.
+**Objective:** Define the visual constants and set up the metadata engine using `react-helmet-async`.
 
 **Prompt:**
 
 ```text
-You are a Creative Director & SEO Strategist.
-Task: Define the Content Strategy and Brand DNA for FashionOS.
+You are a Frontend Architect.
+Task: Set up the Brand constants and SEO infrastructure.
 
 CONTEXT:
-We are building the public website. Tone: "Vogue meets Linear".
+This is a Client-Side SPA. We cannot use server-side metadata. We use `react-helmet-async`.
 
 =========================================
-1. DESIGN TOKENS REFINEMENT
+1. DEPENDENCIES
 =========================================
-Update our design system specs for the Marketing Site:
-- Typography: How to use `Playfair Display` (Headings) vs `Inter` (UI).
-- Spacing: Define a "Luxury Spacing" scale.
-- Imagery: Rules for photography style.
+Update `index.html` importmap to include:
+- `"react-helmet-async": "https://esm.sh/react-helmet-async@2.0.4"`
 
 =========================================
-2. URL STRUCTURE & SEO PLAN
+2. CONSTANTS (`src/lib/constants.ts`)
 =========================================
-Define the URL map for SEO optimization:
-- `/services/photography-production`
-- `/fashion-directory/models/new-york`
-- List top 10 keywords.
+Export constants for:
+- `BRAND_NAME`: "FashionOS"
+- `TAGLINE`: "The Operating System for Fashion"
+- `ASSETS`: An object containing placeholder Unsplash URLs for:
+  - `HERO_VIDEO`
+  - `FASHION_EDITORIAL`
+  - `RUNWAY_SHOT`
+  - `PRODUCT_SHOT`
 
 =========================================
-3. CONTENT ARCHITECTURE
+3. SEO COMPONENT (`src/components/seo/SEOHead.tsx`)
 =========================================
-Create a `docs/content-strategy.md`:
-- Headline Formulas.
-- CTA Strategy.
-- Footer Map.
+Create a component that wraps `<Helmet>`:
+- Props: `title`, `description`, `image?`.
+- Logic: Automatically appends ` | FashionOS` to titles.
+- Tags: Open Graph (og:title, og:description, og:image) and Twitter Card tags.
 
-Output the markdown content for `docs/content-strategy.md`.
+Output the updated `index.html` (importmap only), `src/lib/constants.ts`, and `src/components/seo/SEOHead.tsx`.
 ```
 
 ---
 
-## Stage 12: Core Pages Structure
+## Stage 12: Core Pages Architecture
 
-**Objective:** Build the primary landing pages.
+**Objective:** Build the primary entry points (Home, About, Contact) using the new Design System.
 
 **Prompt:**
 
 ```text
-You are a Lead Frontend Developer.
-Task: Architect the Core Public Pages.
+You are a UI Engineer.
+Task: Build the Core Public Pages.
+
+CONTEXT:
+Use `src/components/ui/*` primitives (Button, Card, FadeIn).
+Use `WebsiteLayout`.
 
 =========================================
-1. HOMEPAGE ARCHITECTURE (`src/pages/public/HomePage.tsx`)
+1. HOMEPAGE (`src/pages/site/HomePage.tsx`)
 =========================================
-Define the sections:
-- Hero: Full-screen video background with overlay text.
-- Value Prop: 3-col grid.
-- "How It Works": Scroll-triggered animation.
-- Marquee: Client logos.
-- CTA Band.
+- **Hero:** Full height. Dark overlay. Headline: "The Operating System for Fashion". CTA: "Start Project" -> `/start-project`.
+- **Features:** 3-column grid using `Card`. Icons for "Studio", "Events", "Intelligence".
+- **Social Proof:** A simple marquee or grid of "Trusted By" brand names.
 
 =========================================
-2. ABOUT PAGE (`src/pages/public/AboutPage.tsx`)
+2. CONTENT PAGES
 =========================================
-- Manifesto Section.
-- Team Grid.
-- Global Presence Map.
+- **`src/pages/site/AboutPage.tsx`**:
+  - Layout: Split screen (Text Left, Image Right).
+  - Typography: Use `font-serif` for "Our Manifesto".
+- **`src/pages/site/ContactPage.tsx`**:
+  - Layout: Two columns.
+  - Left: Contact Info (Email, Office Address).
+  - Right: A visual placeholder for a map or a high-fashion image. (No functional form backend yet).
 
-=========================================
-3. CONTACT PAGE (`src/pages/public/ContactPage.tsx`)
-=========================================
-- Split Layout: Form vs Office Info.
-- Component: `ContactForm.tsx` with validation.
-
-Output the React code for these 3 pages + the ContactForm component.
+Output the code for these three pages.
 ```
 
 ---
 
-## Stage 13: Service Page Templates
+## Stage 13: Service Templates
 
-**Objective:** Create a reusable template for the 8+ service pages.
+**Objective:** Create a reusable architecture for the various service offerings to avoid code duplication.
 
 **Prompt:**
 
 ```text
 You are a Component Architect.
-Task: Build the Service Page Template System.
+Task: Build the Service Page Template.
 
 CONTEXT:
-We have many services (Photography, Video, Web).
+We have 5+ service pages (Photography, Video, Web, etc.) that share the same layout.
 
 =========================================
-1. TEMPLATE COMPONENT (`src/components/templates/ServicePageTemplate.tsx`)
+1. TEMPLATE (`src/components/templates/ServiceTemplate.tsx`)
 =========================================
 Props:
-- `title`, `subtitle`, `heroImage`
-- `benefits`, `process`, `pricing`, `gallery`, `faq`
+- `title` (string)
+- `subtitle` (string)
+- `heroImage` (string URL)
+- `features` (Array of {title, description, icon})
+- `pricing` (Array of {tier, price, features})
 
 Layout:
-- Hero (Parallax effect)
-- "Why Us" Grid
-- "Our Process" Horizontal Scroll
-- Featured Work (Masonry Grid)
-- Pricing Cards
-- FAQ Accordion
-- Sticky CTA Bottom Bar (Mobile only)
+- **Hero:** Parallax background image.
+- **Intro:** Large typography.
+- **Feature Grid:** 2x2 or 3x1 grid.
+- **Pricing Cards:** Distinctive cards for packages.
 
 =========================================
-2. IMPLEMENTATION EXAMPLES
+2. IMPLEMENTATION
 =========================================
-Use the template to create:
-- `src/pages/public/services/PhotographyPage.tsx`
-- `src/pages/public/services/WebDesignPage.tsx`
+Create `src/pages/site/services/PhotographyPage.tsx`:
+- Use `ServiceTemplate`.
+- Data: "E-Commerce Photography", "Editorial Campaigns".
+- Pricing: "Lookbook ($500)", "Campaign ($1500)".
 
-Output the Template component and one implementation example.
+Output the Template and the Photography Page.
 ```
 
 ---
 
 ## Stage 14: Directory & Talent Network
 
-**Objective:** Build the public-facing "LinkedIn for Fashion" interface.
+**Objective:** Build the public marketplace view for discovering talent.
 
 **Prompt:**
 
 ```text
-You are a UI/UX Designer.
-Task: Design the Fashion Directory & Profile Pages.
-
-CONTEXT:
-A public marketplace where brands can find Models, Photographers, and Venues.
+You are a Product Designer.
+Task: Implement the Talent Directory UI.
 
 =========================================
-1. DIRECTORY SEARCH (`src/pages/public/DirectoryPage.tsx`)
+1. COMPONENT (`src/components/directory/TalentCard.tsx`)
 =========================================
-- Filter Sidebar: Role, Location, Rate, Vibe.
-- Results Grid: `TalentCard` component (Image 3:4, Name, Role, Tags).
+- Visual: High-end "Comp Card" style.
+- Props: `name`, `role`, `image`, `rate`, `tags`.
+- Layout: Aspect Ratio 3:4 image. Name and Role overlay or below.
 
 =========================================
-2. PROFILE DETAIL (`src/pages/public/ProfileDetailPage.tsx`)
+2. PAGE (`src/pages/site/DirectoryPage.tsx`)
 =========================================
-- Header: Cover Image + Avatar + Verified Badge.
-- Stats Row: "50+ Shows", "4.9 Rating".
-- Portfolio Grid: Masonry layout.
-- "Hire Me" Modal.
+- **Sidebar:** Filters (Role: Model, Photographer; City: NYC, London). *Visual only for now.*
+- **Grid:** Responsive masonry or simple grid (cols-1 md:cols-3).
+- **Data:** Create a `MOCK_TALENT` array with 6 high-quality example profiles.
 
-Output the React code for the Directory Listing and Profile Detail pages.
+Output the Card component and the Directory page.
 ```
 
 ---
 
-## Stage 15: Public Event Experience
+## Stage 17: Performance & Polish
 
-**Objective:** Create the guest-facing pages for events (Ticketing & Info).
-
-**Prompt:**
-
-```text
-You are a Full-Stack Developer.
-Task: Build the Public Event View.
-
-CONTEXT:
-When an event is published, it gets a public URL (`/events/:slug`).
-
-=========================================
-1. EVENT LISTING (`src/pages/public/EventsPage.tsx`)
-=========================================
-- Calendar View / List View toggle.
-- Event Card: Date badge, Title, Location, "Get Tickets" button.
-
-=========================================
-2. SINGLE EVENT PAGE (`src/pages/public/EventDetailPage.tsx`)
-=========================================
-- Hero: Event Poster/Banner.
-- Details: Date/Time, Map Embed, Description.
-- Schedule: Public version of the Run-of-Show.
-- Ticketing Widget: List Ticket Tiers, Quantity, Checkout button.
-
-Output the code for the Listing and Detail pages.
-```
-
----
-
-## Stage 16: Trust & Portfolio Engine
-
-**Objective:** Build the pages that prove credibility.
+**Objective:** Optimize the SPA for production loading speeds.
 
 **Prompt:**
 
 ```text
-You are a Content Engineer.
-Task: Implement the Trust & Proof pages.
+You are a Performance Engineer.
+Task: Optimize the application loading.
 
 =========================================
-1. PORTFOLIO / WORK (`src/pages/public/PortfolioPage.tsx`)
+1. LAZY IMAGE (`src/components/ui/LazyImage.tsx`)
 =========================================
-- Filterable Grid: "Show me [E-comm] projects for [Beauty] brands".
-- Case Study Modal.
-
-=========================================
-2. TESTIMONIALS
-=========================================
-- Create a `TestimonialCarousel` component.
-- Data: Quote, Client Name, Role, Brand Logo.
-
-Output the Portfolio page code and the Testimonial component.
-```
-
----
-
-## Stage 17: SEO & Performance Strategy
-
-**Objective:** Ensure the site is discoverable and fast.
-
-**Prompt:**
-
-```text
-You are a Technical SEO Specialist.
-Task: Implement SEO & Performance best practices.
+- Wrapper around `<img>`.
+- Props: `src`, `alt`, `className`, `aspectRatio`.
+- Logic: Use `loading="lazy"`.
+- Visual: Show a gray `bg-gray-100` pulse skeleton until the image loads (onLoad event).
 
 =========================================
-1. METADATA MANAGEMENT
+2. ROUTE SPLITTING
 =========================================
-- Create a `SEOHead.tsx` component.
-- Props: title, description, image (OG), type.
-- Implement Schema.org JSON-LD.
+Update `src/router.tsx`:
+- Implement `React.lazy()` for all major page routes (Dashboard, Public Pages).
+- Wrap the router in `React.Suspense` with a full-screen `LoadingScreen` fallback.
 
-=========================================
-2. PERFORMANCE OPTIMIZATION
-=========================================
-- Implement Lazy Loading for all images below the fold.
-- Create a `Image` wrapper component that handles loading states.
-
-=========================================
-3. SITEMAP
-=========================================
-- Create a dynamic `sitemap.xml` generator strategy.
-
-Output the `SEOHead` component and the optimized `Image` component.
+Output the LazyImage component and the updated Router.
 ```

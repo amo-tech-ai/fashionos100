@@ -13,26 +13,18 @@
 **Master Prompt:**
 
 ```text
-You are a senior full-stack React architect.
-Your job: set up a **fresh, clean MVP** for FashionOS 2.0.
+You are a Senior Frontend Architect.
+Action: Initialize the FashionOS 2.0 codebase with a strict **React 19** stack.
 
-**CRITICAL:** You must fix the "Minified React error #31" by ensuring we use a **SINGLE** React version.
-The environment is pre-configured for **React 19**. Do NOT downgrade to React 18. Do NOT use esm.sh.
-
-We are ONLY doing:
-- Core setup
-- Directory structure
-- Basic routing
-- Simple placeholder pages
-
-❌ NO AI, NO Supabase, NO data modeling yet.
+**CRITICAL FIX:** To prevent "Minified React error #31", we must use the environment's native CDN for React.
+Do NOT use `esm.sh` for React/ReactDOM.
+Do NOT use React 18.
 
 ====================================================
-1) CHOOSE A SINGLE STACK & REACT SOURCE
+1) DEPENDENCY CONFIGURATION (Import Map)
 ====================================================
-Use the **Exact Import Map** below. Do not deviate. This matches the environment defaults to prevent duplicate React instances.
+Configure `index.html` with this EXACT import map:
 
-```html
 <script type="importmap">
 {
   "imports": {
@@ -46,20 +38,16 @@ Use the **Exact Import Map** below. Do not deviate. This matches the environment
   }
 }
 </script>
-```
-
-- Use **React 19**.
-- Use **React Router v7** (via `react-router-dom`).
 
 ====================================================
-2) DIRECTORY STRUCTURE FOR MVP
+2) DIRECTORY STRUCTURE
 ====================================================
-Create a **simple, clean directory structure**:
+Create a clean structure:
 
 - `index.html`
 - `src/`
-  - `main.tsx`
-  - `App.tsx` (Router definitions)
+  - `main.tsx` (Entry point)
+  - `App.tsx` (Router definition)
   - `layouts/`
     - `DashboardLayout.tsx`
     - `WebsiteLayout.tsx`
@@ -78,75 +66,39 @@ Create a **simple, clean directory structure**:
     - `ui/PlaceholderPage.tsx`
 
 ====================================================
-3) INDEX.HTML – CLEAN, SAFE BOOTSTRAP
+3) ROUTING ARCHITECTURE
 ====================================================
-Generate a full `index.html` that:
-- Includes Tailwind via CDN.
-- Uses the **Import Map** defined above.
-- Mounts the app in `<div id="root"></div>`.
+Use `react-router-dom` v7 patterns in `src/App.tsx`:
 
-====================================================
-4) MAIN ENTRY & ROUTER (React 19 + Router v7)
-====================================================
-Create:
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { DashboardLayout } from './layouts/DashboardLayout';
+import { WebsiteLayout } from './layouts/WebsiteLayout';
+// ... imports
 
-### `src/main.tsx`
-- Import `createRoot` from `react-dom/client`.
-- Import `App`.
-- Mount `App` into the root element.
+export default function App() {
+  return (
+    <Routes>
+      {/* Public Site */}
+      <Route element={<WebsiteLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        {/* ... other public routes */}
+      </Route>
 
-### `src/App.tsx`
-- Use `BrowserRouter`, `Routes`, and `Route` from `react-router-dom`.
-- **CRITICAL:** When defining routes, pass the component as a JSX element, NOT a reference.
-  - ✅ Correct: `element={<DashboardHome />}`
-  - ❌ Wrong: `element={DashboardHome}` (This causes Error #31)
+      {/* Dashboard (Protected) */}
+      <Route path="/dashboard" element={<DashboardLayout />}>
+        <Route index element={<DashboardHome />} />
+        <Route path="projects" element={<ProjectsPage />} />
+        {/* ... other dashboard routes */}
+      </Route>
+    </Routes>
+  );
+}
 
-Define basic routes:
-- **Website (Public):**
-  - Layout: `WebsiteLayout`
-  - `/` → `HomePage`
-  - `/about` → `AboutPage`
-  - `/services` → `ServicesPage`
-  - `/events` → `EventsPage`
-  - `/directory` → `DirectoryPage`
+**Constraints:**
+- Use `BrowserRouter` in `main.tsx`.
+- Ensure all components are functional.
+- Verify Tailwind CSS is included via CDN in `index.html`.
 
-- **Dashboard (Private):**
-  - Layout: `DashboardLayout`
-  - `/dashboard` → `DashboardHome`
-  - `/dashboard/projects` → `ProjectsPage`
-  - `/dashboard/services` → `ServicesPage` (Dashboard version)
-
-====================================================
-5) LAYOUTS + PLACEHOLDER PAGES
-====================================================
-Implement:
-
-### `layouts/DashboardLayout.tsx`
-- Simple sidebar (fixed width) + top bar layout.
-- Use `<Outlet />` from `react-router-dom` for content.
-
-### `layouts/WebsiteLayout.tsx`
-- Simple header navigation + footer.
-- Use `<Outlet />` for content.
-
-### `components/ui/PlaceholderPage.tsx`
-- Props: `title: string`, `description?: string`.
-- Renders a clean center-aligned placeholder with a title and description.
-
-### Page Components
-For every page listed in the directory structure:
-- Export a component that renders `<PlaceholderPage title="..." />`.
-
-====================================================
-6) OUTPUT FORMAT
-====================================================
-Return your answer in this order:
-
-1. Final `index.html`.
-2. Directory tree.
-3. `src/main.tsx`.
-4. `src/App.tsx`.
-5. Basic implementations for layouts and placeholders.
-
-Ensure all code is compatible with **React 19**.
+Output the full content for: `index.html`, `src/main.tsx`, `src/App.tsx`, and the Layouts.
 ```

@@ -3,84 +3,100 @@
 
 **Phase:** 2 (System Build)
 **Dependencies:** Task 02 (UI Components), Task 04 (Dashboard Layout)
-**Output:** Functional Multi-step Booking Form
+**Output:** Functional Multi-step Booking Form with Pricing Engine
 
 ---
 
 ## 1. Context
-We need to implement the "Airbnb-style" booking flow for photoshoots at `/start-project`. This involves complex state management across multiple steps, real-time pricing calculation, and a responsive layout that handles the "Receipt" summary differently on mobile vs desktop.
+We need to implement the "Airbnb-style" booking flow for photoshoots at `/start-project`. This involves complex state management across 13 potential steps, real-time pricing calculation, and a responsive layout that handles the "Receipt" summary differently on mobile vs desktop.
 
 ## 2. Execution Prompt
 
 **Copy and paste this into your AI assistant:**
 
 ```text
-You are a UX Engineer.
+You are a UX Engineer and React Expert.
 Action: Build the "Shoot Booking Wizard" logic and UI.
 
 =========================================
-1. STATE MANAGEMENT (`src/context/BookingContext.tsx`)
+1. PRICING ENGINE (`src/lib/pricing.ts`)
+=========================================
+Create a pure function utility for calculating costs.
+- Define constants:
+  - `BASE_FEES`: { fashion: 0, beauty: 200, food: 500 }
+  - `STYLE_PRICES`: { editorial: 85, catalog: 45, street: 65 }
+  - `SIZE_FEES`: { standard: 0, large: 25 }
+- Function `calculateTotal(state: BookingState)`:
+  - Returns `{ subtotal, serviceFee, tax, total, breakdown }`.
+  - Logic: Base + (ShotCount * StylePrice) + (ShotCount * SizeFee).
+
+=========================================
+2. STATE MANAGEMENT (`src/context/BookingContext.tsx`)
 =========================================
 Create a Context Provider to manage the wizard state.
 - **State Object:**
-  - `serviceType`: 'photography' | 'video'
-  - `category`: string (e.g., 'ecomm', 'editorial')
+  - `service`: 'photography' | 'video'
+  - `category`: string
+  - `style`: string
   - `shotCount`: number (default 10)
+  - `productSize`: string
+  - `brief`: string
   - `date`: Date | null
-  - `creativeBrief`: string
-- **Derived State (Pricing):**
-  - Create a `calculateTotal(state)` function.
-  - Logic: `Base Fee ($500) + (Shot Count * $50)`.
-- **Export:** `useBooking` hook.
+- **Exports:** `state`, `totals` (calculated via pricing.ts), `updateState`, `reset`.
 
 =========================================
-2. WIZARD LAYOUT (`src/layouts/WizardLayout.tsx`)
+3. WIZARD LAYOUT (`src/layouts/BookingLayout.tsx`)
 =========================================
-Create a specialized layout for the booking flow.
-- **Desktop:** Split screen.
-  - Left (60%): The Form Step (children).
-  - Right (40%): Sticky "Receipt" Summary showing current selections and `estimatedPrice`.
-- **Mobile:** Single column.
-  - Sticky Bottom Bar: Shows "Total: $XXX" and "Next" button.
-  - Summary is hidden behind a "View Details" toggle in the bottom bar.
+Create a specialized layout wrapper (different from DashboardLayout).
+- **Top Bar:** "Step X of Y" progress bar. "Save & Exit" button.
+- **Desktop Grid:**
+  - Left (65%): Main content `<Outlet />`.
+  - Right (35%): Sticky Sidebar `<BookingSummary />` showing live totals.
+- **Mobile:**
+  - Main content takes full width.
+  - **Sticky Bottom Bar:** Shows "Total: $XXX" and "Next" button. Clicking "Total" expands a bottom sheet summary.
 
 =========================================
-3. STEP COMPONENTS (`src/features/booking/`)
+4. KEY STEP COMPONENTS (`src/pages/public/booking/`)
 =========================================
-Create the following step components using the Design System:
+Build these specific step pages (use the UI primitives from Task 02):
 
 A. `StepCategory.tsx`
-   - Grid of 3 cards: "E-Commerce", "Editorial", "Lookbook".
-   - Each card has an icon and description.
-   - Selecting one updates context and highlights the card.
+   - Grid of cards (E-Commerce, Beauty, Jewelry).
+   - Hover effects: border color change, subtle scale.
 
-B. `StepQuantity.tsx`
-   - A styled range slider (1-100 looks).
-   - Display the current count clearly.
+B. `StepStyle.tsx`
+   - Visual grid showing examples of "Ghost Mannequin", "On-Model", "Flat Lay".
+   - Each card includes a "Starting at $X" badge.
 
-C. `StepBrief.tsx`
-   - A large `Textarea` for the creative brief.
-   - Add a "✨ AI Polish" button (placeholder logic for now, just `console.log`).
+C. `StepQuantity.tsx`
+   - Large, styled Range Slider (1-100).
+   - Dynamic text: "20 Looks = Professional Package".
 
-D. `StepReview.tsx`
+D. `StepBrief.tsx`
+   - Textarea for "Creative Direction".
+   - **Placeholder:** "Describe your vision... e.g. 'Minimalist, high contrast, harsh shadows'."
+   - **AI Button:** "✨ Polish with AI" (just console.log for now).
+
+E. `StepReview.tsx`
    - Read-only summary of all choices.
-   - "Confirm Booking" button that redirects to `/dashboard`.
+   - "Confirm & Pay" button.
 
 =========================================
-4. PAGE INTEGRATION (`src/pages/public/StartProjectPage.tsx`)
+5. ROUTING
 =========================================
-- Wrap the page in `BookingProvider`.
-- Implement a simple step counter/progress bar.
-- Render the current step component based on internal `step` state.
-- Handle Back/Next navigation logic.
+Update `src/App.tsx` to include the `/start-project` nest routes:
+- `/start-project` (BookingLayout)
+  - `index` -> Redirect to `category`
+  - `category`, `style`, `quantity`, `brief`, `review`
 
-Output the code for the Context, Layout, and the Step components.
+Output the code for `pricing.ts`, `BookingContext.tsx`, `BookingLayout.tsx`, and `StepQuantity.tsx` (as a representative step).
 ```
 
 ---
 
 ## 3. Verification Checklist
 - [ ] `estimatedPrice` updates immediately when slider changes.
-- [ ] Mobile layout shows the sticky bottom bar.
-- [ ] Desktop layout shows the sticky sidebar.
-- [ ] Data persists when navigating "Back".
+- [ ] Mobile layout shows the sticky bottom bar with "Next" button.
+- [ ] Desktop layout shows the sticky sidebar summary.
+- [ ] State persists when navigating "Back" to previous steps.
