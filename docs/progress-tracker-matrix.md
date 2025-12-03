@@ -13,7 +13,7 @@
 | Venue Logistics | Map integration & contacts | 🟢 Completed | 100% | `EventVenue.tsx` | — | None |
 | Guest List | RSVP management | 🟢 Completed | 100% | `EventGuests.tsx` | — | None |
 | Tickets | Pricing tiers & stats | 🟢 Completed | 100% | `EventTickets.tsx` | — | None |
-| Casting Board | Model management | 🟢 Completed | 100% | `EventCasting.tsx` | — | None |
+| Casting Board | Model management (Mock) | 🟡 Partial | 80% | `EventCasting.tsx` | Needs DB Table | Schema Migration |
 | Global Venue Directory | Venue search & list | 🟢 Completed | 100% | `VenueDirectory.tsx` | — | None |
 | Global Talent Network | Creative directory | 🟢 Completed | 100% | `TalentNetwork.tsx` | — | None |
 | **UI & UX Polish** | | | | | | |
