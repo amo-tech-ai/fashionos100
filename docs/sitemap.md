@@ -1,144 +1,289 @@
+# 🗺️ FashionOS Sitemap & Architecture
 
-# 🗺️ FashionOS Sitemap
+## 1. Full Sitemap Structure
 
-## 🌳 Visual Hierarchy
+### A) CORE SITEMAP (Essential / Beginner View)
+*Designed for quick navigation and essential workflows.*
 
-```mermaid
-graph TD
-    Root[FashionOS App]
-    
-    %% Public Zone
-    Root -->|PublicLayout| Public
-    subgraph Public [Public Zone]
-        Home[Home /]
-        Dir[Directory /directory]
-        Evt[Events /events]
-        Shop[Marketplace /shop]
-        
-        Svc[Services /services]
-        Svc --> SvcPhoto[Photography]
-        Svc --> SvcVideo[Video Production]
-        Svc --> SvcEcomm[Ecommerce]
-        Svc --> SvcSocial[Social Media]
-    end
+*   **Public Website**
+    *   Home
+    *   About Us
+    *   Contact
+    *   **Services**
+        *   Fashion Photography
+        *   Product Photography
+        *   Jewellery Photography
+        *   Video Production
+        *   Retouching Services
+    *   **Marketplace** (Shop)
+    *   **Fashion Directory** (Talent Search)
+    *   **Events** (Public Calendar)
+    *   **Event Detail** (Public View / Ticket Purchase)
+    *   **Login / Sign Up**
+*   **Dashboard (Private)**
+    *   **Overview** (Stats & Upcoming)
+    *   **My Events** (List View)
+    *   **Event Context** (Active Event)
+        *   Command Center
+        *   Timeline & Run of Show
+        *   Venue Map
+        *   Casting Board
+        *   Sponsors
+        *   Tasks
+    *   **Media Library** (DAM)
+    *   **Settings**
 
-    %% Dashboard Zone
-    Root -->|DashboardLayout| Private
-    subgraph Private [Authenticated Dashboard]
-        Dash[Overview /dashboard]
-        
-        %% Core Modules
-        Dash --> D_Book[Bookings]
-        Dash --> D_Cal[Calendar]
-        Dash --> D_Evt[Events Manager]
-        Dash --> D_Fin[Financials]
-        Dash --> D_Gal[Gallery]
-        
-        %% Sponsor CRM Module
-        Dash --> Sponsor[Sponsors /dashboard/sponsors]
-        Sponsor --> Sp_Pipe[Pipeline & Leads]
-        Sponsor --> Sp_List[Directory List]
-        Sponsor --> Sp_Detail[Profile :id]
-        Sponsor --> Sp_Pack[Packages]
-        Sponsor --> Sp_Deliv[Deliverables Tracker]
-        Sponsor --> Sp_ROI[ROI Analytics]
-        
-        %% Secondary Modules
-        Dash --> D_Inv[Invoices]
-        Dash --> D_Msg[Inbox]
-        Dash --> D_Set[Settings]
-    end
-    
-    %% Style
-    classDef primary fill:#000,stroke:#000,color:#fff;
-    classDef secondary fill:#fff,stroke:#e5e7eb,color:#000;
-    class Root primary;
-    class Home,Svc,Dir,Evt,Shop,Dash secondary;
-```
+### B) ADVANCED SITEMAP (Enterprise / Power User View)
+*Includes CRM, Logistics, AI Tools, and Studio Operations.*
 
-## 🌐 Public Application
-The public-facing side of FashionOS serves as the landing and discovery platform for the fashion industry.
-
-### 1.0 Home (`/`)
-*   **Hero Section**: "Operating System for Fashion" value proposition.
-*   **Feature Highlights**: Links to Unified Dashboard and Global Directory.
-*   **Testimonials**: Social proof.
-
-### 2.0 Services (`/services`)
-*   **Overview**: General agency capabilities.
-*   **Sub-Pages**:
-    *   `/services/photography`: Product & Editorial photography packages.
-    *   `/services/video-production`: Campaign films, social content, and showreels.
-    *   `/services/ecommerce`: Amazon A+ content, packshots, and AI studio tools.
-    *   `/services/social`: Social media management and strategy.
-    *   `/services/web-design`: (Link redirects to main Services for now).
-
-### 3.0 Directory (`/directory`)
-*   **Functionality**: Talent discovery network.
-*   **Filters**:
-    *   Category (All, Designers, Photographers, Stylists, Models, Brands, Venues).
-    *   Location/Country (USA, Spain, UK, Australia).
-    *   Specialty.
-*   **View Modes**:
-    *   **Grid View**: Visual card layout with rating and role.
-    *   **List View**: Compact linear layout for rapid scanning.
-
-### 4.0 Events (`/events`)
-*   **Search**: Keyword search for events.
-*   **Calendar Filtering**: `CalendarPicker` component for date range selection.
-*   **Event Feed**: Chronological listing of fashion shows and meetups.
-*   **Concierge**: Info on tickets, venues, and transport.
-
-### 5.0 Marketplace (`/shop` -> `/services/ecommerce`)
-*   **Offerings**: Standardized content packs (e.g., "Lookbook Starter", "Amazon A+").
+*   **Global Command Center**
+    *   **Core**
+        *   Dashboard Overview
+        *   Master Calendar
+        *   Messages / Inbox
+    *   **Studio & Production** (Service Management)
+        *   Bookings (Photography/Video Shoots)
+        *   Studio Schedule
+        *   Retouching Queue
+    *   **Commercial (CRM)**
+        *   Sponsors List
+        *   Lead Pipeline
+        *   Packages & Inventory
+        *   Contracts Repository
+    *   **Logistics**
+        *   Venue Directory (Global Maps)
+        *   Vendor Database (AV, Lighting, Security, Staff)
+        *   Talent Network (Models, HMU, Stylists)
+    *   **Finance**
+        *   Invoices & Payments
+        *   Budget Tracker
+    *   **AI Hub**
+        *   Insights & Trends
+        *   RAG Document Center (Uploads/Parsing)
+*   **Event Context** (Inside specific Event ID)
+    *   **Management**
+        *   Command Center
+        *   Timeline (14-Phase)
+        *   Run of Show (Minute-by-minute)
+    *   **Logistics**
+        *   Venue & Floorplan
+        *   Guest List & Seating
+        *   Tickets & RSVPs
+    *   **Casting**
+        *   Model Board
+        *   Designer Collections
+    *   **Commercial**
+        *   Active Sponsors
+        *   Activations & Booths
+        *   Deliverables Tracker
+    *   **Post-Event**
+        *   Analytics & ROI
+        *   Media Recap
 
 ---
 
-## 🔒 Private Dashboard (`/dashboard`)
-The authenticated workspace for agency owners and creators. Wrapped in `DashboardLayout`.
+## 2. Visual Architecture (Mermaid Diagrams)
 
-### Core Modules
+### Diagram 1 — HIGH-LEVEL SITEMAP (Global)
 
-#### 1. Overview (`/dashboard`)
-*   **KPI Cards**: Quick stats for Upcoming Events, Bookings, Revenue, Social Growth.
-*   **Analytics**: Ticket sales breakdown and Revenue trends.
-*   **AI Copilot**: Contextual assistant for creative direction.
+```mermaid
+graph TD
+  Public[Public Site] --> Services
+  Public --> Marketplace
+  Public --> Directory
+  Public --> Login
 
-#### 2. Bookings (`/dashboard/bookings`)
-*   **KPIs**: Total Bookings, Tickets Sold, Earnings, Cancelled.
-*   **Ledger**: List of recent booking transactions.
+  Login --> Dashboard[Global Dashboard]
+  
+  Dashboard --> Core[Core Operations]
+  Dashboard --> Studio[Studio & Shoots]
+  Dashboard --> CRM[Sponsor CRM]
+  Dashboard --> Logistics[Logistics & Vendors]
+  Dashboard --> Events[Event Manager]
+  Dashboard --> Finance[Finance]
+  Dashboard --> Settings[Settings]
 
-#### 3. Calendar (`/dashboard/calendar`)
-*   **Views**: Month, Week, Content.
-*   **Filtering**: Event type (Schedules, Event, Meeting, Setup, Deadlines).
-*   **Interaction**: Click-to-view event details modal.
+  Services --> Photo[Photography]
+  Services --> Video[Video]
+  Services --> Retouch[Retouching]
+```
 
-#### 4. Events (`/dashboard/events`)
-*   **Management**: Organizer view for hosted events.
-*   **Analytics**: Ticket sales velocity, revenue per event, attendee demographics.
-*   **Activity Feed**: Recent registrations and updates.
+### Diagram 2 — EVENT-CONTEXT SITEMAP (Inside an Event)
 
-#### 5. Sponsors (`/dashboard/sponsors`)
-*   **Pipeline**: Visual Kanban board for deal stages.
-*   **Directory**: CRM list view of all brand partners.
-*   **Packages**: Builder for sponsorship tiers.
-*   **Analytics**: ROI and revenue reporting.
+```mermaid
+graph TD
+  Event["Event Context (ID)"] --> CommandCenter
+  Event --> Ops[Operations]
+  Event --> Log[Logistics]
+  Event --> Cast[Casting]
+  Event --> Com[Commercial]
+  Event --> Media[Media & Data]
 
-#### 6. Financials (`/dashboard/financials`)
-*   **Overview**: Total Balance, Income vs Expenses.
-*   **Cashflow**: Monthly bar charts.
-*   **Transactions**: Detailed table of payments and invoices.
+  Ops --> Timeline
+  Ops --> RunOfShow
+  Ops --> Tasks
 
-#### 7. Gallery (`/dashboard/gallery`)
-*   **Media Library**: Grid view of uploaded assets.
-*   **Organization**: Folders and Collections.
-*   **Filtering**: By date, type (Image/Video), and tags.
+  Log --> VenueMap
+  Log --> GuestList
+  Log --> Tickets
 
-### Placeholder / Planned Modules
-*   **Invoices** (`/dashboard/invoices`): Billing management.
-*   **Inbox** (`/dashboard/messages`): Direct messaging with talent/clients.
-*   **Feedback** (`/dashboard/feedback`): Client review tool.
-*   **Social** (`/dashboard/social`): Social media scheduler and analytics.
-*   **Directory** (`/dashboard/directory`): Personal address book / CRM.
-*   **Shop** (`/dashboard/shop`): E-commerce store settings.
-*   **Settings** (`/dashboard/settings`): Account configuration.
+  Cast --> Models
+  Cast --> Designers
+
+  Com --> Sponsors
+  Com --> Activations
+  Com --> Deliverables
+
+  Media --> Library
+  Media --> Analytics
+```
+
+### Diagram 3 — ADVANCED MODULES SITEMAP
+
+```mermaid
+graph TD
+  CRM --> Leads[Lead Pipeline]
+  CRM --> Sponsors[Active Sponsors]
+  CRM --> Packages[Sponsorship Packages]
+  CRM --> Contracts[Contract Generation]
+
+  Logistics --> Venues[Venue Directory]
+  Logistics --> Vendors
+  Vendors --> AV[AV & Lighting]
+  Vendors --> HMU[Hair & Makeup]
+  Vendors --> Staff[Security & Staff]
+
+  AIHub[AI Control Center] --> Insights[Trend Insights]
+  AIHub --> TimelineAI[Auto-Schedule]
+  AIHub --> VenueAI[Map Grounding]
+  AIHub --> DocAI[RAG / Contract Reader]
+
+  Studio --> ProdPhoto[Product Photography]
+  Studio --> JewelPhoto[Jewellery Photography]
+  Studio --> FashPhoto[Fashion Photography]
+  Studio --> StudioRent[Studio Rental]
+```
+
+---
+
+## 3. Navigation Configuration (JSON)
+
+```json
+{
+  "public_navigation": [
+    { "label": "Home", "path": "/", "icon": "Home" },
+    { "label": "About", "path": "/about", "icon": "Info" },
+    { 
+      "label": "Services", 
+      "path": "/services", 
+      "icon": "Camera",
+      "children": [
+        { "label": "Fashion Photography", "path": "/services/fashion-photography" },
+        { "label": "Product Photography", "path": "/services/product-photography" },
+        { "label": "Jewellery Photography", "path": "/services/jewellery-photography" },
+        { "label": "Video Production", "path": "/services/video" },
+        { "label": "Retouching", "path": "/services/retouching" }
+      ]
+    },
+    { "label": "Marketplace", "path": "/shop", "icon": "ShoppingBag" },
+    { "label": "Directory", "path": "/directory", "icon": "Users" },
+    { "label": "Events", "path": "/events", "icon": "Calendar" },
+    { "label": "Contact", "path": "/contact", "icon": "Mail" }
+  ],
+  "dashboard_global": [
+    {
+      "category": "Core",
+      "items": [
+        { "label": "Overview", "path": "/dashboard", "icon": "LayoutDashboard" },
+        { "label": "Calendar", "path": "/dashboard/calendar", "icon": "Calendar" },
+        { "label": "Messages", "path": "/dashboard/messages", "icon": "MessageSquare" }
+      ]
+    },
+    {
+      "category": "Studio & Shoots",
+      "items": [
+        { "label": "Bookings", "path": "/dashboard/bookings", "icon": "Camera" },
+        { "label": "Photography Studio", "path": "/dashboard/studio", "icon": "Aperture" },
+        { "label": "Retouching", "path": "/dashboard/retouching", "icon": "Wand2" },
+        { "label": "Media Gallery", "path": "/dashboard/gallery", "icon": "Image" }
+      ]
+    },
+    {
+      "category": "Commercial",
+      "items": [
+        { "label": "Sponsors", "path": "/dashboard/sponsors", "icon": "Users" },
+        { "label": "Pipeline", "path": "/dashboard/leads", "icon": "Target" },
+        { "label": "Contracts", "path": "/dashboard/contracts", "icon": "FileText" }
+      ]
+    },
+    {
+      "category": "Logistics",
+      "items": [
+        { "label": "Venue Directory", "path": "/dashboard/venues", "icon": "MapPin" },
+        { "label": "Vendors", "path": "/dashboard/vendors", "icon": "Truck" },
+        { "label": "Talent Network", "path": "/dashboard/talent", "icon": "Star" }
+      ]
+    },
+    {
+      "category": "System",
+      "items": [
+        { "label": "AI Hub", "path": "/dashboard/ai", "icon": "Sparkles" },
+        { "label": "Financials", "path": "/dashboard/financials", "icon": "DollarSign" },
+        { "label": "Settings", "path": "/dashboard/settings", "icon": "Settings" }
+      ]
+    }
+  ],
+  "event_context": [
+    {
+      "category": "Management",
+      "items": [
+        { "label": "Command Center", "path": "", "icon": "Activity" },
+        { "label": "Timeline", "path": "timeline", "icon": "Clock" },
+        { "label": "Run of Show", "path": "schedule", "icon": "ListVideo" }
+      ]
+    },
+    {
+      "category": "Logistics",
+      "items": [
+        { "label": "Venue & Floorplan", "path": "venue", "icon": "Map" },
+        { "label": "Guest List", "path": "guests", "icon": "Users" },
+        { "label": "Tickets", "path": "tickets", "icon": "Ticket" }
+      ]
+    },
+    {
+      "category": "Casting",
+      "items": [
+        { "label": "Models", "path": "models", "icon": "Scissors" },
+        { "label": "Designers", "path": "designers", "icon": "Shirt" }
+      ]
+    },
+    {
+      "category": "Commercial",
+      "items": [
+        { "label": "Sponsors", "path": "sponsors", "icon": "DollarSign" },
+        { "label": "Activations", "path": "activations", "icon": "Zap" },
+        { "label": "Deliverables", "path": "deliverables", "icon": "CheckSquare" }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## 4. Architectural Logic
+
+### 1. Global Navigation (The Business View)
+This layer sits at `/dashboard`. It manages the **assets, people, and money** that span across multiple projects.
+*   **Studio & Shoots:** Manages specific service lines like Product Photography or Jewellery Photography bookings that are independent of large events.
+*   **CRM:** Manages global relationships with Sponsors and Vendors that might be used across different events (e.g., a long-term contract with LVMH).
+*   **Logistics:** The master database of Venues and Talent available to be booked.
+
+### 2. Event Context Mode (The Project View)
+When a user selects a specific event (e.g., "NYFW Spring Gala"), the interface shifts focus. All navigation items (Timeline, Models, Sponsors) become filtered **specifically for that event ID**.
+*   *Example:* Clicking "Models" inside Event Context shows the Casting Board for *that specific runway show*, not the global database of all models.
+
+### 3. Advanced & AI Modules
+*   **AI Hub:** Centralizes tools like Document RAG (chatting with contracts) and Venue Intelligence (Maps integration) to provide insights across the platform.
+*   **Vendors:** Detailed management for specialized teams like AV, Lighting, Hair/Makeup, and Security.
+*   **Marketplace/Services:** The public-facing pages (e.g., `/services/jewellery-photography`) act as lead-gen funnels that feed directly into the "Bookings" module in the dashboard, connecting the public site to the internal OS.
