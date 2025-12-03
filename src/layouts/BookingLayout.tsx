@@ -1,29 +1,13 @@
 
 import React, { useState } from 'react';
-import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { BookingSidebar } from '../components/booking/BookingSidebar';
 import { WizardProgressBar } from '../components/booking/ui/WizardProgressBar';
-import { ChevronLeft, LayoutDashboard, Target, Users, Camera, PanelRightClose, PanelRightOpen, ChevronUp, X } from 'lucide-react';
+import { ChevronLeft, PanelRightClose, PanelRightOpen, X, ChevronUp } from 'lucide-react';
 import { Button } from '../components/Button';
 import { useBooking } from '../context/BookingContext';
 import { formatCurrency } from '../utils/format';
-
-const STEPS = [
-  { path: '/start-project/category', label: 'Category' },
-  { path: '/start-project/style', label: 'Style' },
-  { path: '/start-project/size', label: 'Size' },
-  { path: '/start-project/scenes', label: 'Scenes' },
-  { path: '/start-project/shot-type', label: 'Type' },
-  { path: '/start-project/sub-category', label: 'Sub-Cat' },
-  { path: '/start-project/models', label: 'Talent' },
-  { path: '/start-project/shot-list', label: 'Count' },
-  { path: '/start-project/references', label: 'Refs' },
-  { path: '/start-project/brief', label: 'Brief' },
-  { path: '/start-project/shot-builder', label: 'List' },
-  { path: '/start-project/retouching', label: 'Retouch' },
-  { path: '/start-project/schedule', label: 'Schedule' }, 
-  { path: '/start-project/review', label: 'Review' },
-];
+import { BOOKING_STEPS } from '../lib/booking-steps';
 
 export const BookingLayout: React.FC = () => {
   const location = useLocation();
@@ -32,7 +16,7 @@ export const BookingLayout: React.FC = () => {
   const [isSummaryOpen, setIsSummaryOpen] = useState(false); // Mobile Drawer
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Desktop Collapse
   
-  const currentStepIndex = STEPS.findIndex(s => s.path === location.pathname);
+  const currentStepIndex = BOOKING_STEPS.findIndex(s => s.path === location.pathname);
   const safeStepIndex = currentStepIndex === -1 ? 0 : currentStepIndex;
 
   const isCheckout = location.pathname.includes('checkout');
@@ -63,7 +47,7 @@ export const BookingLayout: React.FC = () => {
             <div className="flex-1 max-w-md mx-8 hidden md:block">
               <WizardProgressBar 
                 currentStep={safeStepIndex + 1} 
-                totalSteps={STEPS.length} 
+                totalSteps={BOOKING_STEPS.length} 
               />
             </div>
           )}
@@ -135,7 +119,7 @@ export const BookingLayout: React.FC = () => {
              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-[2rem]">
                 <div>
                    <h3 className="font-serif font-bold text-xl">Project Summary</h3>
-                   <p className="text-xs text-gray-500 uppercase tracking-wider">Step {safeStepIndex + 1} of {STEPS.length}</p>
+                   <p className="text-xs text-gray-500 uppercase tracking-wider">Step {safeStepIndex + 1} of {BOOKING_STEPS.length}</p>
                 </div>
                 <button onClick={() => setIsSummaryOpen(false)} className="p-2 bg-white hover:bg-gray-100 rounded-full transition-colors border border-gray-200">
                    <X size={20} />

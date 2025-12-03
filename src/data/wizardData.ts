@@ -7,42 +7,42 @@ export const WIZARD_DATA = {
       id: 'fashion', 
       label: 'Fashion Apparel', 
       icon: ShoppingBag, 
-      image: 'https://res.cloudinary.com/dzqy2ixl0/image/upload/v1764398514/5-fashionos_wc2p1c.jpg', 
+      image: 'https://images.unsplash.com/photo-1550614000-4b9519e02d48?q=80&w=800&auto=format&fit=crop', 
       desc: 'Runway, Ghost Mannequin, Model' 
     },
     { 
       id: 'beauty', 
       label: 'Beauty & Cosmetics', 
       icon: Sparkles, 
-      image: 'https://res.cloudinary.com/dzqy2ixl0/image/upload/v1764398689/95-fashionos_fcp8nf.jpg', 
+      image: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?q=80&w=800&auto=format&fit=crop', 
       desc: 'Skincare, Makeup, Texture' 
     },
     { 
       id: 'jewelry', 
       label: 'Jewelry', 
       icon: Watch, 
-      image: 'https://res.cloudinary.com/dzqy2ixl0/image/upload/v1764398625/104-fashionos_jwzopk.jpg', 
+      image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=800&auto=format&fit=crop', 
       desc: 'Rings, Necklaces, Macro' 
     },
     { 
       id: 'footwear', 
       label: 'Footwear', 
       icon: Footprints, 
-      image: 'https://res.cloudinary.com/dzqy2ixl0/image/upload/v1764398827/48-fashionos_qj0z9e.jpg', 
+      image: 'https://images.unsplash.com/photo-1560343090-f0409e92791a?q=80&w=800&auto=format&fit=crop', 
       desc: 'Sneakers, Heels, Boots' 
     },
     { 
       id: 'eyewear', 
       label: 'Eyewear', 
       icon: Glasses, 
-      image: 'https://res.cloudinary.com/dzqy2ixl0/image/upload/v1764398887/110-fashionos_k98ocv.jpg', 
+      image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=800&auto=format&fit=crop', 
       desc: 'Sunglasses, Optical, Detail' 
     },
     { 
       id: 'food', 
       label: 'Food & Beverage', 
       icon: Utensils, 
-      image: 'https://images.unsplash.com/photo-1563170351-be82bc888aa4?q=80&w=600&auto=format&fit=crop', 
+      image: 'https://images.unsplash.com/photo-1606851091851-e8c8c0fca5ba?q=80&w=800&auto=format&fit=crop', 
       desc: 'Cocktails, Bottles, Plated' 
     },
   ],

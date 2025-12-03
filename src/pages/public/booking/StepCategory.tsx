@@ -18,21 +18,26 @@ export const StepCategory: React.FC = () => {
 
   return (
     <FadeIn>
-      <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8">
-        <div className="mb-12 text-center lg:text-left">
-            <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6 text-gray-900">Select your shoot type</h1>
-            <p className="text-gray-500 text-lg font-light leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              Choose the category that best fits your product. This helps us assign the right photographers and studio equipment.
+      <div className="max-w-[1400px] mx-auto px-4 md:px-6 lg:px-8">
+        
+        {/* Header */}
+        <div className="mb-12 text-center lg:text-left max-w-3xl">
+            <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 block">Step 1 / Production Scope</span>
+            <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 text-gray-900">
+                Select your shoot type
+            </h1>
+            <p className="text-gray-500 text-lg font-light leading-relaxed">
+              What type of product are we shooting today? This helps us assign the right creative team and studio equipment.
             </p>
         </div>
 
-        {/* Popular Choices */}
-        <div className="flex flex-wrap gap-3 mb-12 justify-center lg:justify-start">
-           <span className="text-xs font-bold uppercase tracking-widest text-gray-400 self-center mr-2">Popular:</span>
+        {/* Popular Tags */}
+        <div className="flex flex-wrap gap-2 mb-10 justify-center lg:justify-start items-center">
+           <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mr-2">Trending:</span>
            {['Fashion Apparel', 'Beauty & Cosmetics', 'Jewelry'].map(tag => (
              <button 
                 key={tag}
-                className="px-5 py-2.5 rounded-full bg-white border border-gray-200 text-gray-600 text-xs font-bold uppercase tracking-wider hover:border-black hover:text-black transition-all shadow-sm"
+                className="px-4 py-1.5 rounded-full bg-white border border-gray-200 text-gray-500 text-xs font-medium hover:border-purple-300 hover:text-purple-600 transition-all"
                 onClick={() => {
                    const match = WIZARD_DATA.categories.find(c => c.label === tag);
                    if (match) handleSelect(match.id);
@@ -43,32 +48,34 @@ export const StepCategory: React.FC = () => {
            ))}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-8 mb-16">
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {WIZARD_DATA.categories.map((cat) => (
-             <CategoryCard
-                key={cat.id}
-                id={cat.id}
-                title={cat.label}
-                description={cat.desc}
-                icon={cat.icon}
-                image={cat.image}
-                isSelected={state.category === cat.id}
-                isRecommended={false}
-                onClick={() => handleSelect(cat.id)}
-             />
+             <div key={cat.id} className="h-full">
+               <CategoryCard
+                  id={cat.id}
+                  title={cat.label}
+                  description={cat.desc}
+                  icon={cat.icon}
+                  image={cat.image}
+                  isSelected={state.category === cat.id}
+                  isRecommended={false}
+                  onClick={() => handleSelect(cat.id)}
+               />
+             </div>
           ))}
         </div>
 
         {/* Continue CTA */}
-        <div className="flex justify-center pb-10">
+        <div className="flex justify-center lg:justify-start pb-10 border-t border-gray-200 pt-8">
            <Button 
              size="lg" 
              variant="primary" 
              disabled={!state.category}
              onClick={() => navigate('/start-project/style')}
-             className="px-12 h-16 text-base shadow-xl shadow-purple-900/10"
+             className="px-12 h-14 text-sm shadow-xl shadow-purple-900/10"
            >
-             Next Step <ArrowRight size={18} className="ml-2" />
+             Next Step <ArrowRight size={16} className="ml-2" />
            </Button>
         </div>
       </div>

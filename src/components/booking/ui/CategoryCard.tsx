@@ -25,70 +25,66 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
   return (
     <div 
       onClick={onClick}
-      className={`group relative h-[380px] rounded-3xl overflow-hidden cursor-pointer transition-all duration-500 ${
-        isSelected 
-          ? 'ring-4 ring-fashion-purple ring-offset-4 shadow-2xl scale-[1.02]' 
-          : isRecommended
-            ? 'ring-2 ring-purple-200 hover:shadow-xl'
-            : 'hover:shadow-2xl hover:-translate-y-2'
-      }`}
+      className={`
+        group relative flex flex-col bg-white rounded-2xl overflow-hidden cursor-pointer
+        transition-all duration-300 ease-out h-full
+        ${isSelected 
+          ? 'ring-2 ring-fashion-purple shadow-xl scale-[1.01]' 
+          : 'border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1'
+        }
+      `}
       role="radio"
       aria-checked={isSelected}
     >
-      {/* Background Image */}
-      <img 
-        src={image} 
-        className={`w-full h-full object-cover transition-transform duration-700 ${isSelected ? 'scale-110' : 'group-hover:scale-110'}`}
-        alt={title} 
-        loading="lazy"
-      />
-      
-      {/* Gradient Overlays */}
-      <div className={`absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90 transition-opacity duration-500 ${
-        isSelected ? 'opacity-100' : 'opacity-80 group-hover:opacity-90'
-      }`} />
-      
-      <div className={`absolute inset-0 bg-black/20 transition-opacity duration-500 ${isSelected ? 'opacity-0' : 'group-hover:opacity-0'}`} />
-      
-      {/* AI Recommended Badge */}
-      {isRecommended && !isSelected && (
-        <div className="absolute top-4 right-4 z-20">
-           <span className="bg-white/90 backdrop-blur text-purple-700 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-lg">
-              <Sparkles size={10} /> AI Match
-           </span>
-        </div>
-      )}
-
-      {/* Content Layer */}
-      <div className="absolute bottom-0 left-0 p-6 w-full z-10">
-        <div className="flex justify-between items-end mb-3">
-           {/* Icon & Title */}
-           <div className="flex flex-col gap-3">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20 transition-colors ${
-                 isSelected ? 'bg-fashion-purple text-white' : 'bg-white/10 text-white group-hover:bg-white/20'
-              }`}>
-                 <Icon size={24} strokeWidth={1.5} />
-              </div>
-              <h3 className="text-white font-serif font-bold text-2xl tracking-wide leading-none">{title}</h3>
+      {/* Image Area (2:1 Ratio) */}
+      <div className="relative w-full h-40 overflow-hidden bg-gray-50">
+         <img 
+            src={image} 
+            alt={title}
+            className={`w-full h-full object-cover transition-transform duration-700 ${isSelected ? 'scale-105' : 'group-hover:scale-105'}`}
+            loading="lazy"
+         />
+         
+         {/* AI Recommended Badge */}
+         {isRecommended && (
+           <div className="absolute top-3 right-3 z-10">
+              <span className="bg-white/95 backdrop-blur text-purple-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm border border-purple-100">
+                 <Sparkles size={10} className="fill-purple-200" /> AI Match
+              </span>
            </div>
-           
-           {/* Selection Check */}
-           {isSelected && (
-             <div className="bg-fashion-purple text-white p-2 rounded-full shadow-lg animate-in zoom-in duration-300 mb-1">
-               <CheckCircle2 size={20} />
-             </div>
-           )}
-        </div>
-        
-        <p className={`text-sm font-medium transition-colors duration-300 ${isSelected ? 'text-purple-100' : 'text-gray-300 group-hover:text-white'}`}>
-            {description}
-        </p>
+         )}
+
+         {/* Selection Overlay */}
+         <div className={`absolute inset-0 bg-purple-900/10 transition-opacity duration-300 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
       </div>
 
-      {/* Active Border (Simulated internal border) */}
-      {isSelected && (
-         <div className="absolute inset-0 border-[3px] border-white/20 rounded-3xl pointer-events-none" />
-      )}
+      {/* Content Area */}
+      <div className="p-5 flex flex-col flex-1">
+         <div className="flex justify-between items-start mb-2">
+             <div className={`
+                w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300
+                ${isSelected ? 'bg-fashion-purple text-white' : 'bg-gray-50 text-gray-400 group-hover:bg-gray-100 group-hover:text-gray-600'}
+             `}>
+                <Icon size={20} strokeWidth={1.5} />
+             </div>
+             
+             {/* Check Circle */}
+             <div className={`
+                transition-all duration-300 
+                ${isSelected ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}
+             `}>
+                <CheckCircle2 size={22} className="text-fashion-purple fill-purple-50" />
+             </div>
+         </div>
+
+         <h3 className={`font-serif text-lg font-bold mb-1 transition-colors ${isSelected ? 'text-fashion-purple' : 'text-gray-900'}`}>
+            {title}
+         </h3>
+         
+         <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
+            {description}
+         </p>
+      </div>
     </div>
   );
 };
