@@ -1,6 +1,11 @@
 
 # Changelog
 
+## [2.0.1] - 2025-03-10 (Hotfix)
+### 🐛 Bug Fixes
+- **Build Pipeline:** Fixed Vercel build error `ENOENT: tsconfig.node.json` by ensuring the file is present and correctly configured for Vite 5/6 ecosystem.
+- **Configuration:** Verified `vite.config.ts` path resolution for ESM compatibility.
+
 ## [2.0.0] - 2025-03-10 (Gold Master)
 ### 🚀 Feature Complete
 - **Sponsor CRM:** Full suite of tools for managing sponsors, including AI lead scoring, contract generation, activation tracking, and a dedicated external portal.
