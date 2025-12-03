@@ -5,6 +5,17 @@
 
 | Task Name | Short Description | Status | % Complete | ✅ Confirmed | ⚠️ Missing / Failing | 💡 Next Action |
 | --------- | ----------------- | ------ | ---------- | ------------- | -------------------- | -------------- |
+| **Event-First Dashboard** | | | | | | |
+| Router & Navigation | Dynamic Sidebar Switching | 🟢 Completed | 100% | `DashboardLayout.tsx` | — | None |
+| Event Command Center | Overview stats & widgets | 🟢 Completed | 100% | `EventCommandCenter.tsx` | — | None |
+| Timeline View | 14-Phase tracker | 🟢 Completed | 100% | `EventTimeline.tsx` | — | None |
+| Run of Show | Schedule builder | 🟢 Completed | 100% | `EventRunOfShow.tsx` | — | None |
+| Venue Logistics | Map integration & contacts | 🟢 Completed | 100% | `EventVenue.tsx` | — | None |
+| Guest List | RSVP management | 🟢 Completed | 100% | `EventGuests.tsx` | — | None |
+| Tickets | Pricing tiers & stats | 🟢 Completed | 100% | `EventTickets.tsx` | — | None |
+| Casting Board | Model management | 🟢 Completed | 100% | `EventCasting.tsx` | — | None |
+| Global Venue Directory | Venue search & list | 🟢 Completed | 100% | `VenueDirectory.tsx` | — | None |
+| Global Talent Network | Creative directory | 🟢 Completed | 100% | `TalentNetwork.tsx` | — | None |
 | **UI & UX Polish** | | | | | | |
 | UI Standardization | StatusBadge & EmptyState components | 🟢 Completed | 100% | `DashboardEvents`, `Financials` | — | None |
 | Mobile Optimization | Safe areas, Table scrolls, Input zoom | 🟢 Completed | 100% | `index.css` utilities | — | None |

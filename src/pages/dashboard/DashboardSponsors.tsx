@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Plus, Sparkles, X, SlidersHorizontal, DollarSign, Calendar, 
   Activity, Users, Search
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { FadeIn } from '../../components/FadeIn';
 import { SponsorList } from '../../components/sponsors/SponsorList';
@@ -15,17 +15,27 @@ import { Input } from '../../components/forms/Input';
 
 export const DashboardSponsors: React.FC = () => {
   const navigate = useNavigate();
+  // Get Event ID from URL if present (Context Awareness)
+  const { id: eventId } = useParams<{ id: string }>();
+  
   // Hook connecting to Supabase
   const { deals, loading, updateSponsorStatus } = useSponsors();
   
   const [view, setView] = useState<'Pipeline' | 'List'>('Pipeline');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter deals for pipeline view
-  const filteredDeals = deals.filter(d => 
-    d.sponsor?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    d.event?.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter deals for pipeline view, also applying Event Context if active
+  const filteredDeals = useMemo(() => {
+    return deals.filter(d => {
+      const matchesSearch = 
+        d.sponsor?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        d.event?.title.toLowerCase().includes(searchQuery.toLowerCase());
+        
+      const matchesEvent = eventId ? d.event_id === eventId : true;
+      
+      return matchesSearch && matchesEvent;
+    });
+  }, [deals, searchQuery, eventId]);
 
   return (
     <div className="space-y-8 animate-in fade-in pb-20 relative">
@@ -34,9 +44,11 @@ export const DashboardSponsors: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-between items-end gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">
-            <span>Dashboard</span> <span className="text-gray-300">/</span> <span className="text-fashion-purple">Sponsors</span>
+            <span>{eventId ? 'Event' : 'Dashboard'}</span> <span className="text-gray-300">/</span> <span className="text-fashion-purple">Sponsors</span>
           </div>
-          <h1 className="text-3xl font-serif font-bold text-[#1A1D2D]">Sponsorship Manager</h1>
+          <h1 className="text-3xl font-serif font-bold text-[#1A1D2D]">
+            {eventId ? 'Event Sponsorships' : 'Sponsorship Manager'}
+          </h1>
         </div>
         <div className="flex items-center gap-3">
            <Link to="/dashboard/sponsors/new-deal">
@@ -47,8 +59,8 @@ export const DashboardSponsors: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Widget */}
-      <SponsorKPIWidget sponsors={deals} loading={loading} />
+      {/* KPI Widget (Scoped to filtered deals) */}
+      <SponsorKPIWidget sponsors={filteredDeals} loading={loading} />
 
       {/* View Toggle */}
       <div className="flex justify-between items-center">
@@ -77,7 +89,7 @@ export const DashboardSponsors: React.FC = () => {
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                  <input 
                     type="text" 
-                    placeholder="Search deals by sponsor or event..." 
+                    placeholder="Search deals by sponsor..." 
                     className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-100 shadow-sm"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -98,7 +110,7 @@ export const DashboardSponsors: React.FC = () => {
       {view === 'List' && (
         <FadeIn>
             <SponsorList 
-              sponsors={deals} 
+              sponsors={filteredDeals} 
               onSponsorClick={(s) => navigate(`/dashboard/sponsors/${s.sponsor_id}`)}
             />
         </FadeIn>

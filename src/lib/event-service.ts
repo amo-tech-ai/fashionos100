@@ -3,7 +3,14 @@ import { supabase } from './supabase';
 import { Database } from '../types/database';
 
 export type Event = Database['public']['Tables']['events']['Row'] & {
-  venue?: { name: string; city: string; address?: string; geo_lat?: number; geo_lng?: number } | null;
+  venue?: { 
+    name: string; 
+    city: string; 
+    address?: string; 
+    geo_lat?: number; 
+    geo_lng?: number;
+    capacity?: number; 
+  } | null;
   registrations?: any[];
   ticket_tiers?: Database['public']['Tables']['ticket_tiers']['Row'][];
   event_schedules?: Database['public']['Tables']['event_schedules']['Row'][];
